@@ -1,0 +1,49 @@
+<ion-toolbar class="custom-toolbar">
+  <ion-buttons>
+    <ion-button (click)="navigateTo('/dashboard-admin')" [class.tab-selected]="activePage === '/dashboard-admin'">
+      <ion-icon name="home"></ion-icon>
+      <ion-label>Dashboard</ion-label>
+    </ion-button>
+
+    <ion-button (click)="navigateTo('/dashboard-admin/manage-employees')"
+      [class.tab-selected]="activePage === '/dashboard-admin/manage-employees'">
+      <ion-icon name="storefront"></ion-icon>
+      <ion-label>Funcionários</ion-label>
+    </ion-button>
+
+    <ion-button (click)="navigateTo('/dashboard-admin/manage-clients')"
+      [class.tab-selected]="activePage === '/dashboard-admin/manage-clients'">
+      <ion-icon name="people-circle"></ion-icon>
+      <ion-label>clients</ion-label>
+    </ion-button>
+
+    <ion-button (click)="navigateTo('/dashboard-admin/pagamentos')"
+      [class.tab-selected]="activePage === '/dashboard-admin/pagamentos'">
+      <ion-icon name="wallet"></ion-icon>
+      <ion-label>Pagamentos</ion-label>
+    </ion-button>
+
+    <ion-button (click)="navigateTo('/dashboard-admin/notificacoes')"
+      [class.tab-selected]="activePage === '/dashboard-admin/notificacoes'">
+      <ion-icon name="notifications"></ion-icon>
+      <ion-label>Notificações</ion-label>
+    </ion-button>
+
+    <ion-button (click)="navigateTo('/dashboard-admin/relatorios')"
+      [class.tab-selected]="activePage === '/dashboard-admin/relatorios'">
+      <ion-icon name="document-text"></ion-icon>
+      <ion-label>Relatórios</ion-label>
+    </ion-button>
+
+    <ion-button (click)="navigateTo('/dashboard-admin/configuracoes')"
+      [class.tab-selected]="activePage === '/dashboard-admin/configuracoes'">
+      <ion-icon name="settings"></ion-icon>
+      <ion-label>Configurações</ion-label>
+    </ion-button>
+
+    <ion-button (click)="logout()">
+      <ion-icon name="log-out"></ion-icon>
+      <ion-label>Sair</ion-label>
+    </ion-button>
+  </ion-buttons>
+</ion-toolbar>

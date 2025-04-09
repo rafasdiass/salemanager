@@ -1,0 +1,26 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>
+      <ion-icon name="notifications"></ion-icon>
+      Notificações e Comunicados
+    </ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="notifications-content">
+  <!-- Exibição do carregador enquanto os dados estão sendo carregados -->
+  <div *ngIf="isLoading(); else contentLoaded" class="loading-container">
+    <ion-spinner name="crescent"></ion-spinner>
+    <p>Carregando notificações...</p>
+  </div>
+
+  <ng-template #contentLoaded>
+    <!-- Componente filho que contém o formulário de criação de notificações -->
+    <app-notifications-create-form (notificationCreated)="onNotificationCreated($event)">
+    </app-notifications-create-form>
+
+    <!-- Componente filho que exibe o histórico das notificações -->
+    <app-notifications-history [notifications]="notifications()">
+    </app-notifications-history>
+  </ng-template>
+</ion-content>

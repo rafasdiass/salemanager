@@ -1,0 +1,39 @@
+<ion-content class="client-benefits-page">
+  <ion-header>
+    <ion-toolbar>
+      <ion-title>Meus Benefícios</ion-title>
+    </ion-toolbar>
+  </ion-header>
+
+  <div class="container">
+    <!-- Loader enquanto os benefícios estão sendo carregados -->
+    <ion-spinner *ngIf="isLoading" class="loading-spinner"></ion-spinner>
+
+    <!-- Mensagem de erro -->
+    <div *ngIf="errorMessage" class="error-message">
+      <p>{{ errorMessage }}</p>
+    </div>
+
+    <!-- Lista de benefícios -->
+    <div *ngIf="!isLoading && beneficios.length > 0">
+      <ion-card *ngFor="let beneficio of beneficios">
+        <ion-card-header>
+          <ion-title>{{ beneficio.titulo }}</ion-title>
+        </ion-card-header>
+        <ion-card-content>
+          <p>{{ beneficio.descricao }}</p>
+          <p><strong>Tipo:</strong> {{ beneficio.tipo }}</p>
+          <p><strong>Status:</strong> {{ beneficio.expirado ? 'Expirado' : 'Disponível' }}</p>
+          <p *ngIf="beneficio.utilizadoEm"><strong>Utilizado em:</strong> {{ beneficio.utilizadoEm | date:'dd/MM/yyyy'
+            }}</p>
+          <p *ngIf="beneficio.validade"><strong>Validade:</strong> {{ beneficio.validade | date:'dd/MM/yyyy' }}</p>
+        </ion-card-content>
+      </ion-card>
+    </div>
+
+    <!-- Mensagem quando não há benefícios -->
+    <div *ngIf="!isLoading && beneficios.length === 0 && !errorMessage">
+      <p>Nenhum benefício disponível no momento.</p>
+    </div>
+  </div>
+</ion-content>

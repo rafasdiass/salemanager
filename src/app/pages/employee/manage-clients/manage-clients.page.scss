@@ -1,0 +1,43 @@
+.view-client-details {
+    --background: var(--ion-color-light-grey);
+}
+
+.container {
+    padding: 16px;
+}
+
+.top-section {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.button-col {
+    display: flex;
+    justify-content: flex-end;
+}
+
+.client-card {
+    background-color: var(--ion-color-card-bg);
+    box-shadow: var(--box-shadow-light);
+    border-radius: 10px;
+    padding: 10px;
+    margin-bottom: 10px;
+}
+
+.client-name {
+    font-size: 18px;
+    font-weight: bold;
+    color: var(--ion-color-primary);
+}
+
+.client-info {
+    font-size: 14px;
+    color: var(--ion-color-dark-grey);
+}
+
+.action-buttons {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 10px;
+}

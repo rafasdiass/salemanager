@@ -1,0 +1,23 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Pagamentos do client</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <div class="tabs">
+    <button [class.active]="activeTab === 'history'" (click)="switchTab('history')">
+      Histórico
+    </button>
+    <button [class.active]="activeTab === 'management'" (click)="switchTab('management')">
+      Gerenciar
+    </button>
+  </div>
+
+  <div *ngIf="activeTab === 'history'">
+    <app-client-payments-history></app-client-payments-history>
+  </div>
+  <div *ngIf="activeTab === 'management'">
+    <app-client-payments-management></app-client-payments-management>
+  </div>
+</ion-content>

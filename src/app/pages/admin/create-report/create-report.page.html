@@ -1,0 +1,71 @@
+<ion-content>
+  <div class="container mt-4">
+    <h1 class="text-center">
+      <i class="bi bi-bar-chart-fill"></i> Relatórios Consolidados
+    </h1>
+
+    <!-- Mensagem de carregamento -->
+    <div *ngIf="isLoading" class="text-center mt-4">
+      <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Carregando...</span>
+      </div>
+    </div>
+
+    <!-- Mensagem de erro -->
+    <div *ngIf="erroCarregamento && !isLoading" class="alert alert-danger mt-4">
+      Não foi possível carregar os relatórios. Tente novamente mais tarde.
+    </div>
+
+    <!-- Relatórios consolidados -->
+    <div *ngIf="!isLoading && relatorioConsolidado">
+      <h2 class="mt-4">Totais</h2>
+      <ul class="list-group">
+        <li class="list-group-item">
+          <strong>Total de clients:</strong> {{ relatorioConsolidado.totais.totalclients }}
+        </li>
+        <li class="list-group-item">
+          <strong>Total de employees:</strong> {{ relatorioConsolidado.totais.totalemployees }}
+        </li>
+        <li class="list-group-item">
+          <strong>Total de Pagamentos Realizados:</strong>
+          {{ relatorioConsolidado.totais.totalPagamentosRealizados }}
+        </li>
+        <li class="list-group-item">
+          <strong>Total de Pagamentos Pendentes:</strong>
+          {{ relatorioConsolidado.totais.totalPagamentosPendentes }}
+        </li>
+      </ul>
+
+      <h2 class="mt-4">Novos Registros</h2>
+      <div class="row">
+        <div class="col-md-6">
+          <h3>clients</h3>
+          <ul class="list-group">
+            <li *ngFor="let client of relatorioConsolidado.novosRegistros.novosclients" class="list-group-item">
+              {{ client.first_name }} {{ client.last_name }} - Registrado em
+              {{ client.registration_date }}
+            </li>
+          </ul>
+        </div>
+        <div class="col-md-6">
+          <h3>employees</h3>
+          <ul class="list-group">
+            <li *ngFor="let employee of relatorioConsolidado.novosRegistros.novosemployees" class="list-group-item">
+              {{ employee.first_name }} {{ employee.last_name }} - Registrado em
+              {{ employee.registration_date }}
+            </li>
+          </ul>
+        </div>
+      </div>
+
+      <h2 class="mt-4">Histórico de Pagamentos</h2>
+      <ul class="list-group">
+        <li *ngFor="let pagamento of relatorioConsolidado.historicoPagamentos" class="list-group-item">
+          <strong>Data:</strong> {{ pagamento.data }} |
+          <strong>Valor:</strong> {{ pagamento.valor }} |
+          <strong>Status:</strong> {{ pagamento.status }}
+        </li>
+      </ul>
+    </div>
+  </div>
+</ion-content>

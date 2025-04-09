@@ -1,0 +1,42 @@
+<div>
+  <h2>Gestão de Pagamentos Pendentes/Atrasados</h2>
+
+  <!-- Mensagem de carregamento -->
+  <div *ngIf="isLoading" class="loading-container">
+    <p>Carregando pagamentos...</p>
+  </div>
+
+  <!-- Mensagem de erro -->
+  <div *ngIf="errorMessage" class="error-container">
+    <p class="text-danger">{{ errorMessage }}</p>
+  </div>
+
+  <!-- Mensagem de sucesso -->
+  <div *ngIf="successMessage" class="success-container">
+    <p class="text-success">{{ successMessage }}</p>
+  </div>
+
+  <!-- Lista de pagamentos pendentes/atrasados -->
+  <ul *ngIf="!isLoading && !errorMessage && (pagamentosPendentesAtrasados$ | async)?.length">
+    <li *ngFor="let pagamento of pagamentosPendentesAtrasados$ | async">
+      <strong>{{ pagamento.client.first_name }} {{ pagamento.client.last_name }}</strong> -
+      {{ pagamento.valor | currency:'BRL' }} -
+      <span [ngClass]="{ 
+        'text-warning': pagamento.status === 'pendente',
+        'text-danger': pagamento.status === 'atrasado'
+      }">
+        {{ pagamento.status | titlecase }}
+      </span>
+      (Vencimento: {{ pagamento.vencimento | date:'shortDate' }})
+
+      <button (click)="gerarBoleto(pagamento)" class="btn btn-primary">
+        Gerar Boleto
+      </button>
+    </li>
+  </ul>
+
+  <!-- Mensagem caso não existam pagamentos -->
+  <p *ngIf="!isLoading && !errorMessage && !(pagamentosPendentesAtrasados$ | async)?.length" class="text-muted">
+    Nenhum pagamento pendente ou atrasado encontrado.
+  </p>
+</div>

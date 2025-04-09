@@ -1,0 +1,22 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Comunicados</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <div *ngIf="communications() && communications().length > 0; else noCommunications">
+    <ion-card *ngFor="let communication of communications()">
+      <ion-card-header>
+        <ion-card-title>{{ communication.titulo }}</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <p>{{ communication.mensagem }}</p>
+        <p><strong>Data:</strong> {{ communication.data | date: 'short' }}</p>
+      </ion-card-content>
+    </ion-card>
+  </div>
+  <ng-template #noCommunications>
+    <p class="no-data">Nenhum comunicado encontrado.</p>
+  </ng-template>
+</ion-content>

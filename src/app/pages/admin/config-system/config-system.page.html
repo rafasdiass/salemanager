@@ -1,0 +1,59 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>
+      <ion-icon name="settings" slot="start"></ion-icon>
+      Configurações do Sistema
+    </ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="config-content">
+  <div class="config-container">
+    <h2>
+      <ion-icon name="settings"></ion-icon>
+      Configurações Gerais
+    </h2>
+
+    <ion-card>
+      <ion-card-header>
+        <ion-title>Correção pelo INCC</ion-title>
+      </ion-card-header>
+      <ion-card-content>
+        <!-- Índice INCC -->
+        <ion-item>
+          <ion-icon slot="start" name="bar-chart"></ion-icon>
+          <ion-label position="stacked">Índice INCC (%)</ion-label>
+          <ion-input type="numeric" formControlName="indiceIncc" placeholder="Digite o índice"></ion-input>
+        </ion-item>
+
+        <!-- Data Base do INCC -->
+        <ion-item>
+          <ion-icon slot="start" name="calendar"></ion-icon>
+          <ion-label position="stacked">Data Base do INCC</ion-label>
+          <ion-input type="date" formControlName="dataBaseIncc"></ion-input>
+        </ion-item>
+      </ion-card-content>
+    </ion-card>
+
+    <ion-card>
+      <ion-card-header>
+        <ion-title>Opções Financeiras</ion-title>
+      </ion-card-header>
+      <ion-card-content>
+        <!-- Retirar Juros -->
+        <ion-item>
+          <ion-label>Retirar Juros de Todos os Segurados</ion-label>
+          <ion-toggle formControlName="retirarJuros" color="secondary"></ion-toggle>
+        </ion-item>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Botão de Salvar -->
+    <div class="save-button">
+      <ion-button expand="block" color="primary" (click)="atualizarConfiguracoes()">
+        <ion-icon name="save" slot="start"></ion-icon>
+        Salvar Configurações
+      </ion-button>
+    </div>
+  </div>
+</ion-content>

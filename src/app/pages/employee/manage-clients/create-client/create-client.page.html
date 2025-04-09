@@ -1,0 +1,145 @@
+<ion-content class="create-client-page">
+  <div class="container">
+    <h1 class="text-center mt-4">
+      <i class="bi bi-person-plus-fill"></i> Cadastrar client
+    </h1>
+
+    <!-- Formulário de cadastro -->
+    <form [formGroup]="clientForm" (ngSubmit)="submitForm()" class="mt-4">
+      <div class="row g-3">
+        <!-- CPF -->
+        <div class="col-md-6">
+          <label for="cpf" class="form-label">
+            <i class="bi bi-credit-card-2-front"></i> CPF
+          </label>
+          <input id="cpf" type="text" formControlName="cpf" class="form-control" placeholder="Digite o CPF" />
+          <div *ngIf="
+              clientForm.get('cpf')?.invalid &&
+              clientForm.get('cpf')?.touched
+            " class="text-danger small mt-1">
+            CPF inválido. Insira 11 dígitos numéricos.
+          </div>
+        </div>
+
+        <!-- Email -->
+        <div class="col-md-6">
+          <label for="email" class="form-label">
+            <i class="bi bi-envelope"></i> Email
+          </label>
+          <input id="email" type="email" formControlName="email" class="form-control" placeholder="Digite o email" />
+          <div *ngIf="
+              clientForm.get('email')?.invalid &&
+              clientForm.get('email')?.touched
+            " class="text-danger small mt-1">
+            Email inválido.
+          </div>
+        </div>
+
+        <!-- Nome -->
+        <div class="col-md-6">
+          <label for="first_name" class="form-label">
+            <i class="bi bi-person-fill"></i> Nome
+          </label>
+          <input id="first_name" type="text" formControlName="first_name" class="form-control"
+            placeholder="Digite o nome" />
+          <div *ngIf="
+              clientForm.get('first_name')?.invalid &&
+              clientForm.get('first_name')?.touched
+            " class="text-danger small mt-1">
+            Nome é obrigatório.
+          </div>
+        </div>
+
+        <!-- Sobrenome -->
+        <div class="col-md-6">
+          <label for="last_name" class="form-label">
+            <i class="bi bi-person-lines-fill"></i> Sobrenome
+          </label>
+          <input id="last_name" type="text" formControlName="last_name" class="form-control"
+            placeholder="Digite o sobrenome" />
+          <div *ngIf="
+              clientForm.get('last_name')?.invalid &&
+              clientForm.get('last_name')?.touched
+            " class="text-danger small mt-1">
+            Sobrenome é obrigatório.
+          </div>
+        </div>
+
+        <!-- Telefone -->
+        <div class="col-md-6">
+          <label for="phone" class="form-label">
+            <i class="bi bi-telephone-fill"></i> Telefone
+          </label>
+          <input id="phone" type="text" formControlName="phone" class="form-control" placeholder="Digite o telefone" />
+          <div *ngIf="
+              clientForm.get('phone')?.invalid &&
+              clientForm.get('phone')?.touched
+            " class="text-danger small mt-1">
+            Telefone é obrigatório.
+          </div>
+        </div>
+
+        <!-- Endereço -->
+        <div class="col-md-6">
+          <label for="street" class="form-label">
+            <i class="bi bi-map"></i> Rua
+          </label>
+          <input id="street" type="text" formControlName="address.street" class="form-control"
+            placeholder="Digite a rua" />
+        </div>
+
+        <div class="col-md-2">
+          <label for="number" class="form-label">
+            <i class="bi bi-hash"></i> Número
+          </label>
+          <input id="number" type="text" formControlName="address.number" class="form-control" placeholder="Nº" />
+        </div>
+
+        <div class="col-md-4">
+          <label for="neighborhood" class="form-label">
+            <i class="bi bi-geo-alt-fill"></i> Bairro
+          </label>
+          <input id="neighborhood" type="text" formControlName="address.neighborhood" class="form-control"
+            placeholder="Digite o bairro" />
+        </div>
+
+        <div class="col-md-6">
+          <label for="city" class="form-label">
+            <i class="bi bi-building"></i> Cidade
+          </label>
+          <input id="city" type="text" formControlName="address.city" class="form-control"
+            placeholder="Digite a cidade" />
+        </div>
+
+        <div class="col-md-3">
+          <label for="state" class="form-label">
+            <i class="bi bi-map-fill"></i> Estado
+          </label>
+          <input id="state" type="text" formControlName="address.state" class="form-control"
+            placeholder="Digite o estado" />
+        </div>
+
+        <div class="col-md-3">
+          <label for="postal_code" class="form-label">
+            <i class="bi bi-mailbox"></i> CEP
+          </label>
+          <input id="postal_code" type="text" formControlName="address.postal_code" class="form-control"
+            placeholder="Digite o CEP" />
+        </div>
+      </div>
+
+      <!-- Botões -->
+      <div class="mt-4 text-center">
+        <!-- Salvar -->
+        <button type="submit" class="btn btn-success me-2" [disabled]="isSubmitting">
+          <i class="bi bi-check-circle"></i> Salvar
+        </button>
+
+        <!-- Cancelar -->
+        <button type="button" class="btn btn-secondary" (click)="cancel()" [disabled]="isSubmitting">
+          <i class="bi bi-x-circle"></i> Cancelar
+        </button>
+      </div>
+    </form>
+  </div>
+</ion-content>

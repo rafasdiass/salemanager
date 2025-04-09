@@ -1,0 +1,116 @@
+.view-employee-details {
+    height: 100vh; // Garante que o modal ocupe toda a altura da tela
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+
+    ion-content {
+        --background: var(--ion-color-light-grey); // Cor de fundo neutra
+        display: flex;
+        flex-direction: column;
+    }
+
+    .container {
+        flex: 1;
+        padding: 16px;
+        padding-bottom: 80px; // Espaço extra para evitar corte dos últimos itens
+        margin-top: 20px; // Adiciona espaço no topo
+        margin-bottom: 20px; // Adiciona espaço na parte inferior
+        overflow-y: auto; // Ativa a rolagem vertical quando necessário
+    }
+
+    ion-card {
+        margin-top: 16px;
+        margin-bottom: 16px;
+        border-radius: 12px;
+        box-shadow: 0px 2px 6px rgba(0, 0, 0, 0.1);
+        background: var(--ion-color-white);
+
+        ion-card-content {
+            padding: 16px;
+        }
+
+        h3 {
+            color: var(--ion-color-primary);
+            margin-bottom: 10px;
+        }
+    }
+
+    ion-list {
+        padding: 0;
+        background: transparent;
+
+        ion-item {
+            --padding-start: 12px;
+            --inner-padding-end: 12px;
+            border-bottom: 1px solid var(--ion-color-light-grey);
+
+            &:last-child {
+                border-bottom: none;
+            }
+
+            ion-icon {
+                color: var(--ion-color-secondary);
+                font-size: 1.4rem;
+            }
+        }
+    }
+
+    // Estilo do rodapé
+    ion-footer {
+        margin-top: 20px;
+        background: var(--ion-color-white);
+
+        ion-toolbar {
+            display: flex;
+            justify-content: flex-end;
+            padding: 10px 16px;
+
+            ion-button {
+                font-size: 1rem;
+                font-weight: bold;
+            }
+        }
+    }
+
+    // Estilo do spinner de carregamento
+    .loading-spinner {
+        text-align: center;
+        margin-top: 20px;
+        color: var(--ion-color-primary);
+
+        ion-spinner {
+            width: 40px;
+            height: 40px;
+        }
+    }
+
+    // Estilização da mensagem quando não há dados
+    .empty-message {
+        text-align: center;
+        font-size: 1.1em;
+        color: var(--ion-color-medium);
+        margin-top: 20px;
+    }
+
+    // Responsividade para telas menores
+    @media (max-width: 768px) {
+        .container {
+            padding: 12px;
+            padding-bottom: 100px; // Espaço extra para evitar corte no mobile
+            margin-top: 10px;
+            margin-bottom: 10px;
+        }
+
+        ion-card {
+            margin-bottom: 12px;
+        }
+
+        ion-list {
+            ion-item {
+                --padding-start: 8px;
+                --inner-padding-end: 8px;
+            }
+        }
+    }
+}

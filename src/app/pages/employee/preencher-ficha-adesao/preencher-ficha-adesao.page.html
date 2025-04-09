@@ -1,0 +1,143 @@
+<ion-content class="preencher-ficha-adesao">
+  <div class="container">
+    <!-- Título da página -->
+    <h1 class="text-center mt-4">
+      <i class="bi bi-file-earmark-plus"></i> Preencher Ficha de Adesão
+    </h1>
+
+    <!-- Formulário de Ficha de Adesão -->
+    <form [formGroup]="adesaoForm" (ngSubmit)="submitForm()" class="mt-4">
+      <div class="row g-3">
+        <!-- client -->
+        <div class="col-md-6">
+          <label for="client" class="form-label">
+            <i class="bi bi-person"></i> client
+          </label>
+        <input id="client" type="text" class="form-control" placeholder="Buscar pelo nome ou CPF"
+          (input)="filterclients($event)" />
+
+          <ul *ngIf="filteredclients.length > 0" class="list-group mt-1">
+            <li *ngFor="let client of filteredclients"
+              class="list-group-item d-flex justify-content-between align-items-center"
+              (click)="adesaoForm.controls['client'].setValue(client.id)">
+              {{ client.first_name }} {{ client.last_name }} - CPF: {{ client.cpf }}
+              <i class="bi bi-person-check text-success"></i>
+            </li>
+          </ul>
+          <div *ngIf="adesaoForm.get('client')?.invalid && adesaoForm.get('client')?.touched"
+            class="text-danger small mt-1">
+            Selecione um client.
+          </div>
+        </div>
+
+        <!-- Título -->
+        <div class="col-md-6">
+          <label for="titulo" class="form-label">
+            <i class="bi bi-bookmark"></i> Título
+          </label>
+          <input id="titulo" type="text" formControlName="titulo" class="form-control"
+            placeholder="Digite o título da adesão" />
+          <div *ngIf="adesaoForm.get('titulo')?.invalid && adesaoForm.get('titulo')?.touched"
+            class="text-danger small mt-1">
+            Título é obrigatório.
+          </div>
+        </div>
+
+        <!-- Descrição -->
+        <div class="col-md-12">
+          <label for="descricao" class="form-label">
+            <i class="bi bi-textarea-resize"></i> Descrição
+          </label>
+          <textarea id="descricao" formControlName="descricao" class="form-control" rows="3"
+            placeholder="Digite a descrição (opcional)"></textarea>
+        </div>
+
+        <!-- Valor da Adesão -->
+        <div class="col-md-6">
+          <label for="valorAdesao" class="form-label">
+            <i class="bi bi-cash"></i> Valor da Adesão
+          </label>
+          <input id="valorAdesao" type="number" formControlName="valorAdesao" class="form-control"
+            placeholder="Digite o valor da adesão" />
+          <div *ngIf="adesaoForm.get('valorAdesao')?.invalid && adesaoForm.get('valorAdesao')?.touched"
+            class="text-danger small mt-1">
+            Insira um valor válido.
+          </div>
+        </div>
+
+        <!-- Parcelas Fixas -->
+        <div class="col-md-6">
+          <label class="form-label">
+            <i class="bi bi-card-list"></i> Parcelas Fixas
+          </label>
+          <div class="row g-2">
+            <div class="col-md-6">
+              <input type="number" formControlName="parcelasFixas.adesao" class="form-control" placeholder="Adesão" />
+            </div>
+            <div class="col-md-6">
+              <input type="number" formControlName="parcelasFixas.terreno" class="form-control" placeholder="Terreno" />
+            </div>
+          </div>
+        </div>
+
+        <!-- Parcelas Variáveis -->
+        <div class="col-md-6">
+          <label class="form-label">
+            <i class="bi bi-list-check"></i> Parcelas Variáveis
+          </label>
+          <div class="row g-2">
+            <div class="col-md-4">
+              <input type="number" formControlName="parcelasObra.totalParcelas" class="form-control"
+                placeholder="Total" />
+            </div>
+            <div class="col-md-4">
+              <input type="number" formControlName="parcelasObra.parcelasPagas" class="form-control"
+                placeholder="Pagas" />
+            </div>
+            <div class="col-md-4">
+              <input type="number" formControlName="parcelasObra.parcelasRestantes" class="form-control"
+                placeholder="Restantes" />
+            </div>
+          </div>
+        </div>
+
+        <!-- Programa Habitacional -->
+        <div class="col-md-6">
+          <label for="programaHabitacional" class="form-label">
+            <i class="bi bi-house-door"></i> Programa Habitacional
+          </label>
+          <input id="programaHabitacional" type="text" formControlName="programaHabitacional" class="form-control"
+            placeholder="Digite o nome do programa" />
+        </div>
+
+        <!-- Fase -->
+        <div class="col-md-6">
+          <label for="fase" class="form-label">
+            <i class="bi bi-calendar3"></i> Fase
+          </label>
+          <input id="fase" type="text" formControlName="fase" class="form-control"
+            placeholder="Digite a fase do programa" />
+        </div>
+
+        <!-- Tipo de Unidade -->
+        <div class="col-md-6">
+          <label for="tipoUnidade" class="form-label">
+            <i class="bi bi-building"></i> Tipo de Unidade
+          </label>
+          <input id="tipoUnidade" type="text" formControlName="tipoUnidade" class="form-control"
+            placeholder="Digite o tipo de unidade" />
+        </div>
+      </div>
+
+      <!-- Botões -->
+      <div class="mt-4 text-center">
+        <button type="submit" class="btn btn-success me-2" [disabled]="adesaoForm.invalid">
+          <i class="bi bi-check-circle"></i> Salvar
+        </button>
+        <button type="button" class="btn btn-secondary" (click)="closeModal()">
+          <i class="bi bi-x-circle"></i> Cancelar
+        </button>
+      </div>
+    </form>
+  </div>
+</ion-content>

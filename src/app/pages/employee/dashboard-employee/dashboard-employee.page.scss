@@ -1,0 +1,69 @@
+.dashboard-employee {
+    display: flex;
+    flex-direction: column;
+    background-color: #f2f2f2;
+
+    /* 🛠️ Ajuste do container principal */
+    .dashboard-container {
+        margin: 10px auto;
+        padding: 16px;
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+        max-width: 1200px;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+    }
+
+    /* 🛠️ Ajuste para garantir que o conteúdo inicie abaixo do navbar */
+    .conteudo {
+        margin-top: 70px;
+        /* Ajuste conforme a altura do navbar */
+    }
+
+    /* 🌐 Ajustes para Web/Desktop */
+    @media screen and (min-width: 1024px) {
+        .dashboard-container {
+            margin-top: 80px;
+            padding-left: 0;
+            max-width: 100%;
+        }
+
+        .conteudo {
+            margin-top: 80px;
+            /* Mantém espaçamento abaixo do navbar */
+        }
+    }
+
+    /* 📱 Ajustes para dispositivos menores (Mobile) */
+    @media screen and (max-width: 768px) {
+        .dashboard-container {
+            padding: 15px;
+            margin-left: 0;
+            min-height: calc(100vh - 60px);
+            position: relative;
+        }
+
+        .dashboard-content {
+            margin-bottom: 80px;
+        }
+
+        .conteudo {
+            margin-top: 70px;
+            /* Ajusta para telas menores sem sobreposição */
+        }
+    }
+
+    /* 📏 Ajustes para telas muito pequenas */
+    @media screen and (max-width: 425px) {
+        .dashboard-container {
+            margin: 10px auto;
+        }
+
+        .conteudo {
+            margin-top: 75px;
+            /* Pequeno ajuste para evitar sobreposição */
+        }
+    }
+}

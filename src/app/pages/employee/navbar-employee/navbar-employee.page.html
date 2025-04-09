@@ -1,0 +1,38 @@
+<ion-toolbar class="custom-toolbar">
+  <ion-buttons>
+
+    <ion-button (click)="navigateTo('/dashboard-employee')"
+      [class.tab-selected]="activePage === '/dashboard-employee'">
+      <ion-icon name="home"></ion-icon>
+      <ion-label>Dashboard</ion-label>
+    </ion-button>
+
+    <ion-button (click)="navigateTo('/propostas')" [class.tab-selected]="activePage === '/propostas'">
+      <ion-icon name="briefcase"></ion-icon>
+      <ion-label>Propostas</ion-label>
+    </ion-button>
+
+    <ion-button (click)="navigateTo('/dashboard-employee/manage-clients')"
+      [class.tab-selected]="activePage === '/dashboard-employee/manage-clients'">
+      <ion-icon name="people"></ion-icon>
+      <ion-label>clients</ion-label>
+    </ion-button>
+
+    <ion-button (click)="navigateTo('/dashboard-employee/comissao-employee')"
+      [class.tab-selected]="activePage === '/dashboard-employee/comissao-employee'">
+      <ion-icon name="cash-outline"></ion-icon>
+      <ion-label>Comissão</ion-label>
+    </ion-button>
+
+    <ion-button (click)="navigateTo('/configuracoes')" [class.tab-selected]="activePage === '/configuracoes'">
+      <ion-icon name="settings"></ion-icon>
+      <ion-label>Configurações</ion-label>
+    </ion-button>
+
+    <ion-button (click)="logout()">
+      <ion-icon name="log-out"></ion-icon>
+      <ion-label>Sair</ion-label>
+    </ion-button>
+
+  </ion-buttons>
+</ion-toolbar>

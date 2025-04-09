@@ -1,0 +1,131 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Política de Privacidade</ion-title>
+    <ion-buttons slot="end">
+      <ion-button fill="clear" color="danger" (click)="closeModal()">
+        <ion-icon name="close"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="privacy-container">
+  <ion-list>
+    <ion-item>
+      <ion-label>
+        <h2>1. INTRODUÇÃO</h2>
+        <ion-text>
+          A privacidade de nossos clients é uma prioridade para a Cooperativa Viver Mais. Este documento detalha como
+          coletamos, utilizamos, armazenamos e protegemos os dados pessoais fornecidos.
+        </ion-text>
+      </ion-label>
+    </ion-item>
+
+    <ion-item>
+      <ion-label>
+        <h2>2. DADOS COLETADOS</h2>
+      </ion-label>
+    </ion-item>
+    <ion-list>
+      <ion-item>
+        <ion-icon name="person-outline" slot="start"></ion-icon>
+        <ion-label>Nome completo, CPF, endereço e contatos</ion-label>
+      </ion-item>
+      <ion-item>
+        <ion-icon name="cash-outline" slot="start"></ion-icon>
+        <ion-label>Informações financeiras e transacionais</ion-label>
+      </ion-item>
+      <ion-item>
+        <ion-icon name="globe-outline" slot="start"></ion-icon>
+        <ion-label>Dados relacionados ao uso de nossas plataformas</ion-label>
+      </ion-item>
+    </ion-list>
+
+    <ion-item>
+      <ion-label>
+        <h2>3. FINALIDADE DO USO DOS DADOS</h2>
+      </ion-label>
+    </ion-item>
+    <ion-list>
+      <ion-item>
+        <ion-icon name="people-outline" slot="start"></ion-icon>
+        <ion-label>Fornecer serviços personalizados aos clients</ion-label>
+      </ion-item>
+      <ion-item>
+        <ion-icon name="card-outline" slot="start"></ion-icon>
+        <ion-label>Realizar processamento de pagamentos e transações financeiras</ion-label>
+      </ion-item>
+      <ion-item>
+        <ion-icon name="mail-outline" slot="start"></ion-icon>
+        <ion-label>Enviar comunicações importantes relacionadas aos serviços</ion-label>
+      </ion-item>
+    </ion-list>
+
+    <ion-item>
+      <ion-label>
+        <h2>4. COMPARTILHAMENTO DE DADOS</h2>
+        <ion-text>
+          Os dados dos usuários não serão compartilhados com terceiros, exceto nos seguintes casos:
+        </ion-text>
+      </ion-label>
+    </ion-item>
+    <ion-list>
+      <ion-item>
+        <ion-icon name="hammerOutline" slot="start"></ion-icon>
+        <ion-label>Quando exigido por lei ou determinação judicial</ion-label>
+      </ion-item>
+      <ion-item>
+        <ion-icon name="briefcase-outline" slot="start"></ion-icon>
+        <ion-label>Quando necessário para o processamento de transações financeiras por parceiros</ion-label>
+      </ion-item>
+    </ion-list>
+
+    <ion-item>
+      <ion-label>
+        <h2>5. SEGURANÇA DAS INFORMAÇÕES</h2>
+        <ion-text>
+          Adotamos medidas técnicas e organizacionais para proteger as informações pessoais de nossos clients.
+        </ion-text>
+      </ion-label>
+    </ion-item>
+
+    <ion-item>
+      <ion-label>
+        <h2>6. DIREITOS DOS USUÁRIOS</h2>
+        <ion-text>
+          Os clients têm os seguintes direitos relacionados aos seus dados pessoais:
+        </ion-text>
+      </ion-label>
+    </ion-item>
+
+    <ion-item>
+      <ion-label>
+        <h2>7. ALTERAÇÕES NA POLÍTICA</h2>
+        <ion-text>
+          Esta Política de Privacidade pode ser alterada a qualquer momento. Notificaremos os clients sobre mudanças
+          significativas.
+        </ion-text>
+      </ion-label>
+    </ion-item>
+
+    <ion-item>
+      <ion-label>
+        <h2>8. CONTATO</h2>
+      </ion-label>
+    </ion-item>
+    <ion-list>
+      <ion-item>
+        <ion-icon name="mail-outline" slot="start"></ion-icon>
+        <ion-label><strong>E-mail:</strong> {{ emailContato }}</ion-label>
+      </ion-item>
+      <ion-item>
+        <ion-icon name="call-outline" slot="start"></ion-icon>
+        <ion-label><strong>Telefone:</strong> {{ telefoneContato }}</ion-label>
+      </ion-item>
+    </ion-list>
+  </ion-list>
+</ion-content>
+
+<ion-footer class="privacy-footer">
+  <ion-button expand="block" color="primary" (click)="closeModal()">Fechar</ion-button>
+</ion-footer>

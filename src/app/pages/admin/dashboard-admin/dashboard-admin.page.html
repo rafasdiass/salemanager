@@ -1,0 +1,98 @@
+<ion-content class="dashboard-screen with-navbar">
+  <app-navbar-admin></app-navbar-admin>
+
+  <div *ngIf="isLoading" class="loading-container">
+    <ion-spinner></ion-spinner>
+  </div>
+
+  <div *ngIf="!isLoading && resumo" class="dashboard-container">
+
+    <!-- Resumo Geral -->
+    <ion-card *ngIf="adminResumo">
+      <ion-card-header>
+        <ion-title>Resumo Geral</ion-title>
+      </ion-card-header>
+      <ion-card-content>
+        <p>Total clients: {{ adminResumo.totalclients }}</p>
+        <p>Total employees: {{ adminResumo.totalemployees }}</p>
+        <p>clients Ativos: {{ adminResumo.clientsAtivos }}</p>
+        <p>employees Ativos: {{ adminResumo.employeesAtivos }}</p>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Resumo de Pagamentos -->
+    <ion-card *ngIf="pagamentosResumo">
+      <ion-card-header>
+        <ion-title>Pagamentos</ion-title>
+      </ion-card-header>
+      <ion-card-content>
+        <p>Pagamentos Realizados: R$ {{ pagamentosResumo.totalRealizados }}</p>
+        <p>Pagamentos Pendentes: R$ {{ pagamentosResumo.totalPendentes }}</p>
+        <p>Pagamentos Cancelados: R$ {{ pagamentosResumo.totalCancelados }}</p>
+
+        <ng-container *ngIf="pagamentosResumo.historicoPagamentos.length; else semPagamentos">
+          <div *ngFor="let pagamento of pagamentosResumo.historicoPagamentos.slice(0,3)">
+            <p>{{ pagamento.client.first_name }} {{ pagamento.client.last_name }}: R$ {{ pagamento.valor }} - {{
+              pagamento.data }}</p>
+          </div>
+        </ng-container>
+        <ng-template #semPagamentos>
+          <p>Nenhum pagamento encontrado.</p>
+        </ng-template>
+
+        <ion-button expand="block" color="primary" (click)="navigateTo('pagamentos')">
+          Ver todos os pagamentos
+        </ion-button>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Resumo employee -->
+    <ion-card *ngIf="employeeResumo">
+      <ion-card-header>
+        <ion-title>Propostas employees</ion-title>
+      </ion-card-header>
+      <ion-card-content>
+        <p>Total Propostas: {{ employeeResumo.totalPropostas }}</p>
+        <p>Propostas Pendentes: {{ employeeResumo.propostasPendentes }}</p>
+
+        <ng-container *ngIf="employeeResumo.historicoPropostas.length; else semPropostas">
+          <div *ngFor="let proposta of employeeResumo.historicoPropostas.slice(0,3)">
+            <p>{{ proposta.cliente }} - R$ {{ proposta.valor }} ({{ proposta.status }})</p>
+          </div>
+        </ng-container>
+        <ng-template #semPropostas>
+          <p>Nenhuma proposta encontrada.</p>
+        </ng-template>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Resumo de Adesões -->
+    <ion-card *ngIf="adesoesResumo">
+      <ion-card-header>
+        <ion-title>Adesões</ion-title>
+      </ion-card-header>
+      <ion-card-content>
+        <p>Total: {{ adesoesResumo.total }}</p>
+        <p>Aprovadas: {{ adesoesResumo.aprovadas }}</p>
+        <p>Pendentes: {{ adesoesResumo.pendentes }}</p>
+        <p>Rejeitadas: {{ adesoesResumo.rejeitadas }}</p>
+
+        <ng-container *ngIf="adesoesResumo.detalhes.length; else semAdesoes">
+          <div *ngFor="let adesao of adesoesResumo.detalhes.slice(0,3)">
+            <p>{{ adesao.titulo }} - {{ adesao.status }} (R$ {{ adesao.valorAdesao }})</p>
+          </div>
+        </ng-container>
+        <ng-template #semAdesoes>
+          <p>Nenhuma adesão encontrada.</p>
+        </ng-template>
+      </ion-card-content>
+    </ion-card>
+
+  </div>
+
+  <div *ngIf="errorMessage" class="error-message">
+    {{ errorMessage }}
+  </div>
+
+  <ion-router-outlet></ion-router-outlet>
+</ion-content>

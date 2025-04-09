@@ -1,0 +1,40 @@
+<ion-toolbar class="custom-toolbar">
+  <ion-buttons>
+
+    <ion-button (click)="navigateTo('/dashboard-client')"
+      [class.tab-selected]="activePage === '/dashboard-client'">
+      <ion-icon name="home"></ion-icon>
+      <ion-label>Dashboard</ion-label>
+    </ion-button>
+
+    <ion-button (click)="navigateTo('/dashboard-client/payment')"
+      [class.tab-selected]="activePage === '/dashboard-client/payment'">
+      <ion-icon name="wallet"></ion-icon>
+      <ion-label>Pagamentos</ion-label>
+    </ion-button>
+
+    <ion-button (click)="navigateTo('/dashboard-client/client-mensagens')"
+      [class.tab-selected]="activePage === '/dashboard-client/client-mensagens'">
+      <ion-icon name="chatbox"></ion-icon>
+      <ion-label>Mensagens</ion-label>
+    </ion-button>
+
+    <ion-button (click)="navigateTo('/dashboard-client/benefits')"
+      [class.tab-selected]="activePage === '/dashboard-client/benefits'">
+      <ion-icon name="gift"></ion-icon>
+      <ion-label>Benefícios</ion-label>
+    </ion-button>
+
+    <ion-button (click)="navigateTo('/dashboard-client/configuracoes')"
+      [class.tab-selected]="activePage === '/dashboard-client/configuracoes'">
+      <ion-icon name="settings"></ion-icon>
+      <ion-label>Configurações</ion-label>
+    </ion-button>
+
+    <ion-button (click)="logout()">
+      <ion-icon name="log-out"></ion-icon>
+      <ion-label>Sair</ion-label>
+    </ion-button>
+
+  </ion-buttons>
+</ion-toolbar>

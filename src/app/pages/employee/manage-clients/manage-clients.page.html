@@ -1,0 +1,74 @@
+<ion-content class="view-client-details">
+  <ion-header>
+    <ion-toolbar>
+      <ion-title>
+        <ion-icon name="people"></ion-icon> Gerenciar clients
+      </ion-title>
+    </ion-toolbar>
+  </ion-header>
+
+  <ion-grid class="container">
+    <!-- 🔹 Seção de Busca e Botão -->
+    <ion-row class="top-section">
+      <ion-col size-md="6" size-xs="12">
+        <ion-searchbar class="search-bar" placeholder="Digite CPF, nome ou e-mail" [(ngModel)]="searchTerm"
+          (ionInput)="filterclients()"></ion-searchbar>
+      </ion-col>
+      <ion-col size-md="6" size-xs="12" class="button-col">
+        <ion-button class="add-button" color="primary" (click)="createNewclient()">
+          <ion-icon name="person-add"></ion-icon> Novo client
+        </ion-button>
+      </ion-col>
+    </ion-row>
+
+    <!-- 🔹 Lista de clients -->
+    <ion-row class="content-section" *ngIf="!isLoading">
+      <ion-col size-md="8" size-xs="12">
+        <ion-list *ngIf="filteredclients.length > 0; else emptyList">
+          <ion-card *ngFor="let client of filteredclients" class="client-card">
+            <ion-card-content>
+              <ion-item>
+                <ion-icon name="person-circle-outline" slot="start" class="icon-large"></ion-icon>
+                <ion-label>
+                  <h2 class="client-name">{{ client.first_name }} {{ client.last_name }}</h2>
+                </ion-label>
+              </ion-item>
+              <ion-item>
+                <ion-icon name="id-card-outline" slot="start" class="icon-small"></ion-icon>
+                <ion-label class="client-info">CPF: {{ client.cpf }}</ion-label>
+              </ion-item>
+              <ion-item>
+                <ion-icon name="mail-outline" slot="start" class="icon-small"></ion-icon>
+                <ion-label class="client-info">Email: {{ client.email }}</ion-label>
+              </ion-item>
+              <ion-row class="action-buttons">
+                <ion-button fill="outline" color="primary" (click)="viewDetails(client)">
+                  <ion-icon name="eye"></ion-icon> Detalhes
+                </ion-button>
+                <ion-button fill="outline" color="warning" (click)="editclient(client)">
+                  <ion-icon name="create"></ion-icon> Editar
+                </ion-button>
+                <ion-button fill="outline" color="danger" (click)="deleteclient(client.id)">
+                  <ion-icon name="trash"></ion-icon> Excluir
+                </ion-button>
+              </ion-row>
+            </ion-card-content>
+          </ion-card>
+        </ion-list>
+      </ion-col>
+    </ion-row>
+  </ion-grid>
+
+  <!-- 🔹 Mensagem de Lista Vazia -->
+  <ng-template #emptyList>
+    <ion-row>
+      <ion-col size="12" class="text-center">
+        <ion-text color="medium">
+          <p class="empty-message">
+            <ion-icon name="alert-circle"></ion-icon> Nenhum client encontrado.
+          </p>
+        </ion-text>
+      </ion-col>
+    </ion-row>
+  </ng-template>
+</ion-content>

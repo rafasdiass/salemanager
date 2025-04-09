@@ -1,0 +1,23 @@
+.client-benefits-page {
+    .container {
+        padding: 16px;
+    }
+
+    ion-card {
+        margin-bottom: 16px;
+        border-radius: 10px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        padding: 10px;
+    }
+
+    .loading-spinner {
+        display: block;
+        margin: 20px auto;
+    }
+
+    .error-message {
+        color: var(--ion-color-danger);
+        text-align: center;
+        margin-top: 20px;
+    }
+}

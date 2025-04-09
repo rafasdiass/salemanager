@@ -1,0 +1,77 @@
+<ion-content class="dashboard-screen">
+  <!-- Navbar -->
+  <app-navbar-client></app-navbar-client>
+
+  <!-- Loader -->
+  <div *ngIf="isLoading()" class="loading-container">
+    <ion-spinner class="loading-spinner"></ion-spinner>
+  </div>
+
+  <!-- Painel Principal -->
+  <div *ngIf="!isLoading()" class="dashboard-container">
+    <!-- Benefícios -->
+    <ion-card>
+      <ion-card-header>
+        <ion-title>Benefícios</ion-title>
+      </ion-card-header>
+      <ion-card-content>
+        <app-client-benefits></app-client-benefits>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Status da Propriedade -->
+    <ion-card>
+      <ion-card-header>
+        <ion-title>Status da Cota</ion-title>
+      </ion-card-header>
+      <ion-card-content>
+        <app-client-property-status></app-client-property-status>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Notificações -->
+    <ion-card>
+      <ion-card-header>
+        <ion-title>Últimas Notificações</ion-title>
+      </ion-card-header>
+      <ion-card-content>
+        <ion-list>
+          <ion-item *ngFor="let notificacao of notifications()">
+            <ion-icon [name]="getNotificationIcon(notificacao.tipoNotificacao)" slot="start"></ion-icon>
+            <ion-label>
+              <h2>{{ notificacao.titulo }}</h2>
+              <p>{{ notificacao.mensagem }}</p>
+            </ion-label>
+          </ion-item>
+          <ion-item *ngIf="notifications().length === 0">
+            <ion-label>Nenhuma notificação disponível.</ion-label>
+          </ion-item>
+        </ion-list>
+      </ion-card-content>
+    </ion-card>
+
+   
+
+    <!-- Pagamentos -->
+    <ion-card>
+      <ion-card-header>
+        <ion-title>Pagamentos</ion-title>
+      </ion-card-header>
+      <ion-card-content>
+        <app-client-payment></app-client-payment>
+      </ion-card-content>
+    </ion-card>
+  </div>
+
+  <!-- Exibição de Erro -->
+  <ion-card *ngIf="errorMessage()">
+    <ion-card-content class="error-message">
+      {{ errorMessage() }}
+    </ion-card-content>
+  </ion-card>
+
+  <!-- Espaço extra para evitar sobreposição da navbar -->
+  <div class="spacer"></div>
+
+  <ion-router-outlet></ion-router-outlet>
+</ion-content>

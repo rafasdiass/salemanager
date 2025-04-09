@@ -1,0 +1,35 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Notificações</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <!-- Loader enquanto carrega as notificações -->
+  <ng-container *ngIf="isLoading(); else content">
+    <ion-spinner name="crescent"></ion-spinner>
+  </ng-container>
+
+  <ng-template #content>
+    <div *ngIf="notifications() && notifications().length > 0; else noNotifications">
+      <ion-card *ngFor="let notification of notifications()">
+        <ion-card-header>
+          <ion-icon [name]="getIcon(notification.tipoNotificacao)" slot="start"></ion-icon>
+          <ion-card-title>{{ notification.titulo }}</ion-card-title>
+        </ion-card-header>
+        <ion-card-content>
+          <p>{{ notification.mensagem }}</p>
+          <p>
+            <ion-icon [name]="getStatusIcon(notification.status)" class="status-icon"></ion-icon>
+            <strong>Status:</strong> {{ notification.status }}
+          </p>
+          <p><strong>Data:</strong> {{ notification.criadoEm | date:'short' }}</p>
+        </ion-card-content>
+      </ion-card>
+    </div>
+  </ng-template>
+
+  <ng-template #noNotifications>
+    <p class="no-data">Nenhuma notificação encontrada.</p>
+  </ng-template>
+</ion-content>

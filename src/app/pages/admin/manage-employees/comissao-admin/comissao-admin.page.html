@@ -1,0 +1,64 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Comissão do employee</ion-title>
+    <ion-button fill="clear" slot="end" (click)="closeModal()">
+      <ion-icon name="close"></ion-icon>
+    </ion-button>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <ion-spinner *ngIf="isLoading"></ion-spinner>
+
+  <ion-card *ngIf="!isLoading && comissao">
+    <ion-card-content>
+      <h2>{{ comissao.employee.first_name }} {{ comissao.employee.last_name }}</h2>
+      <p>Email: {{ comissao.employee.email }}</p>
+
+      <ion-list>
+        <ion-item>
+          <ion-label>Total de Vendas Mensal:</ion-label>
+          <strong>R$ {{ comissao.totalVendasMensal | number:'1.2-2' }}</strong>
+        </ion-item>
+
+        <ion-item>
+          <ion-label>Total Comissão:</ion-label>
+          <strong>R$ {{ comissao.totalComissao | number:'1.2-2' }}</strong>
+        </ion-item>
+      </ion-list>
+
+      <!-- Lista de períodos de comissão -->
+      <ion-list>
+        <ion-item *ngFor="let periodo of periodos">
+          <ion-label>Comissão {{ periodo | uppercase }}:</ion-label>
+          <strong>R$ {{ comissao.pagamentosPorPeriodo[periodo].totalRecebido | number:'1.2-2' }}</strong>
+        </ion-item>
+      </ion-list>
+
+      <!-- Seção de detalhes de pagamentos -->
+      <ion-list *ngFor="let periodo of periodos">
+        <ion-item-divider>
+          <ion-label>Pagamentos {{ periodo | uppercase }}</ion-label>
+        </ion-item-divider>
+        <ion-item *ngFor="let pagamento of comissao.pagamentosPorPeriodo[periodo].pagamentos">
+          <ion-label>
+            <h3>{{ pagamento.vendaReferencia }}</h3>
+            <p>Valor: R$ {{ pagamento.valorPago | number:'1.2-2' }}</p>
+          </ion-label>
+        </ion-item>
+      </ion-list>
+    </ion-card-content>
+  </ion-card>
+
+  <ion-card *ngIf="!isLoading && !comissao">
+    <ion-card-content>
+      <p>Não há dados de comissão disponíveis para este employee.</p>
+    </ion-card-content>
+  </ion-card>
+</ion-content>
+
+<ion-footer>
+  <ion-toolbar>
+    <ion-button expand="full" color="primary" (click)="closeModal()">Fechar</ion-button>
+  </ion-toolbar>
+</ion-footer>

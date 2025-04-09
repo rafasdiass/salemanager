@@ -1,0 +1,100 @@
+:host {
+    display: block;
+}
+
+/* 🔹 Container Principal */
+.container {
+    padding: 16px;
+    text-align: center;
+}
+
+/* 🔹 Estilização do Spinner de Carregamento */
+ion-spinner {
+    display: block;
+    margin: 40px auto;
+}
+
+/* 🔹 Mensagem de erro */
+.empty-message {
+    color: var(--ion-color-dark-grey);
+    font-size: 1.2rem;
+    font-weight: bold;
+    text-align: center;
+    margin-top: 20px;
+}
+
+/* 🔹 Estilização do Card de Comissão */
+ion-card {
+    box-shadow: var(--box-shadow-light);
+    border-radius: 12px;
+    background: var(--ion-color-white);
+}
+
+ion-card-content {
+    padding: 16px;
+}
+
+h3 {
+    font-size: 1.3rem;
+    font-weight: bold;
+    margin-bottom: 12px;
+    color: var(--ion-color-primary);
+    text-align: center;
+}
+
+/* 🔹 Lista dentro do Card */
+ion-list {
+    margin-top: 10px;
+}
+
+ion-item {
+    --border-color: var(--ion-color-light-grey);
+    border-bottom: 1px solid var(--border-color);
+    font-size: 1rem;
+    font-weight: 500;
+    color: var(--ion-color-black);
+    padding: 12px;
+}
+
+/* 🔹 Ícones dentro dos Itens */
+ion-item ion-icon {
+    font-size: 1.5rem;
+    color: var(--ion-color-primary);
+    margin-right: 8px;
+}
+
+/* 🔹 Botão de Fechamento */
+ion-toolbar {
+    background: var(--ion-color-light-grey);
+    padding: 12px;
+}
+
+ion-button {
+    font-size: 1rem;
+    font-weight: bold;
+    border-radius: 8px;
+}
+
+/* 🔹 Responsividade */
+@media (max-width: 600px) {
+    .container {
+        padding: 12px;
+    }
+
+    ion-card-content {
+        padding: 12px;
+    }
+
+    ion-item {
+        font-size: 0.9rem;
+        padding: 10px;
+    }
+
+    h3 {
+        font-size: 1.2rem;
+    }
+
+    ion-button {
+        font-size: 0.9rem;
+    }
+}

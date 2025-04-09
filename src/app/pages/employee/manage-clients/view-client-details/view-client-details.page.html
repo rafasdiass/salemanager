@@ -1,0 +1,78 @@
+<ion-content class="view-client-details">
+  <ion-header>
+    <ion-toolbar>
+      <ion-buttons slot="start">
+        <ion-button (click)="closeModal()">
+          <ion-icon name="close"></ion-icon>
+        </ion-button>
+      </ion-buttons>
+      <ion-title>Detalhes do client</ion-title>
+    </ion-toolbar>
+  </ion-header>
+
+  <div class="container">
+    <!-- Informações do client -->
+    <div class="client-info">
+      <h2>{{ client.first_name }} {{ client.last_name }}</h2>
+      <p><strong>CPF:</strong> {{ client.cpf }}</p>
+      <p><strong>Email:</strong> {{ client.email }}</p>
+      <p><strong>Telefone:</strong> {{ client.phone }}</p>
+      <p>
+        <strong>Endereço:</strong>
+        {{ client.address?.street }}, {{ client.address?.number }} -
+        {{ client.address?.neighborhood }}, {{ client.address?.city }} -
+        {{ client.address?.state }}, CEP: {{ client.address?.postal_code }}
+      </p>
+    </div>
+
+    <!-- Adesões do client -->
+    <div class="adesoes" *ngIf="!isLoading; else loadingSpinner">
+      <h3>Adesões</h3>
+
+      <div *ngIf="adesoes.length > 0; else noAdesoes">
+        <div class="adesao-card" *ngFor="let adesao of adesoes">
+          <h4>{{ adesao.titulo }}</h4>
+          <p><strong>Status:</strong> {{ adesao.status | titlecase }}</p>
+          <p><strong>Programa Habitacional:</strong> {{ adesao.programaHabitacional }}</p>
+          <p><strong>Fase:</strong> {{ adesao.fase }}</p>
+          <p><strong>Tipo de Unidade:</strong> {{ adesao.tipoUnidade }}</p>
+
+          <!-- Valores Financeiros -->
+          <div class="financeiro">
+            <p><strong>Valor Adesão:</strong> R$ {{ adesao.valorAdesao | number: '1.2-2' }}</p>
+            <p><strong>Restante Sem Juros:</strong> R$ {{ adesao.valorRestanteSemJuros | number: '1.2-2' }}</p>
+            <p><strong>Restante Com Juros:</strong> R$ {{ adesao.valorRestanteComJuros | number: '1.2-2' }}</p>
+          </div>
+
+          <!-- Parcelas Fixas -->
+          <div class="parcelas-fixas">
+            <h5>Parcelas Fixas</h5>
+            <p><strong>Adesão:</strong> R$ {{ adesao.parcelasFixas.adesao | number: '1.2-2' }}</p>
+            <p><strong>Terreno:</strong> R$ {{ adesao.parcelasFixas.terreno | number: '1.2-2' }}</p>
+          </div>
+
+          <!-- Parcelas Variáveis -->
+          <div class="parcelas-obras">
+            <h5>Parcelas de Obra</h5>
+            <p><strong>Total:</strong> {{ adesao.parcelasObra.totalParcelas }}</p>
+            <p><strong>Pagas:</strong> {{ adesao.parcelasObra.parcelasPagas }}</p>
+            <p><strong>Restantes:</strong> {{ adesao.parcelasObra.parcelasRestantes }}</p>
+            <p><strong>Valor Parcela Corrigida:</strong> R$ {{ adesao.parcelasObra.valorParcelaCorrigida | number:
+              '1.2-2' }}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Spinner de carregamento -->
+    <ng-template #loadingSpinner>
+      <ion-spinner name="crescent"></ion-spinner>
+      <p>Carregando adesões...</p>
+    </ng-template>
+
+    <!-- Mensagem para ausência de adesões -->
+    <ng-template #noAdesoes>
+      <p>Não há adesões cadastradas para este client.</p>
+    </ng-template>
+  </div>
+</ion-content>

@@ -1,0 +1,57 @@
+@mixin navbar-shared-style {
+    --background: var(--navbar-background-color);
+    border-top: 1px solid var(--navbar-border-color);
+    box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.2);
+    height: var(--navbar-height);
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 1000;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+
+    ion-buttons {
+        width: 100%;
+        display: flex;
+        justify-content: space-around;
+    }
+
+    ion-button {
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        color: var(--navbar-text-color);
+        background: transparent;
+
+        ion-icon {
+            font-size: 22px;
+            margin-bottom: 2px;
+            color: var(--navbar-icon-color);
+        }
+
+        ion-label {
+            font-size: 11px;
+            font-weight: bold;
+            color: var(--navbar-icon-color);
+        }
+
+        &.tab-selected {
+            background-color: var(--navbar-selected-background);
+            border-radius: 8px;
+            color: var(--navbar-selected-text);
+
+            ion-icon,
+            ion-label {
+                color: var(--navbar-selected-text);
+            }
+        }
+    }
+
+    @media (max-width: 767px) {
+        ion-label {
+            display: none;
+        }
+    }
+}

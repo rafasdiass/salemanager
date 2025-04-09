@@ -1,0 +1,23 @@
+.container {
+    padding: 16px;
+}
+
+.tabs {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 20px;
+}
+
+.tabs button {
+    flex: 1;
+    padding: 10px;
+    background: #f8f9fa;
+    border: none;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+.tabs button.active {
+    background: #007bff;
+    color: white;
+}

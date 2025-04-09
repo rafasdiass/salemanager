@@ -1,0 +1,122 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Termos de Serviço</ion-title>
+    <ion-buttons slot="end">
+      <ion-button fill="clear" color="danger" (click)="closeModal()">
+        <ion-icon name="close"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="terms-container">
+  <ion-list>
+    <ion-item>
+      <ion-label>
+        <h2>1. INTRODUÇÃO</h2>
+        <ion-text>
+          Bem-vindo à Cooperativa Viver Mais. Este documento apresenta os Termos de Serviço que regem o uso de nossos
+          serviços.
+          A aceitação destes termos é indispensável para a utilização de nossas plataformas e serviços.
+          Caso não concorde, recomendamos a não utilização.
+        </ion-text>
+      </ion-label>
+    </ion-item>
+
+    <ion-item>
+      <ion-label>
+        <h2>2. ACEITAÇÃO DOS TERMOS</h2>
+        <ion-text>
+          Ao utilizar qualquer serviço oferecido pela Cooperativa Viver Mais, o usuário declara que leu, compreendeu e
+          aceita integralmente os presentes Termos de Serviço. A utilização está condicionada à aceitação destas
+          condições.
+        </ion-text>
+      </ion-label>
+    </ion-item>
+
+    <ion-item>
+      <ion-label>
+        <h2>3. SERVIÇOS OFERECIDOS</h2>
+      </ion-label>
+    </ion-item>
+    <ion-list>
+      <ion-item>
+        <ion-icon name="checkmark-circle-outline" slot="start"></ion-icon>
+        <ion-label>Consultas financeiras e administrativas para clients</ion-label>
+      </ion-item>
+      <ion-item>
+        <ion-icon name="chatbubbles-outline" slot="start"></ion-icon>
+        <ion-label>Suporte e comunicação personalizada</ion-label>
+      </ion-item>
+      <ion-item>
+        <ion-icon name="card-outline" slot="start"></ion-icon>
+        <ion-label>Ferramentas para gestão de pagamentos e benefícios</ion-label>
+      </ion-item>
+    </ion-list>
+
+    <ion-item>
+      <ion-label>
+        <h2>4. OBRIGAÇÕES DO USUÁRIO</h2>
+      </ion-label>
+    </ion-item>
+    <ion-list>
+      <ion-item>
+        <ion-icon name="person-outline" slot="start"></ion-icon>
+        <ion-label>Fornecer informações verdadeiras, atualizadas e completas</ion-label>
+      </ion-item>
+      <ion-item>
+        <ion-icon name="shield-checkmark-outline" slot="start"></ion-icon>
+        <ion-label>Utilizar os serviços de forma ética e respeitando as legislações vigentes</ion-label>
+      </ion-item>
+      <ion-item>
+        <ion-icon name="lock-closed-outline" slot="start"></ion-icon>
+        <ion-label>Manter a confidencialidade de suas credenciais de acesso</ion-label>
+      </ion-item>
+    </ion-list>
+
+    <ion-item>
+      <ion-label>
+        <h2>5. PRIVACIDADE E DADOS</h2>
+        <ion-text>
+          Os dados pessoais fornecidos pelos usuários serão tratados de acordo com a Política de Privacidade da
+          Cooperativa Viver Mais.
+          É responsabilidade do usuário ler e compreender as diretrizes dessa política.
+        </ion-text>
+      </ion-label>
+    </ion-item>
+
+    <ion-item>
+      <ion-label>
+        <h2>6. ALTERAÇÕES NOS TERMOS</h2>
+        <ion-text>
+          A Cooperativa Viver Mais reserva-se o direito de alterar estes Termos de Serviço a qualquer momento.
+          As mudanças serão comunicadas previamente aos usuários. O uso continuado dos serviços implica aceitação
+          automática das alterações.
+        </ion-text>
+      </ion-label>
+    </ion-item>
+
+    <ion-item>
+      <ion-label>
+        <h2>7. CONTATO</h2>
+        <ion-text>
+          Em caso de dúvidas ou solicitações relacionadas aos Termos de Serviço, entre em contato:
+        </ion-text>
+      </ion-label>
+    </ion-item>
+    <ion-list>
+      <ion-item>
+        <ion-icon name="mail-outline" slot="start"></ion-icon>
+        <ion-label><strong>E-mail:</strong> {{ emailContato }}</ion-label>
+      </ion-item>
+      <ion-item>
+        <ion-icon name="call-outline" slot="start"></ion-icon>
+        <ion-label><strong>Telefone:</strong> {{ telefoneContato }}</ion-label>
+      </ion-item>
+    </ion-list>
+  </ion-list>
+</ion-content>
+
+<ion-footer class="terms-footer">
+  <ion-button expand="block" color="primary" (click)="closeModal()">Fechar</ion-button>
+</ion-footer>
