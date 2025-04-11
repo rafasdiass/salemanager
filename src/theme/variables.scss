@@ -1,18 +1,24 @@
-// src/theme/variables.scss
-
 @use 'sass:map';
 
 /**
- * Paleta de Cores para o Salão / Barbearia (Tema Dark + Tons de Marrom/Bege)
+ * Paleta emocional para salões/barbearias com base em percepção visual e psicologia das cores.
+ *
+ * Conceito: Elegância quente + confiança + requinte acessível
  */
 
-$background-dark: #1A1A1A;
-$card-background: #272727;
-$primary-color: #C2A476;
-$accent-color: #A77B5A;
-$text-light: #F5F5F5;
-$text-muted: #C3C3C3;
-$input-background: #363636;
-$error-color: #FF5252;
-$shadow-color: rgba(0, 0, 0, 0.6);
-$border-color: #3D3D3D;
+$background-dark: #1A1614; // fundo escuro elegante e quente
+$card-background: #261F1C; // fundo dos cards com tom de couro queimado
+$primary-color: #D4AF37; // dourado médio (riqueza, prestígio, sem ostentação)
+$accent-color: #8C593B; // marrom canela (estabilidade, cuidado, conforto)
+$text-light: #FFF8F0; // bege claro quente (suave, sem cansaço visual)
+$text-muted: #C4B8A6; // tom neutro pastel (elegância e legibilidade)
+$input-background: #302724; // inputs visíveis porém integrados
+$error-color: #E74C3C; // alerta vibrante elegante
+$shadow-color: rgba(0, 0, 0, 0.65); // sombras com profundidade quente
+$border-color: #3C312D; // bordas quentes, suaves mas perceptíveis
+
+// Cores extras para diferenciação entre seções
+$company-section-color: #2C1E1A; // fundo exclusivo da área de empresa (chocolate escuro)
+$client-section-color: #1E2621; // fundo exclusivo da área de cliente (verde oliva escuro elegante)
+$client-highlight: #A3C9A8; // cor de ação cliente (tranquilidade, acesso facilitado)
+$company-highlight: #D7A86E; // cor de ação empresa (força, organização, decisão)

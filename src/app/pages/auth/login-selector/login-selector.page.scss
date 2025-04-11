@@ -17,6 +17,36 @@
             margin-bottom: 12px;
         }
 
+        ion-segment {
+            margin-bottom: 16px;
+            background-color: $border-color;
+            border-radius: 8px;
+            padding: 4px;
+
+            ion-segment-button {
+                --color: $text-light;
+                --color-checked: $primary-color;
+                --background-checked: transparent;
+                font-weight: bold;
+            }
+        }
+
+        // Formulário de login de empresa
+        form[formGroup].company-form {
+            background-color: $company-section-color;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 12px;
+        }
+
+        // Formulário de login de cliente
+        form[formGroup].client-form {
+            background-color: $client-section-color;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 12px;
+        }
+
         ion-item {
             --background: $input-background;
             --color: $text-light;
@@ -30,13 +60,25 @@
         }
 
         ion-button {
-            --background: $primary-color;
             margin-top: 12px;
+            text-transform: uppercase;
+            font-weight: 600;
+        }
+
+        // Botão em destaque para empresa
+        form[formGroup].company-form ion-button {
+            --background: $company-highlight;
+        }
+
+        // Botão em destaque para cliente
+        form[formGroup].client-form ion-button {
+            --background: $client-highlight;
         }
 
         .error-msg {
             text-align: center;
             font-size: 0.95rem;
+            color: $error-color;
             margin-top: 12px;
         }
 
