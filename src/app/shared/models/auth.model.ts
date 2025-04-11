@@ -1,39 +1,39 @@
-export interface AuthenticatedUser {
-  id: string; // ID único do client no sistema
-  cpf: string; // CPF usado para login
-  email: string; // E-mail para comunicação ou recuperação de senha
-  role: 'ADMIN' | 'employee' | 'client'; // Papel para controle de acesso
-  first_name: string; // Nome do client
-  last_name: string; // Sobrenome do client
-  phone: string; // Telefone de contato
-  address?: {
-    street: string; // Rua
-    number: string; // Número
-    neighborhood: string; // Bairro
-    city: string; // Cidade
-    state: string; // Estado
-    postal_code: string; // CEP
-  };
-  registration_date: string; // Data de registro no sistema
-  is_active: boolean; // Indica se o client está ativo
-  employeeId?: string; // ID do employee associado
-  createdAt: string; // Data de criação do registro
-  updatedAt: string; // Data da última atualização do registro
-  password?: string; // Senha do usuário (pode estar vazia no primeiro login)
+// authenticated-user.model.ts
+import { Address } from './address.model';
+import { BaseEntity } from './base-entity.model';
+import { UserRole } from './user-role.enum';
+
+export interface AuthenticatedUser extends BaseEntity {
+  cpf: string;
+  email: string;
+  role: UserRole;
+  first_name: string;
+  last_name: string;
+  phone: string;
+  companyIds?: string[];
+  couponUsed?: string;
+  address?: Address;
+  registration_date: string;
+  is_active: boolean;
+  employeeId?: string;
+  password?: string;
 }
 
+// Estado de autenticação armazenado no front-end
 export interface AuthState {
   isAuthenticated: boolean;
   user: AuthenticatedUser | null;
   token: string | null;
 }
 
+// Requisição de Login (envio de CPF e senha)
 export interface LoginRequest {
-  cpf: string; // CPF do usuário
-  password: string; // Senha do usuário
+  cpf: string;
+  password: string;
 }
 
+// Resposta de Login do Backend
 export interface LoginResponse {
-  access_token: string; // Token de autenticação
+  access_token: string; // Token de autenticação (JWT ou similar)
   user: AuthenticatedUser; // Informações do usuário autenticado
 }

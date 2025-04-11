@@ -1,136 +1,43 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, effect, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
-import { ResumoService } from 'src/app/shared/services/resumo.service';
-import { NavigationService } from 'src/app/shared/services/navigation.service';
-import { Resumo } from 'src/app/shared/models/resumo.model';
-import {
-  IonContent,
-  IonButton,
-  IonCard,
-  IonCardHeader,
-  IonCardContent,
-  IonSpinner,
-  IonTitle,
-  IonRouterOutlet,
-} from '@ionic/angular/standalone';
-import { NavbarPageAdmin } from '../navbar-admin/navbar-admin.page';
+import { IonicModule } from '@ionic/angular';
+import { AuthService } from 'src/app/shared/services/auth.service';
+import { ClientService } from 'src/app/shared/services/clients.service';
+import { EmployeeService } from 'src/app/shared/services/employee.service';
+import { AppointmentsService } from 'src/app/shared/services/appointments.service';
+import { ServicesService } from 'src/app/shared/services/services.service';
 
 @Component({
   selector: 'app-dashboard-admin',
+  standalone: true,
+  imports: [CommonModule, IonicModule],
   templateUrl: './dashboard-admin.page.html',
   styleUrls: ['./dashboard-admin.page.scss'],
-  standalone: true,
-  imports: [
-    IonRouterOutlet,
-    CommonModule,
-    FormsModule,
-    IonContent,
-    IonCard,
-    IonButton,
-    IonCardHeader,
-    IonCardContent,
-    IonSpinner,
-    IonTitle,
-    NavbarPageAdmin,
-  ],
 })
-export class DashboardAdminPage implements OnInit {
-  resumo: Resumo | null = null;
-  isLoading = false;
-  errorMessage: string | null = null;
+export class DashboardAdminPage {
+  private auth = inject(AuthService);
+  private clients = inject(ClientService);
+  private employees = inject(EmployeeService);
+  private appointments = inject(AppointmentsService);
+  private services = inject(ServicesService);
 
-  constructor(
-    private readonly resumoService: ResumoService,
-    private readonly navigationService: NavigationService,
-  ) {}
+  admin = this.auth.currentUser;
 
-  ngOnInit(): void {
-    this.loadDashboardData();
+  totalClients = signal(0);
+  totalEmployees = signal(0);
+  totalAppointments = signal(0);
+  totalServices = signal(0);
+
+  constructor() {
+    effect(() => {
+      this.totalClients.set(this.clients.filteredClients().length);
+      this.totalEmployees.set(this.employees.employees().length);
+      this.totalAppointments.set(this.appointments.appointments().length);
+      this.totalServices.set(this.services.services().length);
+    });
   }
 
-  async loadDashboardData(): Promise<void> {
-    this.isLoading = true;
-    this.errorMessage = null;
-
-    try {
-      const data = await this.resumoService.getResumoAdmin();
-      this.isLoading = false;
-
-      if (data) {
-        this.resumo = {
-          usuarioLogado: data.usuarioLogado,
-          adminResumo: data.adminResumo
-            ? {
-                totalclients: data.adminResumo.totalclients,
-                totalemployees: data.adminResumo.totalemployees,
-                clientsAtivos: data.adminResumo.clientsAtivos,
-                employeesAtivos: data.adminResumo.employeesAtivos,
-                novosclients: data.adminResumo.novosclients,
-                novosemployees: data.adminResumo.novosemployees,
-                adesoes: data.adminResumo.adesoes,
-              }
-            : undefined,
-          employeeResumo: data.employeeResumo
-            ? {
-                totalPropostas: data.employeeResumo.totalPropostas,
-                propostasPendentes: data.employeeResumo.propostasPendentes,
-                historicoPropostas: data.employeeResumo.historicoPropostas,
-              }
-            : undefined,
-          clientResumo: data.clientResumo || undefined,
-          adesoesResumo: data.adesoesResumo
-            ? {
-                total: data.adesoesResumo.total,
-                aprovadas: data.adesoesResumo.aprovadas,
-                pendentes: data.adesoesResumo.pendentes,
-                rejeitadas: data.adesoesResumo.rejeitadas,
-                detalhes: data.adesoesResumo.detalhes,
-              }
-            : undefined,
-          pagamentosResumo: data.pagamentosResumo
-            ? {
-                totalRealizados: data.pagamentosResumo.totalRealizados,
-                totalPendentes: data.pagamentosResumo.totalPendentes,
-                totalCancelados: data.pagamentosResumo.totalCancelados,
-                historicoPagamentos: data.pagamentosResumo.historicoPagamentos,
-              }
-            : undefined,
-        };
-      } else {
-        // Se data for null, podemos definir alguma mensagem ou estado
-        this.resumo = null;
-      }
-    } catch (error: unknown) {
-      console.error('Erro ao carregar dados do dashboard:', error);
-      this.isLoading = false;
-      this.errorMessage =
-        'Erro ao carregar os dados. Por favor, tente novamente mais tarde.';
-      this.resumo = null;
-    }
-  }
-
-  navigateTo(path: string): void {
-    this.navigationService.navigateTo(path);
-  }
-
-  get adminResumo() {
-    return this.resumo?.adminResumo;
-  }
-
-  get pagamentosResumo() {
-    return this.resumo?.pagamentosResumo;
-  }
-
-  get clientResumo() {
-    return this.resumo?.clientResumo;
-  }
-
-  get employeeResumo() {
-    return this.resumo?.employeeResumo;
-  }
-
-  get adesoesResumo() {
-    return this.resumo?.adesoesResumo;
+  logout() {
+    this.auth.logout();
   }
 }

@@ -1,0 +1,52 @@
+// Variáveis de cores e estilos para o tema dark com acentos quentes
+$background-dark: #1c1c1c;
+$input-bg: #2a2a2a;
+$text-light: #f0f0f0;
+$accent-skin: #f1c27d;
+$border-dark: #333;
+$shadow-dark: 0 2px 4px rgba(0, 0, 0, 0.7);
+
+.p-4 {
+    background-color: $background-dark;
+    border-radius: 8px;
+    color: $text-light;
+}
+
+.group-header {
+    background-color: $input-bg;
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    margin-bottom: 0.75rem;
+
+    h6 {
+        margin: 0;
+        color: $accent-skin;
+        font-size: 1.1rem;
+    }
+}
+
+.list-group {
+    .list-group-item {
+        background-color: $background-dark;
+        border: 1px solid $border-dark;
+        border-radius: 4px;
+        margin-bottom: 0.5rem;
+        padding: 0.75rem 1.25rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        transition: background-color 0.3s ease;
+
+        &:hover {
+            background-color: $input-bg;
+        }
+
+        .fw-bold {
+            color: $accent-skin;
+        }
+
+        i {
+            vertical-align: middle;
+        }
+    }
+}

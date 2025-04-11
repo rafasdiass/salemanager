@@ -1,13 +1,21 @@
 @mixin navbar-shared-style {
-    --background: var(--navbar-background-color);
-    border-top: 1px solid var(--navbar-border-color);
+    /* Fundo do navbar */
+    --background: var(--navbar-background-color, #272727);
+    /* Borda superior sutil */
+    border-top: 1px solid var(--navbar-border-color, #3d3d3d);
     box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.2);
-    height: var(--navbar-height);
+
+    /* Altura do navbar */
+    height: var(--navbar-height, 60px);
+
+    /* Fixado no bottom */
     position: fixed;
     bottom: 0;
     left: 0;
     right: 0;
     z-index: 1000;
+
+    /* Layout em linha, espaçado */
     display: flex;
     justify-content: space-around;
     align-items: center;
@@ -22,33 +30,37 @@
         flex-direction: column;
         justify-content: center;
         align-items: center;
-        color: var(--navbar-text-color);
+        color: var(--navbar-text-color, #f5f5f5);
         background: transparent;
+        /* Ajuste de espaçamento se necessário */
+        margin: 0 4px;
 
         ion-icon {
             font-size: 22px;
             margin-bottom: 2px;
-            color: var(--navbar-icon-color);
+            color: var(--navbar-icon-color, #c2a476);
+            /* Ex.: tom dourado/bege */
         }
 
         ion-label {
             font-size: 11px;
             font-weight: bold;
-            color: var(--navbar-icon-color);
+            color: var(--navbar-icon-color, #c2a476);
         }
 
         &.tab-selected {
-            background-color: var(--navbar-selected-background);
+            background-color: var(--navbar-selected-background, #333333);
             border-radius: 8px;
-            color: var(--navbar-selected-text);
+            color: var(--navbar-selected-text, #ffffff);
 
             ion-icon,
             ion-label {
-                color: var(--navbar-selected-text);
+                color: var(--navbar-selected-text, #ffffff);
             }
         }
     }
 
+    /* Em telas menores que 768px, esconde o texto e mostra só ícones */
     @media (max-width: 767px) {
         ion-label {
             display: none;

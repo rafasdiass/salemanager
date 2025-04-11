@@ -1,2 +1,18 @@
-// For information on how to create your own theme, please see:
-// http://ionicframework.com/docs/theming/
+// src/theme/variables.scss
+
+@use 'sass:map';
+
+/**
+ * Paleta de Cores para o Salão / Barbearia (Tema Dark + Tons de Marrom/Bege)
+ */
+
+$background-dark: #1A1A1A;
+$card-background: #272727;
+$primary-color: #C2A476;
+$accent-color: #A77B5A;
+$text-light: #F5F5F5;
+$text-muted: #C3C3C3;
+$input-background: #363636;
+$error-color: #FF5252;
+$shadow-color: rgba(0, 0, 0, 0.6);
+$border-color: #3D3D3D;

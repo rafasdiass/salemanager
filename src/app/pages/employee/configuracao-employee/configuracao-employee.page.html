@@ -1,45 +1,37 @@
-<ion-content class="configuracao-employee">
-  <ion-header>
-    <ion-toolbar>
-      <ion-title>
-        <ion-icon name="settings"></ion-icon> Configuração
-      </ion-title>
-    </ion-toolbar>
-  </ion-header>
+<ion-header translucent>
+  <ion-toolbar>
+    <ion-title>Minha Conta</ion-title>
+  </ion-toolbar>
+</ion-header>
 
-  <div class="container">
-    <!-- Informações do employee -->
-    <ion-card>
-      <ion-card-header>
-        <ion-title>
-          <ion-icon name="person-circle"></ion-icon> Informações do employee
-        </ion-title>
-      </ion-card-header>
-      <ion-card-content>
-        <ion-input [(ngModel)]="configuracoes.nome" placeholder="Nome"></ion-input>
-        <ion-input [(ngModel)]="configuracoes.email" placeholder="E-mail"></ion-input>
-        <ion-input [(ngModel)]="configuracoes.telefone" placeholder="Telefone"></ion-input>
-        <ion-button expand="full" color="primary" (click)="salvarConfiguracoes()">Atualizar Senha</ion-button>
-      </ion-card-content>
-    </ion-card>
+<ion-content class="ion-padding">
+  <form (ngSubmit)="salvarAlteracoes()">
+    <ion-list>
+      <ion-item>
+        <ion-label position="stacked">Nome</ion-label>
+        <ion-input [(ngModel)]="employee().first_name" name="first_name" required></ion-input>
+      </ion-item>
 
-    <!-- Notificações e Alertas -->
-    <ion-card>
-      <ion-card-header>
-        <ion-title>
-          <ion-icon name="notifications"></ion-icon> Notificações e Alertas
-        </ion-title>
-      </ion-card-header>
-      <ion-card-content>
-        <ion-item>
-          <ion-label>Alertas de Comissões</ion-label>
-          <ion-toggle [(ngModel)]="configuracoes.alertasComissao"></ion-toggle>
-        </ion-item>
-        <ion-item>
-          <ion-label>Notificações Gerais</ion-label>
-          <ion-toggle [(ngModel)]="configuracoes.notificacoesGerais"></ion-toggle>
-        </ion-item>
-      </ion-card-content>
-    </ion-card>
-  </div>
+      <ion-item>
+        <ion-label position="stacked">Sobrenome</ion-label>
+        <ion-input [(ngModel)]="employee().last_name" name="last_name"></ion-input>
+      </ion-item>
+
+      <ion-item>
+        <ion-label position="stacked">Email</ion-label>
+        <ion-input type="email" [(ngModel)]="employee().email" name="email"></ion-input>
+      </ion-item>
+
+      <ion-item>
+        <ion-label position="stacked">Telefone</ion-label>
+        <ion-input type="tel" [(ngModel)]="employee().phone" name="phone"></ion-input>
+      </ion-item>
+    </ion-list>
+
+    <div class="ion-margin-top ion-text-center">
+      <ion-button type="submit" expand="block" color="primary">
+        Salvar Alterações
+      </ion-button>
+    </div>
+  </form>
 </ion-content>

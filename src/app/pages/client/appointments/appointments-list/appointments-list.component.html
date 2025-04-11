@@ -1,0 +1,58 @@
+<div class="p-4">
+    <h5 class="mb-4">
+        <i class="bi bi-calendar-week me-2"></i>
+        Lista de Agendamentos
+    </h5>
+
+    <!-- Estado de carregamento -->
+    <div *ngIf="loading()" class="text-center my-4">
+        <div class="spinner-border text-primary" role="status"></div>
+        <p class="mt-2">Carregando agendamentos...</p>
+    </div>
+
+    <!-- Nenhum agendamento -->
+    <div *ngIf="hasNoAppointments()" class="alert alert-info d-flex align-items-center">
+        <i class="bi bi-info-circle-fill me-2"></i>
+        Nenhum agendamento encontrado.
+    </div>
+
+    <!-- Lista de agendamentos agrupados por data -->
+    <div class="list-group shadow-sm" *ngIf="!loading() && !hasNoAppointments()">
+        <ng-container *ngFor="let group of groupedAppointments() | keyvalue">
+            <div class="group-header">
+                <!-- Converte a chave (data no formato yyyy-MM-dd) em data legível -->
+                <h6>{{ group.key | date: 'fullDate' }}</h6>
+            </div>
+            <div *ngFor="let appointment of group.value"
+                class="list-group-item list-group-item-action d-flex justify-content-between align-items-start">
+                <div class="ms-2 me-auto">
+                    <div class="fw-bold">
+                        <i class="bi bi-person-circle me-1 text-primary"></i>
+                        Cliente ID: {{ appointment.clientId }}
+                    </div>
+                    <div>
+                        <i class="bi bi-scissors me-1 text-success"></i>
+                        Serviço ID: {{ appointment.serviceId }}
+                    </div>
+                    <div>
+                        <i class="bi bi-clock me-1 text-secondary"></i>
+                        {{ appointment.startTime | date: 'shortTime' }} → {{ appointment.endTime | date: 'shortTime' }}
+                    </div>
+                    <div>
+                        <i class="bi bi-sticky me-1 text-muted"></i>
+                        {{ appointment.notes || 'Sem observações' }}
+                    </div>
+                    <div class="mt-1">
+                        <span class="badge bg-warning text-dark text-uppercase">
+                            {{ appointment.status }}
+                        </span>
+                    </div>
+                </div>
+                <button class="btn btn-outline-danger btn-sm" (click)="onDelete(appointment.id!)"
+                    title="Excluir agendamento">
+                    <i class="bi bi-trash"></i>
+                </button>
+            </div>
+        </ng-container>
+    </div>
+</div>

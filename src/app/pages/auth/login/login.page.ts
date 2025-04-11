@@ -34,7 +34,7 @@ import { PrivacyPolicyPage } from '../privacy-policy/privacy-policy.page';
   templateUrl: './login.page.html',
   styleUrls: ['./login.page.scss'],
   standalone: true,
-  imports: [IonToolbar, IonFooter, IonCardContent, IonCardSubtitle, IonCardTitle, IonCardHeader, IonCard, 
+  imports: [ IonCardContent, IonCardSubtitle, IonCardTitle, IonCardHeader, IonCard, 
     IonText,
     IonCol,
     IonRow,

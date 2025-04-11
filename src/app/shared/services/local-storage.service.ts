@@ -1,118 +1,110 @@
 import { Injectable, Inject, PLATFORM_ID } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
-import { Observable, Observer } from 'rxjs';
+
+interface ExpiringItem<T> {
+  value: T;
+  expiry: number;
+}
 
 @Injectable({
   providedIn: 'root',
 })
 export class LocalStorageService {
-  // Fallback para SSR: objeto em memória para armazenar dados temporariamente no servidor.
-  private serverStorage: Map<string, string> = new Map();
+  constructor(@Inject(PLATFORM_ID) private platformId: Object) {}
 
-  constructor(@Inject(PLATFORM_ID) private platformId: object) {}
-
-  /**
-   * Verifica se a aplicação está sendo executada no navegador.
-   * Se estiver em SSR (Server-Side Rendering), retorna false.
-   */
   private isBrowser(): boolean {
     return isPlatformBrowser(this.platformId);
   }
 
-  /**
-   * Salva um item no localStorage ou no fallback em memória para SSR.
-   * @param key Chave do item.
-   * @param value Valor do item.
-   */
-  setItem<T>(key: string, value: T): void {
-    const data = JSON.stringify(value);
-    if (this.isBrowser()) {
-      localStorage.setItem(key, data);
-      console.log(`[LocalStorageService] Item salvo no localStorage: ${key}`);
-    } else {
-      this.serverStorage.set(key, data);
-      console.log(`[LocalStorageService] Item salvo no fallback SSR: ${key}`);
+  private checkLocalStorage(): boolean {
+    if (!this.isBrowser()) return false;
+    try {
+      localStorage.setItem('__storage_test__', 'test');
+      localStorage.removeItem('__storage_test__');
+      return true;
+    } catch (error) {
+      console.warn('LocalStorage não é suportado ou está desabilitado.');
+      return false;
     }
   }
 
-  /**
-   * Recupera um item do localStorage ou do fallback em memória para SSR.
-   * @param key Chave do item.
-   * @returns Valor do item ou `null` se não existir ou for inválido.
-   */
-  getItem<T>(key: string): T | null {
-    const data = this.isBrowser()
-      ? localStorage.getItem(key)
-      : this.serverStorage.get(key);
+  // Método interno para salvar um item (já convertido para string)
+  private setItemInternal(key: string, data: any): void {
+    if (this.checkLocalStorage()) {
+      try {
+        localStorage.setItem(key, JSON.stringify(data));
+      } catch (error) {
+        console.error(`Erro ao salvar a chave ${key} no localStorage:`, error);
+      }
+    }
+  }
 
-    if (data && this.isValidJSON(data)) {
-      console.log(`🔍 Recuperando ${key} do localStorage:`, JSON.parse(data));
-      return JSON.parse(data) as T;
-    } else {
-      console.warn(`⚠️ Nenhum dado encontrado para ${key} no localStorage.`);
+  // Método interno para obter um item e convertê-lo de volta
+  private getItemInternal<T>(key: string): T | null {
+    if (this.checkLocalStorage()) {
+      try {
+        const itemStr = localStorage.getItem(key);
+        return itemStr ? (JSON.parse(itemStr) as T) : null;
+      } catch (error) {
+        console.error(`Erro ao ler a chave ${key} do localStorage:`, error);
+        return null;
+      }
     }
     return null;
   }
 
   /**
-   * Remove um item do localStorage ou do fallback em memória para SSR.
-   * @param key Chave do item.
+   * Salva dados no localStorage.
+   * @param key Chave de armazenamento.
+   * @param data Dados a serem armazenados.
+   * @param ttl (Opcional) Tempo de expiração em milissegundos.
    */
-  removeItem(key: string): void {
-    if (this.isBrowser()) {
-      localStorage.removeItem(key);
-      console.log(
-        `[LocalStorageService] Item removido do localStorage: ${key}`,
-      );
+  public setItem<T>(key: string, data: T, ttl?: number): void {
+    if (ttl && ttl > 0) {
+      const item: ExpiringItem<T> = {
+        value: data,
+        expiry: new Date().getTime() + ttl,
+      };
+      this.setItemInternal(key, item);
     } else {
-      this.serverStorage.delete(key);
-      console.log(
-        `[LocalStorageService] Item removido do fallback SSR: ${key}`,
-      );
+      this.setItemInternal(key, data);
     }
   }
 
   /**
-   * Limpa todos os itens do localStorage ou do fallback em memória para SSR.
+   * Obtém dados do localStorage.
+   * @param key Chave de armazenamento.
+   * @param ttlCheck Se verdadeiro, verifica a expiração do item.
+   * @returns Os dados armazenados ou null se não encontrados ou expirados.
    */
-  clear(): void {
-    if (this.isBrowser()) {
-      localStorage.clear();
-      console.log(
-        '[LocalStorageService] Todos os itens foram removidos do localStorage.',
-      );
+  public getItem<T>(key: string, ttlCheck: boolean = false): T | null {
+    if (ttlCheck) {
+      const item = this.getItemInternal<ExpiringItem<T>>(key);
+      if (item) {
+        const now = new Date().getTime();
+        if (now > item.expiry) {
+          this.removeItem(key);
+          return null;
+        }
+        return item.value;
+      }
+      return null;
     } else {
-      this.serverStorage.clear();
-      console.log(
-        '[LocalStorageService] Todos os itens foram removidos do fallback SSR.',
-      );
+      return this.getItemInternal<T>(key);
     }
   }
 
   /**
-   * Verifica se uma string é um JSON válido.
-   * @param data String a ser validada.
-   * @returns Verdadeiro se for um JSON válido, falso caso contrário.
+   * Remove os dados associados à chave especificada.
+   * @param key Chave a ser removida.
    */
-  private isValidJSON(data: string): boolean {
-    try {
-      JSON.parse(data);
-      return true;
-    } catch {
-      return false;
+  public removeItem(key: string): void {
+    if (this.checkLocalStorage()) {
+      try {
+        localStorage.removeItem(key);
+      } catch (error) {
+        console.error(`Erro ao remover a chave ${key} do localStorage:`, error);
+      }
     }
-  }
-
-  /**
-   * Recupera um item do localStorage de forma assíncrona.
-   * @param key Chave do item.
-   * @returns Observable com o valor do item ou `null`.
-   */
-  getItemAsync<T>(key: string): Observable<T | null> {
-    return new Observable((observer: Observer<T | null>) => {
-      const data = this.getItem<T>(key);
-      observer.next(data);
-      observer.complete();
-    });
   }
 }

@@ -1,234 +1,222 @@
+
+```markdown
 # AgendeBarbearia
 
-**AgendeBarbearia** é um aplicativo de agendamento e fidelização para salões e barbearias, desenvolvido em **Angular** com backend no **Firebase**. O sistema utiliza um modelo híbrido de cadastro, permitindo a vinculação de clientes aos estabelecimentos por meio de cupons e QR Code, e disponibiliza diferentes planos de assinatura para os salões (Free, Basic e VIP).
+**AgendeBarbearia** é um aplicativo de agendamento e fidelização para salões e barbearias, desenvolvido em **Angular CLI 19** com backend no **Firebase**. A plataforma oferece um modelo híbrido de cadastro e múltiplos planos para estabelecimentos, com foco em organização, escalabilidade e fidelização.
 
 ---
 
-## Sumário
+## 📚 Sumário
 
-- [Descrição do Projeto](#descrição-do-projeto)
-- [Funcionalidades](#funcionalidades)
-- [Estrutura de Usuários e Perfis](#estrutura-de-usuários-e-perfis)
-- [Modelo de Negócios](#modelo-de-negócios)
-- [Tecnologias Utilizadas](#tecnologias-utilizadas)
-- [Instalação e Configuração](#instalação-e-configuração)
-- [Como Rodar o Projeto](#como-rodar-o-projeto)
-- [Arquitetura do Projeto](#arquitetura-do-projeto)
-- [Boas Práticas e Considerações](#boas-práticas-e-considerações)
-- [Contribuições](#contribuições)
-- [Licença](#licença)
-
----
-
-## Descrição do Projeto
-
-O **AgendeBarbearia** foi criado para oferecer uma solução simples e intuitiva para salões e barbearias gerenciarem seus agendamentos e promoverem a fidelização dos clientes. A plataforma é preparada para operar em múltiplos estabelecimentos, organizando os usuários em três perfis: **Admin do Salão**, **Empregados** e **Clientes**.
+- [Descrição do Projeto](#📝-descrição-do-projeto)
+- [Funcionalidades](#✅-funcionalidades)
+- [Regras de Negócio](#🧩-regras-de-negócio)
+- [Modelagem de Usuários](#👥-modelagem-de-usuários)
+- [Modelo de Assinatura](#💰-modelo-de-assinatura)
+- [Tecnologias Utilizadas](#🧪-tecnologias-utilizadas)
+- [Instalação e Configuração](#⚙️-instalação-e-configuração)
+- [Execução e Build](#🚀-execução-e-build)
+- [Boas Práticas](#✅-boas-práticas)
+- [Licença](#📄-licença)
+- [Contribuições](#🤝-contribuições)
 
 ---
 
-## Funcionalidades
+## 📝 Descrição do Projeto
 
-- **Agendamento Online:**  
-  Permite que os clientes marquem, alterem ou cancelem agendamentos de forma prática.
-
-- **Vinculação via Cupom/QR Code:**  
-  Os estabelecimentos podem gerar cupons e utilizar QR Codes para associar os cadastros dos clientes ao salão/barbearia.
-
-- **Sistema de Fidelização Opcional:**  
-  Módulo de pontuação ativável ou desativável, onde os clientes acumulam pontos para resgatar descontos e benefícios.
-
-- **Gestão de Planos para Estabelecimentos:**  
-  Três pacotes são oferecidos:
-  - **Free:** Até 10 clientes cadastrados, sem custo.
-  - **Basic:** R$50/mês para até 30 clientes.
-  - **VIP:** R$100/mês (preço inicial, sujeito a ajustes) para cadastro ilimitado.
-
-- **Dashboards Personalizados:**  
-  Diferentes interfaces para cada perfil de usuário:
-  - **Admin do Salão:** Painel de gerenciamento com controle de agendamentos, cupons, relatórios e configurações dos planos.
-  - **Empregados:** Interface com foco na operação diária (agendamentos, check-in de clientes, notificações).
-  - **Clientes:** Área para agendamento, visualização de histórico, acompanhamento de pontos e promoções.
+O sistema foi criado para **facilitar agendamentos, promover fidelização e escalar o atendimento de salões e barbearias**, mantendo o controle por parte dos gestores e a liberdade de escolha para os clientes.
 
 ---
 
-## Estrutura de Usuários e Perfis
+## ✅ Funcionalidades
 
-O sistema organiza os usuários por meio do seguinte modelo:
-
-> **Estabelecimento** = { **Admin do Salão**, **Empregados**, **Clientes** }
-
-- **Admin do Salão:**  
-  Possui controle total sobre o estabelecimento, gerenciando cadastros, emissão de cupons/QR Codes, configurações do sistema e monitoramento dos agendamentos.
-
-- **Empregados:**  
-  Auxiliam na rotina do salão, com acesso restrito para visualizar agendamentos e confirmar a presença dos clientes.
-
-- **Clientes:**  
-  Usuários finais que se cadastram na plataforma através de cupons ou QR Codes, realizam agendamentos e participam do programa de fidelidade.
+- Cadastro de salões e planos com geração de cupom automático.
+- Agendamento de horários por clientes vinculados via cupom ou QR Code.
+- Painel de administração por perfil (admin, funcionário, cliente).
+- Histórico completo de atendimentos por cliente.
+- Cancelamento e edição de agendamentos pelo admin.
+- Módulo de fidelidade ativável (acúmulo de pontos por visita).
+- Cadastro automático de clientes ao usar um cupom de salão.
+- Logs de ações sensíveis para auditoria.
+- Detecção de clientes inativos.
+- Validação automática dos limites do plano.
 
 ---
 
-## Modelo de Negócios
+## 🧩 Regras de Negócio
 
-O aplicativo é monetizado por meio da oferta de planos de assinatura para salões/barbearias:
+### 📌 Estrutura por Estabelecimento
 
-- **Plano Free:**  
-  - **Custo:** Gratuito  
-  - **Limite:** Até 10 clientes
-  - **Objetivo:** Permitir a experimentação sem riscos.
+- Cada salão representa uma instância com dados isolados.
+- O `cupom` é o identificador único do estabelecimento, usado para vincular clientes.
+- Cada salão possui:
+  - Subcoleção `users/` com admins, funcionários e clientes.
+  - Subcoleção `appointments/` para agendamentos.
 
-- **Plano Basic:**  
-  - **Custo:** R$50/mês  
-  - **Limite:** Até 30 clientes  
-  - **Objetivo:** Suportar estabelecimentos com demanda moderada.
+### 👤 Tipos de Usuário
 
-- **Plano VIP:**  
-  - **Custo:** R$100/mês (proposta inicial)  
-  - **Limite:** Cadastro ilimitado  
-  - **Objetivo:** Atender salões de alta demanda sem restrições de cadastro.
+#### 👑 Admin
+- Criado após adesão ao plano.
+- Apenas **um admin por estabelecimento**.
+- Não usa cupom e não possui `lastCouponUsedAt`.
+- Pode cancelar ou editar agendamentos (individual ou do dia).
+- Possui acesso completo ao dashboard, relatórios e notificações.
+- Pode cadastrar funcionários e visualizar todos os clientes vinculados.
+- Ações de admins são registradas nos logs.
 
-Cada estabelecimento pode configurar a ativação do sistema de pontos, personalizando o programa de fidelização conforme sua estratégia.
+#### 🧑‍🔧 Funcionário
+- Criado pelo admin.
+- `role = 'employee'`.
+- Acesso somente à agenda (nome, horário, serviço).
+- Não pode acessar, editar ou visualizar dados de clientes além dos agendamentos.
 
----
-
-## Tecnologias Utilizadas
-
-- **Frontend:**  
-  Desenvolvido com **Angular CLI 19**, proporcionando uma aplicação dinâmica e responsiva.
-
-- **Backend:**  
-  Utiliza os serviços do **Firebase** para autenticação, banco de dados em tempo real, e gerenciamento de dados.
-
----
-
-## Instalação e Configuração
-
-Para configurar e rodar o **AgendeBarbearia**, siga as instruções:
-
-1. **Pré-requisitos:**
-   - Node.js (versão recomendada LTS).
-   - Angular CLI 19 instalado globalmente.
-   - Conta e projeto configurado no Firebase (para autenticação, banco de dados, etc.).
-
-2. **Clonando o Repositório:**
-   - Abra o terminal e execute:
-     ```
-     git clone <URL_DO_REPOSITÓRIO>
-     cd agendebarbearia
-     ```
-
-3. **Instalando as Dependências:**
-   - No diretório do projeto, execute:
-     ```
-     npm install
-     ```
-   
-4. **Configurando o Firebase:**
-   - Crie um projeto no [Firebase Console](https://console.firebase.google.com/).
-   - Adicione as configurações do Firebase ao seu projeto Angular (geralmente no arquivo de ambiente, como `environment.ts`).
-   - Configure a autenticação e os recursos de banco de dados de acordo com a documentação do Firebase.
-
-5. **Executando a Aplicação:**
-   - Para iniciar o servidor de desenvolvimento, utilize:
-     ```
-     ng serve
-     ```
-   - Acesse a aplicação pelo navegador, normalmente em `http://localhost:4200/`.
+#### 🙋 Cliente
+- Criado automaticamente ao utilizar um **cupom** (ID do estabelecimento).
+- `role = 'client'`.
+- Deve conter `lastCouponUsedAt` com a data/hora da última utilização do cupom.
+- Antes de criar, o sistema verifica se já existe cliente no salão.  
+  - Se existir, **não duplica**: apenas atualiza o `lastCouponUsedAt`.
+  - Se for a primeira vez no salão, um novo registro é criado.
+- O cliente **não pode ser deletado** pelo admin, apenas marcado como inativo.
+- O salão ativo para agendamento é definido pelo `lastCouponUsedAt` mais recente.
 
 ---
 
-## Como Rodar o Projeto
+### 🔄 Centralização das Regras
 
-### Passo a Passo para Rodar em Ambiente Local
+Implementadas por meio da interface `EntityBusinessRules<T>`, com os seguintes _hooks_:
 
-1. **Certifique-se de ter o Angular CLI 19 instalado:**  
-   - Caso não tenha, instale utilizando:
-     ```
-     npm install -g @angular/cli@19
-     ```
+#### 🔧 prepareForCreate()
+- `admin`: remove `lastCouponUsedAt`, valida que só pode haver um admin.
+- `employee`: força `role = 'employee'`.
+- `client`: adiciona `lastCouponUsedAt` com data atual, se ausente.
+- Valida se o limite de clientes do plano foi atingido antes de criar.
 
-2. **Clone o repositório:**
-   - Utilize o comando:
-     ```
-     git clone <URL_DO_REPOSITÓRIO>
-     cd agendebarbearia
-     ```
-
-3. **Instale as dependências:**
-   - No diretório do projeto, execute:
-     ```
-     npm install
-     ```
-
-4. **Configuração do Firebase:**
-   - Crie um projeto no Firebase e obtenha as credenciais de configuração.
-   - Atualize o arquivo de configuração de ambiente (`src/environments/environment.ts`) com as informações do seu projeto Firebase.
-
-5. **Compile e execute o aplicativo:**
-   - Utilize o Angular CLI para compilar e servir a aplicação:
-     ```
-     ng serve
-     ```
-   - Abra o navegador e acesse `http://localhost:4200/` para visualizar o app em execução.
-
-### Observações Adicionais
-
-- **Ambiente de Produção:**  
-  Após testar localmente, utilize o comando de build para produção:
-  ```
-  ng build --prod
-  ```
-  Configure o Firebase Hosting ou outra plataforma de sua preferência para o deploy da aplicação em produção.
-
-- **Documentação Adicional:**  
-  - Consulte a [documentação do Angular CLI](https://angular.io/cli) para mais comandos e configurações.
-  - Acesse a [documentação do Firebase](https://firebase.google.com/docs) para configurar serviços e integrações específicas.
+#### 🔄 prepareForUpdate()
+- Atualiza `updatedAt`.
+- Impede mudança de `role`.
+- Registra alteração nos logs do sistema.
 
 ---
 
-## Arquitetura do Projeto
+### 🔐 Segurança e Auditoria
 
-- **Componentização:**  
-  A aplicação é dividida em componentes reutilizáveis para gerenciar os diferentes dashboards e funcionalidades específicos para cada perfil (Admin do Salão, Empregados, Clientes).
-
-- **Gerenciamento de Rotas:**  
-  São implementadas rotas protegidas com base no perfil do usuário, garantindo que cada tipo de usuário acesse apenas as funcionalidades permitidas.
-
-- **Integração com Firebase:**  
-  O Firebase serve como backend, provendo serviços como autenticação, banco de dados em tempo real e hospedagem.
+- Toda alteração (criação, edição, cancelamento) gera um log com:
+  - Usuário que executou
+  - Tipo de ação
+  - Data e hora
+  - Entidade afetada
+- Logs não são apagáveis.
 
 ---
 
-## Boas Práticas e Considerações
+### ⏳ Inatividade e Remarketing
 
-- **Experiência do Usuário:**  
-  Cada perfil deve ter uma interface intuitiva, com navegação clara e consistente com a identidade visual do aplicativo.
-
-- **Segurança:**  
-  Implementar controle de acesso adequado para garantir que apenas usuários autorizados acessem determinadas funcionalidades e dados.
-
-- **Flexibilidade do Sistema:**  
-  O módulo de fidelidade (pontos) pode ser ativado ou desativado por cada estabelecimento, permitindo personalização conforme a estratégia de cada salão.
-
-- **Monitoramento:**  
-  Utilize as ferramentas de monitoramento do Firebase para acompanhar o desempenho e a usabilidade do aplicativo, ajustando os recursos conforme o feedback dos usuários.
+- Clientes com mais de 60 dias sem agendamento são considerados inativos.
+- Esses dados são utilizados em estratégias de **remarketing automático**.
+- Inatividade é calculada com base em `lastCouponUsedAt`.
 
 ---
 
-## Contribuições
+## 👥 Modelagem de Usuários
 
-Contribuições para o projeto são sempre bem-vindas! Para contribuir:
-
-- Faça um fork do repositório.
-- Crie uma branch para sua funcionalidade ou correção.
-- Envie um pull request com uma descrição clara das alterações.
+```json
+{
+  "id": "string",
+  "role": "admin" | "employee" | "client",
+  "createdAt": "timestamp",
+  "updatedAt": "timestamp",
+  "lastCouponUsedAt": "timestamp (clientes somente)",
+  "nome": "string",
+  "telefone": "string",
+  "email": "string",
+  "estabelecimentoId": "string",
+  "ativo": true
+}
+```
 
 ---
 
-## Licença
+## 💰 Modelo de Assinatura
 
-Este projeto está licenciado sob os termos da [Licença MIT](LICENSE).
+### 🆓 Plano Free
+- Gratuito
+- Até 10 clientes
+
+### 💼 Plano Basic
+- R$50/mês
+- Até 30 clientes
+
+### 👑 Plano VIP
+- R$100/mês (ajustável)
+- Ilimitado
+
+> O cupom é gerado automaticamente com base no `estabelecimentoId`.
 
 ---
 
-Este README serve como guia completo para o desenvolvimento, configuração e execução do **AgendeBarbearia**. Se houver dúvidas ou sugestões para melhorias, sinta-se à vontade para abrir uma issue ou entrar em contato. Vamos transformar a experiência de agendamento e fidelização nos salões e barbearias!
+## 🧪 Tecnologias Utilizadas
+
+- **Angular CLI 19**  
+- **Firebase (Auth, Firestore, Hosting)**  
+- **Signals, Computed, Effects (Angular 16+)**  
+- **Arquitetura Standalone**  
+- **Componentização Reativa**  
+- **Deploy no Firebase Hosting**
+
+---
+
+## ⚙️ Instalação e Configuração
+
+```bash
+git clone https://github.com/usuario/agendebarbearia.git
+cd agendebarbearia
+npm install
+```
+
+Configure seu arquivo `environment.ts` com as credenciais do Firebase.
+
+---
+
+## 🚀 Execução e Build
+
+### Ambiente de Desenvolvimento
+```bash
+ng serve
+```
+
+### Produção
+```bash
+ng build --configuration production
+```
+
+---
+
+## ✅ Boas Práticas
+
+- Separação de responsabilidades por perfil.
+- CRUD com _hooks_ de validação.
+- Timestamps automáticos.
+- Controle rigoroso de acesso.
+- Isolamento completo entre salões.
+- Firebase Rules ativas para segurança.
+- Regras centralizadas e auditáveis.
+
+---
+
+## 📄 Licença
+
+Distribuído sob a licença **MIT**. Veja o arquivo `LICENSE`.
+
+---
+
+## 🤝 Contribuições
+
+Contribuições são bem-vindas!  
+Faça um fork, crie uma branch com sua funcionalidade e envie um PR detalhado.
+
+---
+
+**AgendeBarbearia** é a solução definitiva para digitalizar, organizar e escalar o atendimento de salões e barbearias.
+```
+

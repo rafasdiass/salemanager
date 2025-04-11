@@ -1,69 +1,68 @@
-.dashboard-employee {
-    display: flex;
-    flex-direction: column;
-    background-color: #f2f2f2;
+@use 'variables' as *;
 
-    /* 🛠️ Ajuste do container principal */
-    .dashboard-container {
-        margin: 10px auto;
-        padding: 16px;
-        display: flex;
-        flex-direction: column;
-        gap: 16px;
-        max-width: 1200px;
-        align-items: center;
-        justify-content: center;
+:host {
+    ion-content {
+        background-color: $background-dark;
+        color: $text-light;
+    }
+
+    .employee-info {
         text-align: center;
-    }
+        margin-bottom: 20px;
 
-    /* 🛠️ Ajuste para garantir que o conteúdo inicie abaixo do navbar */
-    .conteudo {
-        margin-top: 70px;
-        /* Ajuste conforme a altura do navbar */
-    }
-
-    /* 🌐 Ajustes para Web/Desktop */
-    @media screen and (min-width: 1024px) {
-        .dashboard-container {
-            margin-top: 80px;
-            padding-left: 0;
-            max-width: 100%;
+        h2 {
+            font-size: 1.5rem;
+            color: $primary-color;
         }
 
-        .conteudo {
-            margin-top: 80px;
-            /* Mantém espaçamento abaixo do navbar */
+        p {
+            font-size: 1rem;
+            color: $text-muted;
         }
     }
 
-    /* 📱 Ajustes para dispositivos menores (Mobile) */
-    @media screen and (max-width: 768px) {
-        .dashboard-container {
-            padding: 15px;
-            margin-left: 0;
-            min-height: calc(100vh - 60px);
-            position: relative;
+    ion-item {
+        --background: $card-background;
+        --color: $text-light;
+        border-radius: 12px;
+        margin-bottom: 10px;
+        box-shadow: 0 4px 6px $shadow-color;
+
+        ion-label h3 {
+            font-size: 1.1rem;
+            color: $primary-color;
         }
 
-        .dashboard-content {
-            margin-bottom: 80px;
-        }
-
-        .conteudo {
-            margin-top: 70px;
-            /* Ajusta para telas menores sem sobreposição */
+        ion-label p {
+            font-size: 0.9rem;
+            color: $text-muted;
         }
     }
 
-    /* 📏 Ajustes para telas muito pequenas */
-    @media screen and (max-width: 425px) {
-        .dashboard-container {
-            margin: 10px auto;
-        }
+    ion-card {
+        background-color: $card-background;
+        color: $text-light;
+        box-shadow: 0 4px 6px $shadow-color;
+        border-radius: 12px;
 
-        .conteudo {
-            margin-top: 75px;
-            /* Pequeno ajuste para evitar sobreposição */
+        ion-card-content {
+            text-align: center;
+            font-size: 1rem;
+            color: $text-muted;
+        }
+    }
+
+    ion-toolbar {
+        --background: $background-dark;
+        --color: $primary-color;
+        border-bottom: 1px solid $border-color;
+    }
+
+    ion-button {
+        --color: $text-light;
+
+        &.danger {
+            --background: $error-color;
         }
     }
 }

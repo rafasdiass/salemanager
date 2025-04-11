@@ -1,118 +1,88 @@
-import { Component, OnInit, inject, signal, effect } from '@angular/core';
-import {
-  IonContent,
-  IonSpinner,
-  IonHeader,
-  IonCard,
-  IonCardHeader,
-  IonTitle,
-  IonCardContent,
-  IonRouterOutlet,
-  IonIcon,
-  IonList,
-  IonItem,
-  IonLabel,
-} from '@ionic/angular/standalone';
+import { Component, computed, effect, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
-import { NavbarclientPage } from '../navbar-client/navbar-client.page';
-import { clientBenefitsPage } from './client-benefits/client-benefits.page';
-import { clientPaymentPage } from './client-payment/client-payment.page';
-import { clientPropertyStatusPage } from './client-property-status/client-property-status.page';
-import { clientMensagensPage } from '../client-mensagens/client-mensagens.page';
-import { clientNotificationsService } from 'src/app/shared/services/client-notifications.service';
-import { clientNotificacao } from 'src/app/shared/models/notificacao.model';
-import { LocalStorageService } from 'src/app/shared/services/local-storage.service';
-import { AuthenticatedUser } from 'src/app/shared/models/auth.model';
+import { IonicModule } from '@ionic/angular';
+import { AuthService } from 'src/app/shared/services/auth.service';
+import { AppointmentsService } from 'src/app/shared/services/appointments.service';
+import { Appointment } from 'src/app/shared/models/appointments.model';
+import { EstablishmentService } from 'src/app/shared/services/establishment.service';
+import { Company } from 'src/app/shared/models/company.model';
+import { ServicesService } from 'src/app/shared/services/services.service';
+import { Service } from 'src/app/shared/models/service.model';
 
 @Component({
   selector: 'app-dashboard-client',
   templateUrl: './dashboard-client.page.html',
   styleUrls: ['./dashboard-client.page.scss'],
   standalone: true,
-  imports: [
-    IonRouterOutlet,
-    IonCardContent,
-    IonTitle,
-    IonCardHeader,
-    IonCard,
-    IonContent,
-    IonSpinner,
-   
-    IonIcon,
-    IonList,
-    IonItem,
-    IonLabel,
-    CommonModule,
-    FormsModule,
-    NavbarclientPage,
-    clientBenefitsPage,
-    clientPaymentPage,
-    clientPropertyStatusPage,
-    
-  ],
+  imports: [CommonModule, IonicModule],
 })
-export class DashboardclientPage implements OnInit {
-  isLoading = signal<boolean>(true);
-  errorMessage = signal<string | null>(null);
-  notifications = signal<clientNotificacao[]>([]);
+export class DashboardClientPage {
+  private auth = inject(AuthService);
+  private appointmentsService = inject(AppointmentsService);
+  private establishmentService = inject(EstablishmentService);
+  private servicesService = inject(ServicesService);
 
-  private notificationsService = inject(clientNotificationsService);
-  private localStorageService = inject(LocalStorageService);
-  private clientId: string | null = null;
+  client = this.auth.currentUser;
+
+  allAppointments = signal<Appointment[]>([]);
+  company = signal<Company | null>(null);
+  servicesMap = signal<Map<string, string>>(new Map());
+
+  upcomingAppointments = computed(() => {
+    const now = new Date();
+    return this.allAppointments().filter((a) => new Date(a.startTime) > now);
+  });
+
+  pastAppointments = computed(() => {
+    const now = new Date();
+    return this.allAppointments().filter((a) => new Date(a.endTime) < now);
+  });
+
+  totalVisits = computed(() => this.pastAppointments().length);
 
   constructor() {
-    // Observa mudanças nas notificações e atualiza automaticamente
+    // Carrega os agendamentos do cliente
     effect(() => {
-      const updatedNotifications = [
-        ...this.notificationsService.notifications(),
-      ];
-      this.notifications.set(updatedNotifications);
+      const clientId = this.client()?.id;
+      if (!clientId) return;
+
+      const appts = this.appointmentsService.getClientAppointments(clientId);
+      this.allAppointments.set(appts);
+    });
+
+    // Carrega os dados da empresa vinculada
+    effect(() => {
+      const companyId = this.client()?.companyIds?.[0];
+      if (!companyId) return;
+
+      this.establishmentService.getById(companyId).subscribe((data) => {
+        this.company.set(data ?? null);
+      });
+    });
+
+    // Carrega e mapeia os serviços da empresa
+    effect(() => {
+      const companyId = this.client()?.companyIds?.[0];
+      if (!companyId) return;
+
+      const allServices = this.servicesService.services();
+      const map = new Map<string, string>();
+
+      allServices.forEach((s: Service) => {
+        if (s.companyId === companyId) {
+          map.set(s.id!, s.name);
+        }
+      });
+
+      this.servicesMap.set(map);
     });
   }
 
-  ngOnInit(): void {
-    this.loadclientId();
-    this.loadNotifications();
+  logout() {
+    this.auth.logout();
   }
 
-  private loadclientId(): void {
-    const storedUser =
-      this.localStorageService.getItem<AuthenticatedUser>('userData');
-    if (storedUser?.id) {
-      this.clientId = storedUser.id;
-    } else {
-      this.errorMessage.set('Usuário não autenticado.');
-      this.clientId = null;
-    }
-  }
-
-  private async loadNotifications(): Promise<void> {
-    if (!this.clientId) {
-      this.errorMessage.set('Erro ao carregar notificações. ID inválido.');
-      return;
-    }
-
-    try {
-      this.isLoading.set(true);
-      await this.notificationsService.loadNotifications(this.clientId);
-    } catch (error) {
-      this.errorMessage.set('Erro ao buscar notificações.');
-    } finally {
-      this.isLoading.set(false);
-    }
-  }
-
-  getNotificationIcon(type: string): string {
-    switch (type) {
-      case 'ALERTA':
-        return 'megaphone-outline';
-      case 'IMPORTANTE':
-        return 'alert-circle-outline';
-      case 'INFORMATIVO':
-        return 'information-circle-outline';
-      default:
-        return 'notifications-outline';
-    }
+  getServiceName(serviceId: string): string {
+    return this.servicesMap().get(serviceId) ?? 'Serviço desconhecido';
   }
 }

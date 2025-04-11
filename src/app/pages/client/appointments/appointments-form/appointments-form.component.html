@@ -1,0 +1,67 @@
+<div class="appointments-form-container p-4 rounded shadow-sm">
+    <h5 class="mb-4 d-flex align-items-center">
+        <i class="bi bi-calendar-plus me-2 text-accent"></i> Novo Agendamento
+    </h5>
+
+    <!-- Exibe o estabelecimento selecionado -->
+    <div *ngIf="selectedEstablishment() as establishment" class="mb-3">
+        <p class="mb-0">
+            <strong>Estabelecimento:</strong> {{ establishment.name }}<br />
+            <small>{{ establishment.vicinity }}</small>
+        </p>
+    </div>
+
+    <form [formGroup]="form" (ngSubmit)="submit()">
+        <div class="row g-3">
+            <!-- Serviço -->
+            <div class="col-md-6">
+                <label for="serviceId" class="form-label">Serviço</label>
+                <select id="serviceId" formControlName="serviceId" class="form-select" [disabled]="loadingServices()">
+                    <option value="" disabled selected>Selecione um serviço</option>
+                    <option *ngFor="let service of filteredServices()" [value]="service.id">
+                        {{ service.name }} ({{ service.duration }} min)
+                    </option>
+                </select>
+            </div>
+
+            <!-- Profissional -->
+            <div class="col-md-6">
+                <label for="professionalId" class="form-label">Profissional</label>
+                <select id="professionalId" formControlName="professionalId" class="form-select"
+                    [disabled]="loadingProfessionals()">
+                    <option value="" disabled selected>Selecione o profissional</option>
+                    <option *ngFor="let pro of professionals()" [value]="pro.id">
+                        {{ pro.name }}
+                    </option>
+                </select>
+            </div>
+
+            <!-- Data -->
+            <div class="col-md-3">
+                <label for="date" class="form-label">Data</label>
+                <input id="date" type="date" formControlName="date" class="form-control date-input" />
+            </div>
+
+            <!-- Hora -->
+            <div class="col-md-3">
+                <label for="time" class="form-label">Hora</label>
+                <input id="time" type="time" formControlName="time" class="form-control time-input" />
+            </div>
+
+            <!-- Observações -->
+            <div class="col-12">
+                <label for="notes" class="form-label">Observações</label>
+                <textarea id="notes" formControlName="notes" rows="3" class="form-control"
+                    placeholder="Ex: atendimento personalizado, etc."></textarea>
+            </div>
+        </div>
+
+        <!-- Botão de Agendamento -->
+        <div class="d-flex justify-content-end mt-4">
+            <button type="submit" class="btn btn-accent"
+                [disabled]="form.invalid || loadingServices() || loadingProfessionals()">
+                <i class="bi bi-check-circle me-2"></i> Agendar
+            </button>
+        </div>
+    </form>
+</div>

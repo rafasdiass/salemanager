@@ -1,0 +1,122 @@
+@use 'sass:color';
+
+$form-bg: #1b1b1b;
+$text-color: #f0f0f0;
+$input-bg: #2a2a2a;
+$input-border: #444;
+$highlight-color: #d4a373;
+$accent-color: #b5838d;
+$muted-color: #aaa;
+$active-green: #9dc08b;
+
+.appointments-form-container {
+    background-color: $form-bg;
+    color: $text-color;
+    padding: 1.5rem;
+    border-radius: 0.25rem;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
+    transition: box-shadow 0.3s ease, transform 0.3s ease;
+
+    h5 {
+        color: $highlight-color;
+        font-size: 1.75rem;
+        font-weight: 600;
+        margin-bottom: 1.5rem;
+    }
+
+    /* Estilização do formulário */
+    form {
+        display: flex;
+        flex-direction: column;
+        gap: 1.75rem;
+
+        label {
+            font-weight: 500;
+            color: $highlight-color;
+            margin-bottom: 0.5rem;
+        }
+
+        input,
+        textarea,
+        select {
+            background-color: $input-bg;
+            color: $text-color;
+            border: 1px solid $input-border;
+            border-radius: 0;
+            padding: 0.75rem 1rem;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+
+            &::placeholder {
+                color: $muted-color;
+            }
+
+            &:focus {
+                border-color: $accent-color;
+                box-shadow: 0 0 0 0.2rem rgba(181, 131, 141, 0.25);
+                outline: none;
+            }
+        }
+
+        textarea {
+            resize: none;
+        }
+    }
+
+    /* Estilização dos inputs de data e hora */
+    .date-input,
+    .time-input {
+        text-align: center;
+        letter-spacing: 0.5px;
+        font-weight: 500;
+        text-transform: uppercase;
+    }
+
+    /* Botão de Agendamento */
+    .btn-accent {
+        background-color: $highlight-color;
+        color: $form-bg;
+        font-weight: 600;
+        border: none;
+        padding: 0.75rem 2rem;
+        border-radius: 0;
+        transition: background-color 0.2s ease, transform 0.2s ease;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6);
+
+        &:hover {
+            background-color: color.adjust($highlight-color, $lightness: -10%);
+            transform: scale(1.01);
+        }
+
+        &:disabled {
+            background-color: $input-border;
+            color: $muted-color;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+    }
+
+    /* Layout utilitário */
+    .d-flex {
+        display: flex;
+    }
+
+    .justify-content-end {
+        justify-content: flex-end;
+    }
+
+    .mt-4 {
+        margin-top: 1.5rem;
+    }
+
+    .p-4 {
+        padding: 1.5rem;
+    }
+
+    .rounded {
+        border-radius: 0.25rem;
+    }
+
+    .shadow-sm {
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+}

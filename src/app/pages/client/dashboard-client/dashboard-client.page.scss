@@ -1,78 +1,77 @@
-.dashboard-screen {
-    --background: #f5f5f5;
+@use 'variables' as *;
 
-    .loading-container {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        height: 100vh;
+:host {
+    ion-content {
+        background: $background-dark;
+        color: $text-light;
     }
 
-    .dashboard-container {
-        display: flex;
-        flex-direction: column;
-        padding: 1rem;
-        gap: 1rem;
+    .client-info {
+        text-align: center;
+        margin-bottom: 1.5rem;
+
+        h2 {
+            color: $primary-color;
+            margin-bottom: 0.25rem;
+        }
+
+        p {
+            color: $text-muted;
+            margin-bottom: 0.5rem;
+        }
+
+        ion-chip {
+            --background: $accent-color;
+            --color: $text-light;
+            font-weight: bold;
+        }
+
+        .icon {
+            font-size: 1.2rem;
+        }
     }
 
-    ion-card {
+    .stat-card {
+        background: $card-background;
+        color: $text-light;
+        box-shadow: 0 4px 8px $shadow-color;
         border-radius: 12px;
-        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-        background: white;
 
-        ion-card-header {
-            background: linear-gradient(135deg, #007aff, #4a90e2);
-            color: white;
-            padding: 1rem;
-            border-radius: 12px 12px 0 0;
-            text-align: center;
+        ion-card-title {
+            font-size: 1rem;
+            color: $primary-color;
         }
 
-        ion-card-content {
-            padding: 1rem;
+        h3 {
+            font-size: 2rem;
+            font-weight: bold;
+            margin-top: 0.5rem;
+            color: $text-light;
         }
+    }
 
-        ion-list {
-            background: transparent;
+    ion-list {
+        background: transparent;
+        margin-top: 1rem;
 
-            ion-item {
-                border-bottom: 1px solid #ddd;
-                --padding-start: 10px;
+        ion-item {
+            --background: $input-background;
+            border-radius: 8px;
+            margin: 0.25rem 0;
 
-                ion-icon {
-                    font-size: 24px;
-                    color: #007aff;
-                }
+            ion-label h3 {
+                color: $primary-color;
+                font-weight: bold;
+            }
 
-                ion-label {
-                    h2 {
-                        font-size: 16px;
-                        font-weight: bold;
-                        color: #333;
-                    }
+            ion-label p {
+                color: $text-muted;
+                font-size: 0.9rem;
+            }
 
-                    p {
-                        font-size: 14px;
-                        color: #666;
-                    }
-                }
-
-                &:last-child {
-                    border-bottom: none;
-                }
+            ion-icon {
+                color: $accent-color;
             }
         }
-    }
-
-    .error-message {
-        color: #ff3b30;
-        text-align: center;
-        font-weight: bold;
-    }
-
-    /* Espaço extra para evitar que o conteúdo fique coberto pela navbar */
-    .spacer {
-        height: 80px;
-        width: 100%;
     }
 }

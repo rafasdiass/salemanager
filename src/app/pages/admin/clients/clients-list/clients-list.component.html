@@ -1,0 +1,21 @@
+<div class="clients-list">
+    <h5 class="mb-3">Lista de Clientes</h5>
+
+    <div *ngIf="loading()" class="alert alert-info">
+        Carregando clientes...
+    </div>
+
+    <div *ngIf="error() as errorMsg" class="alert alert-danger">
+        {{ errorMsg }}
+    </div>
+
+    <ul class="list-group">
+        <li class="list-group-item" *ngFor="let client of clients()">
+            <strong>{{ client.name }}</strong> - {{ client.email }}<br>
+            <small>
+                {{ client.address.street }}, {{ client.address.number }} - {{ client.address.city }}/{{
+                client.address.state }}
+            </small>
+        </li>
+    </ul>
+</div>

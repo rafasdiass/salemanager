@@ -55,77 +55,14 @@ export const routes: Routes = [
             (m) => m.DashboardAdminPage
           ),
       },
-      {
-        path: 'manage-employees',
-        loadComponent: () =>
-          import('./pages/admin/manage-employees/manage-employees.page').then(
-            (m) => m.ManageemployeesPage
-          ),
-      },
-      {
-        path: 'approve-clients',
-        loadComponent: () =>
-          import(
-            './pages/admin/manage-clients/approve-clients/approve-clients.page'
-          ).then((m) => m.ApproveclientsPage),
-      },
-      {
-        path: 'manage-clients',
-        loadComponent: () =>
-          import('./pages/admin/manage-clients/manage-clients.page').then(
-            (m) => m.ManageclientsPage
-          ),
-      },
-      {
-        path: 'view-employee-details',
-        loadComponent: () =>
-          import(
-            './pages/admin/manage-employees/view-employee-details/view-employee-details.page'
-          ).then((m) => m.ViewemployeeDetailsPage),
-      },
-      {
-        path: 'configuracoes',
-        loadComponent: () =>
-          import('./pages/admin/config-system/config-system.page').then(
-            (m) => m.ConfigSystemPage
-          ),
-      },
-      {
-        path: 'create-employee',
-        loadComponent: () =>
-          import(
-            './pages/admin/manage-employees/create-employee/create-employee.page'
-          ).then((m) => m.CreateemployeePage),
-      },
-      {
-        path: 'comissao-admin',
-        loadComponent: () =>
-          import(
-            './pages/admin/manage-employees/comissao-admin/comissao-admin.page'
-          ).then((m) => m.ComissaoAdminPage),
-      },
-      {
-        path: 'relatorios',
-        loadComponent: () =>
-          import('./pages/admin/create-report/create-report.page').then(
-            (m) => m.CreateReportPage
-          ),
-      },
-      {
-        path: 'notificacoes',
-        loadComponent: () =>
-          import(
-            './pages/admin/notifications-admin/notifications-admin.page'
-          ).then((m) => m.NotificationsAdminPage),
-      },
+     
+      
+     
+      
+    
+     
 
-      {
-        path: 'pagamentos',
-        loadComponent: () =>
-          import('./pages/admin/pagamentos/pagamentos.page').then(
-            (m) => m.PagamentosPage
-          ),
-      },
+      
     ],
   },
 
@@ -137,7 +74,7 @@ export const routes: Routes = [
     loadComponent: () =>
       import(
         './pages/employee/dashboard-employee/dashboard-employee.page'
-      ).then((m) => m.DashboardemployeePage),
+      ).then((m) => m.DashboardEmployeePage),
     canActivate: [employeeGuard],
     children: [
       {
@@ -150,50 +87,17 @@ export const routes: Routes = [
         loadComponent: () =>
           import(
             './pages/employee/dashboard-employee/dashboard-employee.page'
-          ).then((m) => m.DashboardemployeePage),
+          ).then((m) => m.DashboardEmployeePage),
       },
-      {
-        path: 'manage-clients',
-        loadComponent: () =>
-          import(
-            './pages/employee/manage-clients/manage-clients.page'
-          ).then((m) => m.ManageclientsPage),
-      },
-      {
-        path: 'preencher-ficha-adesao',
-        loadComponent: () =>
-          import(
-            './pages/employee/preencher-ficha-adesao/preencher-ficha-adesao.page'
-          ).then((m) => m.PreencherFichaAdesaoPage),
-      },
-      {
-        path: 'comissao-employee',
-        loadComponent: () =>
-          import(
-            './pages/employee/comissao-employee/comissao-employee.page'
-          ).then((m) => m.ComissaoemployeePage),
-      },
-      {
-        path: 'view-client-details',
-        loadComponent: () =>
-          import(
-            './pages/employee/manage-clients/view-client-details/view-client-details.page'
-          ).then((m) => m.ViewclientDetailsPage),
-      },
+      
 
-      {
-        path: 'create-client',
-        loadComponent: () =>
-          import(
-            './pages/employee/manage-clients/create-client/create-client.page'
-          ).then((m) => m.CreateclientPage),
-      },
+     
       {
         path: 'configuracao-employee',
         loadComponent: () =>
           import(
             './pages/employee/configuracao-employee/configuracao-employee.page'
-          ).then((m) => m.ConfiguracaoemployeePage),
+          ).then((m) => m.ConfiguracaoEmployeePage),
       },
     ],
   },
@@ -206,7 +110,7 @@ export const routes: Routes = [
     loadComponent: () =>
       import(
         './pages/client/dashboard-client/dashboard-client.page'
-      ).then((m) => m.DashboardclientPage),
+      ).then((m) => m.DashboardClientPage),
     canActivate: [UsuarioGuard],
     children: [
       {
@@ -219,57 +123,15 @@ export const routes: Routes = [
         loadComponent: () =>
           import(
             './pages/client/dashboard-client/dashboard-client.page'
-          ).then((m) => m.DashboardclientPage),
+          ).then((m) => m.DashboardClientPage),
       },
-      {
-        path: 'notifications',
-        loadComponent: () =>
-          import(
-            './pages/client/client-mensagens/notifications-client/notifications-client.page'
-          ).then((m) => m.NotificationsclientPage),
-      },
-      {
-        path: 'payment',
-        loadComponent: () =>
-          import(
-            './pages/client/dashboard-client/client-payment/client-payment.page'
-          ).then((m) => m.clientPaymentPage),
-      },
-      {
-        path: 'payments-history',
-        loadComponent: () =>
-          import(
-            './pages/client/dashboard-client/client-payment/client-payments-history/client-payments-history.page'
-          ).then((m) => m.clientPaymentsHistoryPage),
-      },
-      {
-        path: 'payments-management',
-        loadComponent: () =>
-          import(
-            './pages/client/dashboard-client/client-payment/client-payments-management/client-payments-management.page'
-          ).then((m) => m.clientPaymentsManagementPage),
-      },
-      {
-        path: 'property-status',
-        loadComponent: () =>
-          import(
-            './pages/client/dashboard-client/client-property-status/client-property-status.page'
-          ).then((m) => m.clientPropertyStatusPage),
-      },
-      {
-        path: 'client-mensagens',
-        loadComponent: () =>
-          import(
-            './pages/client/client-mensagens/client-mensagens.page'
-          ).then((m) => m.clientMensagensPage),
-      },
-      {
-        path: 'benefits',
-        loadComponent: () =>
-          import(
-            './pages/client/dashboard-client/client-benefits/client-benefits.page'
-          ).then((m) => m.clientBenefitsPage),
-      },
+      
+      
+     
+      
+      
+      
+     
       {
         path: 'personal-info',
         loadComponent: () =>
@@ -345,25 +207,6 @@ export const routes: Routes = [
       ),
   },
 
-  {
-    path: 'comunicados-client',
-    loadComponent: () =>
-      import(
-        './pages/client/client-mensagens/comunicados-client/comunicados-client.page'
-      ).then((m) => m.ComunicadosclientPage),
-  },
-  {
-    path: 'notifications-create-form',
-    loadComponent: () =>
-      import(
-        './pages/admin/notifications-admin/notifications-create-form/notifications-create-form.page'
-      ).then((m) => m.NotificationsCreateFormPage),
-  },
-  {
-    path: 'notifications-history',
-    loadComponent: () =>
-      import(
-        './pages/admin/notifications-admin/notifications-history/notifications-history.page'
-      ).then((m) => m.NotificationsHistoryPage),
-  },
+ 
+ 
 ];

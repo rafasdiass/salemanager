@@ -1,85 +1,31 @@
-<ion-content class="dashboard-employee with-navbar">
-  <!-- Navbar -->
-  <app-navbar-employee></app-navbar-employee>
+<ion-header translucent>
+  <ion-toolbar>
+    <ion-title>Dashboard do Funcionário</ion-title>
+    <ion-buttons slot="end">
+      <ion-button color="danger" (click)="logout()">Sair</ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
 
-  <!-- Conteúdo principal do Dashboard employee -->
-  <div class="dashboard-container">
-    <!-- Loader enquanto os dados estão sendo carregados -->
-    <ion-spinner *ngIf="isLoading" class="loading-spinner"></ion-spinner>
-
-    <!-- Conteúdo principal -->
-    <div *ngIf="!isLoading && resumo?.employeeResumo">
-      <div class="dashboard-row">
-        <!-- Total de Propostas -->
-        <ion-card class="dashboard-card">
-          <ion-card-header>
-            <ion-title>
-              <i class="bi bi-file-earmark"></i> Total de Propostas
-            </ion-title>
-          </ion-card-header>
-          <ion-card-content>
-            <p class="highlight">{{ resumo?.employeeResumo?.totalPropostas }}</p>
-          </ion-card-content>
-        </ion-card>
-
-        <!-- Propostas Pendentes -->
-        <ion-card class="dashboard-card">
-          <ion-card-header>
-            <ion-title>
-              <i class="bi bi-clock"></i> Propostas Pendentes
-            </ion-title>
-          </ion-card-header>
-          <ion-card-content>
-            <p class="highlight">{{ resumo?.employeeResumo?.propostasPendentes }}</p>
-          </ion-card-content>
-        </ion-card>
-      </div>
-
-      <!-- Tabela de Propostas -->
-      <div class="dashboard-row">
-        <ion-card class="dashboard-card full-width">
-          <ion-card-header>
-            <ion-title>
-              <i class="bi bi-table"></i> Tabela de Propostas
-            </ion-title>
-          </ion-card-header>
-          <ion-card-content>
-            <table class="proposals-table">
-              <thead>
-                <tr>
-                  <th>Data</th>
-                  <th>Cliente</th>
-                  <th>Valor Estimado</th>
-                  <th>Status</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr *ngFor="let proposta of resumo?.employeeResumo?.historicoPropostas">
-                  <td>{{ proposta.data }}</td>
-                  <td>{{ proposta.cliente }}</td>
-                  <td>R$ {{ proposta.valor | number: '1.2-2' }}</td>
-                  <td [ngClass]="{
-                      'status-aprovado': proposta.status === 'Aprovado',
-                      'status-pendente': proposta.status === 'Pendente',
-                      'status-rejeitado': proposta.status === 'Rejeitado'
-                    }">
-                    {{ proposta.status }}
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </ion-card-content>
-        </ion-card>
-      </div>
-    </div>
-
-    <!-- Mensagem de erro -->
-    <div *ngIf="errorMessage" class="error-message">
-      <p>{{ errorMessage }}</p>
-    </div>
+<ion-content class="ion-padding">
+  <div class="employee-info">
+    <h2>Bem-vindo, {{ user()?.first_name }}!</h2>
+    <p>Agendamentos futuros: <strong>{{ totalUpcoming() }}</strong></p>
   </div>
-  <div class="conteudo">
-  <!-- Router Outlet para carregar os filhos -->
-  <ion-router-outlet></ion-router-outlet>
-  </div>
+
+  <ion-list *ngIf="upcomingAppointments().length > 0">
+    <ion-item *ngFor="let appt of upcomingAppointments()">
+      <ion-label>
+        <h3>{{ appt.serviceId }}</h3>
+        <p>{{ appt.startTime | date: 'short' }} - {{ appt.endTime | date: 'short' }}</p>
+        <p>Status: {{ appt.status }}</p>
+      </ion-label>
+    </ion-item>
+  </ion-list>
+
+  <ion-card *ngIf="upcomingAppointments().length === 0">
+    <ion-card-content>
+      Nenhum agendamento futuro disponível no momento.
+    </ion-card-content>
+  </ion-card>
 </ion-content>

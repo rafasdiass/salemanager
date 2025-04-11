@@ -1,0 +1,14 @@
+@use 'sass:color';
+
+$background: #1b1b1b;
+$text-color: #f0f0f0;
+
+.establishments-parent-container {
+    background-color: $background;
+    color: $text-color;
+    padding: 1.5rem;
+
+    .row {
+        gap: 1.5rem;
+    }
+}

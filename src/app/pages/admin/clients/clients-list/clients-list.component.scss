@@ -1,0 +1,43 @@
+/* clients-list.component.scss */
+
+$background-dark: #1c1c1c;
+$text-light: #f0f0f0;
+$accent-skin: #f1c27d;
+$border-dark: #333;
+
+.clients-list {
+    background-color: $background-dark;
+    border: 1px solid $border-dark;
+    border-radius: 8px;
+    padding: 1rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.7);
+    color: $text-light;
+    transition: background-color 0.3s ease;
+
+    h5 {
+        color: $accent-skin;
+        margin-bottom: 1rem;
+        font-size: 1.5rem;
+    }
+
+    .list-group-item {
+        background-color: $background-dark;
+        border: 1px solid $border-dark;
+        border-radius: 4px;
+        padding: 0.75rem 1.25rem;
+        margin-bottom: 0.5rem;
+        transition: background-color 0.3s ease;
+
+        &:hover {
+            background-color: darken($background-dark, 5%);
+        }
+
+        strong {
+            color: $accent-skin;
+        }
+
+        small {
+            color: lighten($text-light, 10%);
+        }
+    }
+}

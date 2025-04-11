@@ -1,0 +1,83 @@
+<form (ngSubmit)="save()" class="service-form">
+    <!-- Nome do Serviço -->
+    <div class="mb-4">
+        <label class="form-label" for="serviceName">Nome do Serviço</label>
+        <input id="serviceName" type="text" class="form-control" [(ngModel)]="name" name="name"
+            placeholder="Ex: Limpeza Facial" [ngClass]="{ 'is-invalid': isInvalid(name) }" />
+        <div class="invalid-feedback">Nome é obrigatório.</div>
+    </div>
+
+    <!-- Descrição (Opcional) -->
+    <div class="mb-4">
+        <label class="form-label" for="serviceDescription">Descrição (opcional)</label>
+        <textarea id="serviceDescription" class="form-control" [(ngModel)]="description" name="description" rows="3"
+            placeholder="Detalhes do serviço..."></textarea>
+    </div>
+
+    <!-- Duração e Preço -->
+    <div class="row mb-4 g-4">
+        <div class="col-md-6">
+            <label class="form-label" for="serviceDuration">Duração (min)</label>
+            <div class="input-group">
+                <span class="input-group-text">
+                    <i class="bi bi-clock"></i>
+                </span>
+                <input id="serviceDuration" type="text" inputmode="numeric" class="form-control" [(ngModel)]="duration"
+                    name="duration" placeholder="Ex: 60" [ngClass]="{ 'is-invalid': isInvalid(duration) }" />
+            </div>
+            <div class="invalid-feedback">Duração é obrigatória.</div>
+        </div>
+
+        <div class="col-md-6">
+            <label class="form-label" for="servicePrice">Preço (R$)</label>
+            <div class="input-group">
+                <span class="input-group-text">
+                    <i class="bi bi-currency-dollar"></i>
+                </span>
+                <input id="servicePrice" type="text" inputmode="numeric" class="form-control" [(ngModel)]="price"
+                    name="price" placeholder="Ex: 200" [ngClass]="{ 'is-invalid': isInvalid(price) }" />
+            </div>
+            <div class="invalid-feedback">Preço é obrigatório.</div>
+        </div>
+    </div>
+
+    <!-- Switch de Serviço Ativo -->
+    <div class="form-check form-switch mb-4">
+        <input class="form-check-input" type="checkbox" [(ngModel)]="isActive" name="isActive" id="serviceIsActive" />
+        <label class="form-check-label" for="serviceIsActive">
+            <i class="bi bi-check-circle me-1"></i>
+            Serviço Ativo
+        </label>
+    </div>
+
+    <!-- Profissionais Responsáveis -->
+    <div class="mb-4">
+        <label class="form-label">Profissionais Responsáveis</label>
+
+        <div *ngIf="professionals().length === 0" class="text-warning small d-flex align-items-center gap-1 mb-2">
+            <i class="bi bi-info-circle-fill"></i>
+            Nenhum profissional ativo encontrado.
+        </div>
+
+        <div class="row">
+            <div *ngFor="let prof of professionals()" class="col-6 col-md-4 col-lg-3 mb-3">
+                <div class="form-check professional-card"
+                    [class.professional-selected]="selectedProfessionals.includes(prof.id!)">
+                    <input class="form-check-input d-none" type="checkbox" [id]="prof.id || ''"
+                        [checked]="selectedProfessionals.includes(prof.id!)" (change)="toggleProfessional(prof.id!)" />
+                    <label class="form-check-label" [for]="prof.id || ''">
+                        <i class="bi bi-person-circle me-1 text-accent"></i>
+                        <span>{{ prof.name }}</span>
+                    </label>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Botão de Salvar Serviço -->
+    <button type="submit" class="btn btn-primary w-100 d-flex justify-content-center align-items-center gap-2"
+        [disabled]="saving()">
+        <i class="bi bi-save"></i>
+        <span>{{ saving() ? 'Salvando...' : 'Salvar Serviço' }}</span>
+    </button>
+</form>

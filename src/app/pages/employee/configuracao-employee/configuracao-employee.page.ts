@@ -1,61 +1,44 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { IonicModule, ToastController } from '@ionic/angular';
+import { AuthService } from 'src/app/shared/services/auth.service';
+import { EmployeeService } from 'src/app/shared/services/employee.service';
 import { FormsModule } from '@angular/forms';
-import { Configuracaoemployee,ConfigemployeeService } from '../../../shared/services/configuracao-employee.service';
-import {
-  IonContent,
-  IonHeader,
-  IonTitle,
-  IonToolbar,
-  IonInput,
-  IonButton,
-  IonToggle, IonIcon, IonCard, IonCardHeader, IonCardContent, IonItem, IonLabel } from '@ionic/angular/standalone';
-
+import { AuthenticatedUser } from 'src/app/shared/models/auth.model';
 
 @Component({
   selector: 'app-configuracao-employee',
+  standalone: true,
+  imports: [CommonModule, IonicModule, FormsModule],
   templateUrl: './configuracao-employee.page.html',
   styleUrls: ['./configuracao-employee.page.scss'],
-  standalone: true,
-  imports: [IonLabel, IonItem, IonCardContent, IonCardHeader, IonCard, IonIcon, 
-    IonContent,
-    IonHeader,
-    IonTitle,
-    IonToolbar,
-    CommonModule,
-    FormsModule,
-    IonInput,
-    IonButton,
-    IonToggle,
-  ],
 })
-export class ConfiguracaoemployeePage implements OnInit {
-  configuracoes: Configuracaoemployee = {
-    nome: '',
-    email: '',
-    telefone: '',
-    alertasComissao: false,
-    notificacoesGerais: false,
-  };
+export class ConfiguracaoEmployeePage {
+  private auth = inject(AuthService);
+  private employeeService = inject(EmployeeService);
+  private toast = inject(ToastController);
 
-  constructor(private configService: ConfigemployeeService) {}
+  employee = signal(this.auth.currentUser() as AuthenticatedUser);
 
-  ngOnInit() {
-    this.carregarConfiguracoes();
-  }
+  async salvarAlteracoes() {
+    const user = this.employee();
+    if (!user?.id) return;
 
-  /**
-   * Carrega as configurações do employee.
-   */
-  carregarConfiguracoes(): void {
-    this.configuracoes = this.configService.obterConfiguracoes();
-  }
-
-  /**
-   * Salva as configurações atualizadas.
-   */
-  salvarConfiguracoes(): void {
-    this.configService.atualizarConfiguracoes(this.configuracoes);
-    alert('✅ Configurações salvas com sucesso!');
+    try {
+      await this.employeeService.update(user.id, user).toPromise();
+      const t = await this.toast.create({
+        message: 'Dados atualizados com sucesso!',
+        duration: 2000,
+        color: 'success',
+      });
+      await t.present();
+    } catch (err) {
+      const t = await this.toast.create({
+        message: 'Erro ao atualizar os dados. Tente novamente.',
+        duration: 3000,
+        color: 'danger',
+      });
+      await t.present();
+    }
   }
 }

@@ -1,0 +1,86 @@
+@use 'sass:color';
+
+$bg-dark: #121212;
+$card-bg: #1e1e1e;
+$text-light: #f5f5f5;
+$accent: #b5838d;
+$highlight: #d4a373;
+$scroll-thumb: rgba(181, 131, 141, 0.6);
+
+.services-container {
+    background-color: $bg-dark;
+    min-height: 100vh;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    overflow-x: hidden;
+
+    @media (min-width: 992px) {
+        flex-direction: row;
+        height: 100vh;
+    }
+
+    .form-area {
+        width: 100%;
+        max-width: 520px;
+        background-color: $card-bg;
+        color: $text-light;
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-start;
+        flex-shrink: 0;
+        overflow-y: auto;
+
+        @media (min-width: 992px) {
+            height: 100vh;
+        }
+    }
+
+    .list-area {
+        flex-grow: 1;
+        background-color: $bg-dark;
+        overflow-y: auto;
+        color: $text-light;
+
+        @media (min-width: 992px) {
+            height: 100vh;
+        }
+    }
+
+    .form-wrapper,
+    .list-wrapper {
+        background-color: $card-bg;
+        padding: 2rem;
+        // ❌ removido o border-radius
+        box-shadow: 0 6px 24px rgba(0, 0, 0, 0.6);
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+    }
+
+    .section-title {
+        color: $highlight;
+        font-weight: 600;
+
+        i {
+            color: $accent;
+        }
+    }
+
+    // Scroll personalizado
+    .list-area::-webkit-scrollbar,
+    .form-area::-webkit-scrollbar {
+        width: 6px;
+    }
+
+    .list-area::-webkit-scrollbar-thumb,
+    .form-area::-webkit-scrollbar-thumb {
+        background-color: $scroll-thumb;
+        border-radius: 3px;
+    }
+
+    .list-area::-webkit-scrollbar-track,
+    .form-area::-webkit-scrollbar-track {
+        background-color: transparent;
+    }
+}

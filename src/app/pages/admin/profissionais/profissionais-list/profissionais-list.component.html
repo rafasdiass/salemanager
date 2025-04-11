@@ -1,0 +1,44 @@
+<div class="container-fluid profissionais-list-container py-4">
+    <h5 class="mb-4 text-accent d-flex align-items-center">
+        <i class="bi bi-scissors me-2"></i>
+        Profissionais Cadastrados
+    </h5>
+
+    <div *ngIf="loading()" class="text-center my-5">
+        <div class="spinner-border text-accent" role="status"></div>
+        <p class="mt-2 text-muted">Carregando profissionais...</p>
+    </div>
+
+    <div *ngIf="error()" class="alert alert-danger">
+        {{ error() }}
+    </div>
+
+    <div *ngIf="!loading() && !hasProfessionals()" class="alert alert-info">
+        Nenhum profissional cadastrado ainda.
+    </div>
+
+    <div class="row g-4" *ngIf="hasProfessionals()">
+        <div class="col-12 col-sm-6 col-md-4 col-lg-3" *ngFor="let prof of professionals()">
+            <div class="card shadow-sm professional-card h-100">
+                <div class="card-body d-flex flex-column justify-content-between">
+                    <div>
+                        <h6 class="card-title mb-1 text-accent">
+                            <i class="bi bi-person-badge-fill me-1"></i> {{ prof.name }}
+                        </h6>
+                        <p class="mb-1"><i class="bi bi-envelope-fill me-1"></i> {{ prof.email }}</p>
+                        <p class="mb-1"><i class="bi bi-telephone-fill me-1"></i> {{ prof.phone }}</p>
+                        <p *ngIf="prof.specialties?.length" class="mb-1">
+                            <i class="bi bi-scissors me-1"></i>
+                            <strong>Especialidades:</strong> {{ prof.specialties.join(', ') }}
+                        </p>
+                    </div>
+                    <div class="mt-3 text-end">
+                        <button class="btn btn-outline-danger btn-sm" (click)="remove(prof)">
+                            <i class="bi bi-trash me-1"></i> Excluir
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

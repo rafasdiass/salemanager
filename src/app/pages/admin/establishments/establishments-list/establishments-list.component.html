@@ -1,0 +1,36 @@
+<div class="establishments-list-container p-4">
+    <h4 class="mb-3 d-flex align-items-center">
+        <i class="bi bi-building me-2 text-accent"></i>
+        Estabelecimentos
+    </h4>
+
+    <!-- Mensagem de carregamento -->
+    <div *ngIf="loading()" class="text-center">
+        <i class="bi bi-arrow-repeat spin me-2"></i>
+        Carregando estabelecimentos...
+    </div>
+
+    <!-- Mensagem de erro -->
+    <div *ngIf="error()" class="alert alert-danger">
+        {{ error() }}
+    </div>
+
+    <!-- Lista de estabelecimentos -->
+    <ul *ngIf="!loading() && hasEstablishments()" class="list-group">
+        <li *ngFor="let est of establishments()"
+            class="list-group-item d-flex justify-content-between align-items-center" (click)="selectEstablishment(est)"
+            style="cursor: pointer;">
+            <div>
+                <strong>{{ est.name }}</strong>
+                <br />
+                <small>{{ est.address }}</small>
+            </div>
+            <i class="bi bi-chevron-right"></i>
+        </li>
+    </ul>
+
+    <!-- Caso não haja estabelecimentos -->
+    <div *ngIf="!loading() && !hasEstablishments()" class="text-muted mt-3">
+        Nenhum estabelecimento encontrado.
+    </div>
+</div>

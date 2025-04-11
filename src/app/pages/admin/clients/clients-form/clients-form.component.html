@@ -1,0 +1,89 @@
+<form [formGroup]="form" (ngSubmit)="submit()" class="clients-form p-4 bg-dark text-light border rounded shadow-sm">
+    <h5 class="mb-4">
+        <i class="bi bi-person-vcard me-2 text-info"></i> Cadastro de Cliente
+    </h5>
+
+    <!-- Dados do Cliente -->
+    <div class="row g-3">
+        <div class="col-md-6">
+            <label for="name" class="form-label">Nome *</label>
+            <input type="text" id="name" class="form-control" formControlName="name" placeholder="Nome completo" />
+        </div>
+
+        <div class="col-md-6">
+            <label for="phone" class="form-label">Telefone *</label>
+            <input type="tel" id="phone" class="form-control" formControlName="phone" placeholder="(99) 99999-9999" />
+        </div>
+
+        <div class="col-md-6">
+            <label for="email" class="form-label">E-mail *</label>
+            <input type="email" id="email" class="form-control" formControlName="email"
+                placeholder="cliente@email.com" />
+        </div>
+
+        <div class="col-md-6">
+            <label for="birthDate" class="form-label">Data de Nascimento *</label>
+            <input type="date" id="birthDate" class="form-control" formControlName="birthDate" />
+        </div>
+
+        <div class="col-12">
+            <label for="notes" class="form-label">Observações</label>
+            <textarea id="notes" class="form-control" rows="3" formControlName="notes"
+                placeholder="Preferências, alergias, recomendações..."></textarea>
+        </div>
+    </div>
+
+    <!-- Endereço -->
+    <fieldset formGroupName="address" class="border p-3 mt-4 rounded">
+        <legend class="w-auto px-2 text-info">Endereço</legend>
+
+        <div class="row g-3">
+            <div class="col-md-6">
+                <label for="street" class="form-label">Rua *</label>
+                <input type="text" id="street" class="form-control" formControlName="street" />
+            </div>
+
+            <div class="col-md-3">
+                <label for="number" class="form-label">Número *</label>
+                <input type="text" id="number" class="form-control" formControlName="number" />
+            </div>
+
+            <div class="col-md-3">
+                <label for="complement" class="form-label">Complemento</label>
+                <input type="text" id="complement" class="form-control" formControlName="complement" />
+            </div>
+
+            <div class="col-md-4">
+                <label for="neighborhood" class="form-label">Bairro *</label>
+                <input type="text" id="neighborhood" class="form-control" formControlName="neighborhood" />
+            </div>
+
+            <div class="col-md-4">
+                <label for="city" class="form-label">Cidade *</label>
+                <input type="text" id="city" class="form-control" formControlName="city" />
+            </div>
+
+            <div class="col-md-2">
+                <label for="state" class="form-label">Estado *</label>
+                <input type="text" id="state" class="form-control" formControlName="state" />
+            </div>
+
+            <div class="col-md-2">
+                <label for="zipCode" class="form-label">CEP *</label>
+                <input type="text" id="zipCode" class="form-control" formControlName="zipCode" />
+            </div>
+
+            <div class="col-md-12">
+                <label for="country" class="form-label">País *</label>
+                <input type="text" id="country" class="form-control" formControlName="country" />
+            </div>
+        </div>
+    </fieldset>
+
+    <!-- Botão -->
+    <div class="d-flex justify-content-end mt-4">
+        <button type="submit" class="btn btn-info text-dark" [disabled]="form.invalid">
+            <i class="bi bi-save me-2"></i>Salvar Cliente
+        </button>
+    </div>
+</form>

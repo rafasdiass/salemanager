@@ -1,47 +1,64 @@
 <ion-toolbar class="custom-toolbar">
-  <ion-buttons>
+  <ion-buttons slot="start">
+    <!-- Botão: Dashboard -->
     <ion-button (click)="navigateTo('/dashboard-admin')" [class.tab-selected]="activePage === '/dashboard-admin'">
       <ion-icon name="home"></ion-icon>
       <ion-label>Dashboard</ion-label>
     </ion-button>
+  </ion-buttons>
 
-    <ion-button (click)="navigateTo('/dashboard-admin/manage-employees')"
-      [class.tab-selected]="activePage === '/dashboard-admin/manage-employees'">
-      <ion-icon name="storefront"></ion-icon>
+  <ion-buttons slot="end">
+    <!-- Botão: Agendamentos -->
+    <ion-button (click)="navigateTo('/dashboard-admin/agendamentos')"
+      [class.tab-selected]="activePage === '/dashboard-admin/agendamentos'">
+      <ion-icon name="calendar"></ion-icon>
+      <ion-label>Agendamentos</ion-label>
+    </ion-button>
+
+    <!-- Botão: Funcionários -->
+    <ion-button (click)="navigateTo('/dashboard-admin/funcionarios')"
+      [class.tab-selected]="activePage === '/dashboard-admin/funcionarios'">
+      <ion-icon name="people"></ion-icon>
       <ion-label>Funcionários</ion-label>
     </ion-button>
 
-    <ion-button (click)="navigateTo('/dashboard-admin/manage-clients')"
-      [class.tab-selected]="activePage === '/dashboard-admin/manage-clients'">
+    <!-- Botão: Clientes -->
+    <ion-button (click)="navigateTo('/dashboard-admin/clientes')"
+      [class.tab-selected]="activePage === '/dashboard-admin/clientes'">
       <ion-icon name="people-circle"></ion-icon>
-      <ion-label>clients</ion-label>
+      <ion-label>Clientes</ion-label>
     </ion-button>
 
-    <ion-button (click)="navigateTo('/dashboard-admin/pagamentos')"
-      [class.tab-selected]="activePage === '/dashboard-admin/pagamentos'">
+    <!-- Botão: Serviços -->
+    <ion-button (click)="navigateTo('/dashboard-admin/servicos')"
+      [class.tab-selected]="activePage === '/dashboard-admin/servicos'">
+      <ion-icon name="cut"></ion-icon>
+      <ion-label>Serviços</ion-label>
+    </ion-button>
+
+    <!-- Botão: Planos -->
+    <ion-button (click)="navigateTo('/dashboard-admin/planos')"
+      [class.tab-selected]="activePage === '/dashboard-admin/planos'">
       <ion-icon name="wallet"></ion-icon>
-      <ion-label>Pagamentos</ion-label>
+      <ion-label>Planos</ion-label>
     </ion-button>
 
-    <ion-button (click)="navigateTo('/dashboard-admin/notificacoes')"
-      [class.tab-selected]="activePage === '/dashboard-admin/notificacoes'">
-      <ion-icon name="notifications"></ion-icon>
-      <ion-label>Notificações</ion-label>
-    </ion-button>
-
+    <!-- Botão: Relatórios -->
     <ion-button (click)="navigateTo('/dashboard-admin/relatorios')"
       [class.tab-selected]="activePage === '/dashboard-admin/relatorios'">
       <ion-icon name="document-text"></ion-icon>
       <ion-label>Relatórios</ion-label>
     </ion-button>
 
+    <!-- Botão: Configurações -->
     <ion-button (click)="navigateTo('/dashboard-admin/configuracoes')"
       [class.tab-selected]="activePage === '/dashboard-admin/configuracoes'">
       <ion-icon name="settings"></ion-icon>
       <ion-label>Configurações</ion-label>
     </ion-button>
 
-    <ion-button (click)="logout()">
+    <!-- Botão: Logout -->
+    <ion-button color="danger" (click)="logout()">
       <ion-icon name="log-out"></ion-icon>
       <ion-label>Sair</ion-label>
     </ion-button>

@@ -9,6 +9,9 @@
         "@ionic/angular-toolkit:page": {
           "styleext": "scss",
           "standalone": true
+        },
+        "@ionic/angular-toolkit:component": {
+          "styleext": "scss"
         }
       },
       "root": "",
@@ -18,14 +21,10 @@
         "build": {
           "builder": "@angular-devkit/build-angular:application",
           "options": {
-            "outputPath": {
-              "base": "www",
-              "browser": ""
-            },
+            "outputPath": "www",
             "index": "src/index.html",
-            "polyfills": [
-              "src/polyfills.ts"
-            ],
+            "browser": "src/main.ts",
+            "polyfills": ["src/polyfills.ts"],
             "tsConfig": "tsconfig.app.json",
             "inlineStyleLanguage": "scss",
             "assets": [
@@ -41,9 +40,9 @@
               "src/theme/navbar-mixin.scss"
             ],
             "scripts": [],
-            "browser": "src/main.ts",
             "stylePreprocessorOptions": {
               "includePaths": [
+                "src/theme",
                 "src"
               ]
             }
@@ -68,7 +67,11 @@
                   "with": "src/environments/environment.prod.ts"
                 }
               ],
-              "outputHashing": "all"
+              "outputHashing": "all",
+              "optimization": true,
+              "sourceMap": false,
+              "extractLicenses": true,
+              "namedChunks": false
             },
             "development": {
               "optimization": false,
@@ -76,7 +79,12 @@
               "sourceMap": true,
               "namedChunks": true
             },
-            "ci": {}
+            "ci": {
+              "optimization": true,
+              "outputHashing": "none",
+              "sourceMap": false,
+              "extractLicenses": true
+            }
           },
           "defaultConfiguration": "production"
         },
@@ -89,7 +97,9 @@
             "development": {
               "buildTarget": "app:build:development"
             },
-            "ci": {}
+            "ci": {
+              "buildTarget": "app:build:ci"
+            }
           },
           "defaultConfiguration": "development"
         },
@@ -118,7 +128,13 @@
               "src/global.scss",
               "src/theme/variables.scss"
             ],
-            "scripts": []
+            "scripts": [],
+            "stylePreprocessorOptions": {
+              "includePaths": [
+                "src/theme",
+                "src"
+              ]
+            }
           },
           "configurations": {
             "ci": {
@@ -139,17 +155,16 @@
     }
   },
   "cli": {
-    "schematicCollections": [
-      "@ionic/angular-toolkit"
-    ],
-    "analytics": "6f3b760f-e6a4-4693-b68f-4d90619373da"
+    "schematicCollections": ["@ionic/angular-toolkit"],
+    "analytics": false
   },
   "schematics": {
     "@ionic/angular-toolkit:component": {
       "styleext": "scss"
     },
     "@ionic/angular-toolkit:page": {
-      "styleext": "scss"
+      "styleext": "scss",
+      "standalone": true
     },
     "@angular-eslint/schematics:application": {
       "setParserOptionsProject": true

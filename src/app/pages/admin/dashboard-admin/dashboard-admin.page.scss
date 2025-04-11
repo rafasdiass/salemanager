@@ -1,99 +1,86 @@
-.dashboard-screen {
-    display: flex;
-    flex-direction: column;
-    height: 100vh;
-    /* 🔹 Garante que ocupe toda a tela */
-    overflow: hidden;
-    /* 🔹 Impede rolagem extra no dashboard */
-    background-color: #f2f2f2;
+// src/app/pages/admin/dashboard-admin/dashboard-admin.page.scss
+@use 'variables' as *;
+:host {
+    --ion-background-color: #1A1A1A;
+    --ion-text-color: #F5F5F5;
 }
 
-.dashboard-container {
-    flex: 1;
-    /* 🔹 Faz com que ocupe todo o espaço disponível */
-    display: flex;
-    flex-direction: column;
-    overflow-y: auto;
-    /* 🔹 Toda a rolagem acontece aqui */
+ion-content {
+    background-color: $background-dark;
+    color: $text-light;
+}
+
+.admin-info {
+    margin-bottom: 24px;
     padding: 16px;
-    margin-left: 250px;
-    /* 🔹 Ajusta o espaço da sidebar */
+    background: $card-background;
+    border-radius: 12px;
+    color: $text-light;
+    box-shadow: 0 4px 8px $shadow-color;
+
+    h2 {
+        font-size: 1.5rem;
+        font-weight: bold;
+        color: $primary-color;
+        margin-bottom: 4px;
+    }
+
+    p {
+        color: $text-muted;
+        font-size: 0.9rem;
+    }
 }
 
-/* Ajustes para os cards no Dashboard */
-.dashboard-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 20px;
-}
-
-.dashboard-card {
-    background-color: #ffffff;
-    color: #333333;
-    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
-    border-radius: 10px;
-    padding: 15px;
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
+.stats-row {
     display: flex;
-    flex-direction: column;
+    flex-wrap: wrap;
     justify-content: space-between;
-    height: 200px;
-}
+    gap: 16px;
 
-/* Efeito hover nos cards */
-.dashboard-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0px 6px 10px rgba(0, 0, 0, 0.15);
-}
-
-/* Botões dentro dos cards */
-.dashboard-card ion-button {
-    --background: #005450;
-    --background-hover: #003f3a;
-    --color: #ffffff;
-    border-radius: 5px;
-}
-
-/* Ajuste do Spinner de carregamento */
-.loading-spinner {
-    display: block;
-    margin: 50px auto;
-    color: #005450;
-}
-
-/* Ajuste da mensagem de erro */
-.error-message {
-    color: #ff4d4d;
-    font-weight: bold;
-    text-align: center;
-    margin-top: 20px;
-}
-
-/* Navbar fixa no rodapé em telas menores */
-@media screen and (max-width: 768px) {
-    .dashboard-container {
-        margin-left: 0;
-        padding-bottom: 80px;
+    ion-col {
+        display: flex;
+        flex-direction: column;
     }
 
-    .dashboard-grid {
-        grid-template-columns: 1fr;
-    }
+    ion-card {
+        flex: 1;
+        background-color: $card-background;
+        border-radius: 16px;
+        color: $text-light;
+        box-shadow: 0 4px 12px $shadow-color;
+        transition: transform 0.2s ease;
 
-    .with-navbar {
-        padding-bottom: 80px;
-    }
+        &:hover {
+            transform: translateY(-4px);
+        }
 
-    
-    /* Garante que o conteúdo role corretamente */
-    .dashboard-content {
-        margin-bottom: 80px;
+        ion-card-header {
+            background: transparent;
+            border-bottom: 1px solid $border-color;
+        }
+
+        ion-card-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: $accent-color;
+        }
+
+        ion-card-content {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.4rem;
+            font-weight: bold;
+            padding: 16px 0;
+            color: $primary-color;
+        }
     }
 }
 
-@media screen and (max-width: 425px) {
-    .dashboard-container {
-        margin: 0 auto;
-        margin-left: 0;
-    }
+ion-button[color="danger"] {
+    --background: $error-color;
+    --background-activated: darken($error-color, 10%);
+    --background-focused: lighten($error-color, 5%);
+    --color: #fff;
+    font-weight: 500;
 }

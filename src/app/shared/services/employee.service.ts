@@ -1,168 +1,68 @@
 import {
   Injectable,
-  WritableSignal,
   signal,
+  computed,
   effect,
-  inject,
+  WritableSignal,
 } from '@angular/core';
-import { Observable, catchError, throwError } from 'rxjs';
-import { ApiService } from './api.service';
-import { client } from '../models/client.model';
-import { AuthService } from './auth.service';
+import { BaseFirestoreCrudService } from './base-firestore-crud.service';
 import { AuthenticatedUser } from '../models/auth.model';
+import { UserRole } from '../models/user-role.enum';
+import { UserBusinessRulesService } from '../regras/user-business-rules.service';
+import { AuthService } from './auth.service';
+import { toSignal } from '@angular/core/rxjs-interop';
 
-@Injectable({
-  providedIn: 'root',
-})
-export class employeeService {
-  private readonly endpoint = 'employee';
+@Injectable({ providedIn: 'root' })
+export class EmployeeService extends BaseFirestoreCrudService<AuthenticatedUser> {
+  private readonly _employees: WritableSignal<AuthenticatedUser[]> = signal([]);
+  readonly employees = computed(() => this._employees());
 
-  /** Signal para armazenar o usuário employee autenticado */
-  public usuarioAutenticado: WritableSignal<AuthenticatedUser | null> =
-    signal(null);
-
-  private apiService = inject(ApiService);
-  private authService = inject(AuthService);
-
-  constructor() {
-    this.initUsuarioAutenticado();
+  constructor(
+    private readonly rules: UserBusinessRulesService,
+    private readonly authService: AuthService
+  ) {
+    super('employees');
+    this.businessRules = this.rules;
+    this.initFilteredEmployees();
   }
 
-  /**
-   * Inicializa o estado do usuário employee autenticado usando Signals.
-   */
-  private initUsuarioAutenticado(): void {
+  private initFilteredEmployees(): void {
     effect(() => {
-      const authState = this.authService.getAuthState();
-      const usuario =
-        authState?.user && authState.user.role === 'employee'
-          ? authState.user
-          : null;
+      const companyId = this.authService.primaryCompanyId();
+      const employeeSignal = toSignal(
+        this.db
+          .collection<AuthenticatedUser>('employees', (ref) =>
+            ref
+              .where('role', '==', UserRole.employee)
+              .where('companyIds', 'array-contains', companyId)
+          )
+          .valueChanges({ idField: 'id' }),
+        { initialValue: [] }
+      );
 
-      this.usuarioAutenticado.set(usuario);
-
-      if (!usuario) {
-        console.warn(
-          '[employeeService] Nenhum usuário employee autenticado.',
-        );
-      }
+      this._employees.set(employeeSignal());
     });
   }
 
-  /**
-   * Lista todos os clients cadastrados.
-   * @returns Observable com lista de clients.
-   */
-  listarclients(): Observable<client[]> {
-    return this.apiService.get<client[]>(`${this.endpoint}/clients`).pipe(
-      catchError((error) => {
-        console.error('[employeeService] Erro ao listar clients:', error);
-        return throwError(() => new Error('Erro ao carregar clients.'));
-      }),
-    );
-  }
-
-  /**
-   * Busca clients com base em um termo de pesquisa.
-   * @param query Termo de busca (ex.: nome ou CPF).
-   * @returns Observable com a lista de clients encontrados.
-   */
-  buscarclient(query: string): Observable<client[]> {
-    if (!query) {
-      console.warn('[employeeService] Termo de busca vazio.');
-      return throwError(
-        () => new Error('O termo de busca não pode ser vazio.'),
+  override create(user: AuthenticatedUser, id?: string) {
+    if (user.role !== UserRole.employee) {
+      throw new Error(
+        'Este serviço só pode ser utilizado para criar funcionários.'
       );
     }
 
-    return this.apiService
-      .get<client[]>(`${this.endpoint}/clients/busca?query=${query}`)
-      .pipe(
-        catchError((error) => {
-          console.error('[employeeService] Erro ao buscar client:', error);
-          return throwError(() => new Error('Erro ao buscar client.'));
-        }),
-      );
-  }
-
-  /**
-   * Cadastra um novo client e associa ao usuário employee autenticado.
-   * @param client Dados do client a ser cadastrado.
-   * @returns Observable com o client criado.
-   */
-  cadastrarclient(client: Partial<client>): Observable<client> {
-    const usuario = this.usuarioAutenticado();
-
-    if (!usuario) {
-      console.error(
-        '[employeeService] Tentativa de cadastro sem usuário employee autenticado.',
-      );
-      return throwError(() => new Error('Usuário employee não autenticado.'));
+    if (!user.companyIds?.length) {
+      throw new Error('Funcionário precisa estar vinculado a uma empresa.');
     }
 
-    const payload = {
-      ...client,
-      employeeId: usuario.id,
-      is_active: false,
-      status: 'pendente',
-    };
-
-    return this.apiService
-      .post<client>(`${this.endpoint}/clients`, payload)
-      .pipe(
-        catchError((error) => {
-          console.error(
-            '[employeeService] Erro ao cadastrar client:',
-            error,
-          );
-          return throwError(() => new Error('Erro ao cadastrar client.'));
-        }),
-      );
+    return super.create(user, id);
   }
 
-  /**
-   * Edita os dados de um client.
-   * @param id ID do client.
-   * @param client Dados atualizados do client.
-   * @returns Observable com o client atualizado.
-   */
-  editarclient(
-    id: string,
-    client: Partial<client>,
-  ): Observable<client> {
-    if (!id) {
-      console.warn('[employeeService] Tentativa de edição sem ID válido.');
-      return throwError(() => new Error('ID do client inválido.'));
+  override update(id: string, user: AuthenticatedUser) {
+    if (user.role !== UserRole.employee) {
+      throw new Error('Não é permitido alterar o tipo de usuário FUNCIONÁRIO.');
     }
 
-    return this.apiService
-      .put<client>(`${this.endpoint}/clients/${id}`, client)
-      .pipe(
-        catchError((error) => {
-          console.error('[employeeService] Erro ao editar client:', error);
-          return throwError(() => new Error('Erro ao editar client.'));
-        }),
-      );
-  }
-
-  /**
-   * Deleta um client pelo ID.
-   * @param id ID do client a ser deletado.
-   * @returns Observable indicando sucesso ou falha.
-   */
-  deletarclient(id: string): Observable<void> {
-    if (!id) {
-      console.warn('[employeeService] Tentativa de exclusão sem ID válido.');
-      return throwError(() => new Error('ID do client inválido.'));
-    }
-
-    return this.apiService
-      .delete<void>(`${this.endpoint}/clients/${id}`)
-      .pipe(
-        catchError((error) => {
-          console.error('[employeeService] Erro ao deletar client:', error);
-          return throwError(() => new Error('Erro ao deletar client.'));
-        }),
-      );
+    return super.update(id, user);
   }
 }

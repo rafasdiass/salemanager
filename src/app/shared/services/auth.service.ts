@@ -1,4 +1,6 @@
-import { Injectable, signal, WritableSignal } from '@angular/core';
+// src/app/shared/services/auth.service.ts
+
+import { Injectable, computed, signal, WritableSignal } from '@angular/core';
 import { Observable, throwError } from 'rxjs';
 import { catchError, map, tap } from 'rxjs/operators';
 import { ApiService } from './api.service';
@@ -10,6 +12,7 @@ import {
   LoginResponse,
   AuthenticatedUser,
 } from '../models/auth.model';
+import { UserRole } from '../models/user-role.enum';
 
 @Injectable({
   providedIn: 'root',
@@ -22,29 +25,45 @@ export class AuthService {
     token: null,
   });
 
+  readonly currentUser = computed(() => this.authState().user);
+  readonly isLoggedIn = computed(() => this.authState().isAuthenticated);
+
+  /** Computed do companyId principal baseado no usuário logado */
+  readonly primaryCompanyId = computed(() => {
+    const user = this.authState().user;
+    if (!user) throw new Error('Usuário não autenticado.');
+
+    if (user.role === UserRole.client) {
+      if (!user.couponUsed) {
+        throw new Error('Cliente não possui cupom vinculado.');
+      }
+      return user.couponUsed;
+    }
+
+    if (user.role === UserRole.ADMIN || user.role === UserRole.employee) {
+      if (!user.companyIds || user.companyIds.length === 0) {
+        throw new Error('Usuário não possui empresas vinculadas.');
+      }
+      return user.companyIds[0];
+    }
+
+    throw new Error(`Tipo de usuário inválido: ${user.role}`);
+  });
+
   constructor(
     private apiService: ApiService,
     private userService: UserService,
     private router: Router
   ) {}
 
-  /**
-   * Retorna o estado de autenticação (Signal).
-   */
   getAuthState(): AuthState {
     return this.authState();
   }
 
-  /**
-   * Verifica se o usuário está autenticado.
-   */
   isAuthenticated(): boolean {
     return this.authState().isAuthenticated;
   }
 
-  /**
-   * AutoLogin usando dados salvos no localStorage.
-   */
   autoLogin(): void {
     const storedUser: AuthenticatedUser | null = this.userService.getUserData();
     const storedToken: string | null = this.userService.getToken();
@@ -66,9 +85,6 @@ export class AuthService {
     }
   }
 
-  /**
-   * Faz login na aplicação.
-   */
   login(credentials: LoginRequest): Observable<LoginResponse> {
     return this.apiService.post<LoginResponse>('auth/login', credentials).pipe(
       tap((response: LoginResponse) => {
@@ -96,9 +112,6 @@ export class AuthService {
     );
   }
 
-  /**
-   * Define a senha no primeiro acesso.
-   */
   definirSenhaPrimeiroAcesso(
     cpf: string,
     newPassword: string
@@ -114,9 +127,6 @@ export class AuthService {
     );
   }
 
-  /**
-   * Faz logout e limpa o estado de autenticação.
-   */
   logout(): void {
     this.userService.clearUserData();
     this.authState.set({
@@ -129,9 +139,6 @@ export class AuthService {
     this.router.navigate(['/login']);
   }
 
-  /**
-   * Renova o token de autenticação.
-   */
   refreshToken(): Observable<string> {
     return this.apiService
       .post<{ access_token: string }>('refresh-token', {})
@@ -159,9 +166,6 @@ export class AuthService {
       );
   }
 
-  /**
-   * Manipula erros de autenticação.
-   */
   private handleError(error: unknown): Observable<never> {
     console.error('Erro no AuthService:', error);
 
@@ -169,9 +173,6 @@ export class AuthService {
     return throwError(() => new Error(errorMessage));
   }
 
-  /**
-   * Retorna uma mensagem de erro amigável com base no tipo de erro.
-   */
   private getErrorMessage(error: unknown): string {
     if (typeof error === 'object' && error !== null && 'status' in error) {
       const status = (error as { status: number }).status;

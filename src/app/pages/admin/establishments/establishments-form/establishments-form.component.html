@@ -1,0 +1,39 @@
+<div class="establishments-form-container p-4 rounded shadow-sm">
+    <h4 class="mb-3">
+        <i class="bi bi-building me-2 text-accent"></i>
+        Cadastro de Estabelecimento
+    </h4>
+    <form [formGroup]="form" (ngSubmit)="submit()">
+        <div class="mb-3">
+            <label for="name" class="form-label">Nome</label>
+            <input id="name" type="text" formControlName="name" class="form-control"
+                placeholder="Digite o nome do estabelecimento" />
+        </div>
+        <div class="mb-3">
+            <label for="address" class="form-label">Endereço</label>
+            <input id="address" type="text" formControlName="address" class="form-control"
+                placeholder="Digite o endereço" />
+        </div>
+        <div class="row mb-3">
+            <div class="col-md-6">
+                <label for="latitude" class="form-label">Latitude</label>
+                <input id="latitude" type="number" formControlName="latitude" class="form-control"
+                    placeholder="Ex: -23.550520" />
+            </div>
+            <div class="col-md-6">
+                <label for="longitude" class="form-label">Longitude</label>
+                <input id="longitude" type="number" formControlName="longitude" class="form-control"
+                    placeholder="Ex: -46.633308" />
+            </div>
+        </div>
+        <div class="mb-3">
+            <label for="companyId" class="form-label">Company ID</label>
+            <input id="companyId" type="text" formControlName="companyId" class="form-control"
+                placeholder="Digite o Company ID" />
+        </div>
+        <div *ngIf="successMessage()" class="alert alert-success">
+            {{ successMessage() }}
+        </div>
+        <div *ngIf="errorMessage()" class="alert alert-danger">
+            {{ errorMessage() }}
+        </div>

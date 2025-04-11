@@ -1,0 +1,18 @@
+/* clients.component.scss */
+
+$background-dark: #121212;
+$text-light: #e0e0e0;
+$accent-skin: #f1c27d; // tom de pele quente/acento
+
+.clients-container {
+    background-color: $background-dark;
+    color: $text-light;
+    padding: 2rem;
+    border-radius: 0.5rem;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.7);
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+    max-width: 1200px;
+    margin: 2rem auto;
+}

@@ -1,0 +1,116 @@
+<form [formGroup]="form" (ngSubmit)="submit()" class="bg-dark text-light p-4 rounded shadow-sm">
+    <h5 class="mb-4 d-flex align-items-center">
+        <i class="bi bi-person-badge-fill me-2 text-warning"></i>
+        Cadastro de Profissional
+    </h5>
+
+    <!-- Dados Pessoais -->
+    <div class="row g-3">
+        <div class="col-md-6">
+            <label for="name" class="form-label">Nome</label>
+            <input id="name" type="text" class="form-control" formControlName="name" />
+        </div>
+
+        <div class="col-md-6">
+            <label for="birthDate" class="form-label">Data de Nascimento</label>
+            <input id="birthDate" type="date" class="form-control" formControlName="birthDate" />
+        </div>
+
+        <div class="col-md-6">
+            <label for="phone" class="form-label">Telefone</label>
+            <input id="phone" type="text" class="form-control" formControlName="phone" mask="(00) 00000-0000"
+                placeholder="(00) 00000-0000" />
+        </div>
+
+        <div class="col-md-6">
+            <label for="email" class="form-label">E-mail</label>
+            <input id="email" type="email" class="form-control" formControlName="email" />
+        </div>
+
+        <div class="col-md-6">
+            <label for="password" class="form-label">Senha</label>
+            <input id="password" type="password" class="form-control" formControlName="password" />
+        </div>
+
+        <div class="col-md-6">
+            <label for="profileImageUpload" class="form-label">Foto de Perfil (.jpeg)</label>
+            <input id="profileImageUpload" type="file" accept="image/jpeg" class="form-control"
+                (change)="onImageSelect($event)" />
+            <div *ngIf="imagePreviewUrl" class="mt-2">
+                <img [src]="imagePreviewUrl" alt="Prévia da Imagem" class="img-thumbnail" style="max-height: 150px;" />
+            </div>
+        </div>
+    </div>
+
+    <hr class="border-secondary my-4" />
+
+    <!-- Endereço -->
+    <h6 class="mb-3 text-warning">Endereço</h6>
+    <div class="row g-3">
+        <div class="col-md-6">
+            <label for="street" class="form-label">Rua</label>
+            <input id="street" type="text" class="form-control" formControlName="street" />
+        </div>
+
+        <div class="col-md-3">
+            <label for="number" class="form-label">Número</label>
+            <input id="number" type="text" class="form-control" formControlName="number" />
+        </div>
+
+        <div class="col-md-3">
+            <label for="complement" class="form-label">Complemento</label>
+            <input id="complement" type="text" class="form-control" formControlName="complement" />
+        </div>
+
+        <div class="col-md-4">
+            <label for="neighborhood" class="form-label">Bairro</label>
+            <input id="neighborhood" type="text" class="form-control" formControlName="neighborhood" />
+        </div>
+
+        <div class="col-md-4">
+            <label for="city" class="form-label">Cidade</label>
+            <input id="city" type="text" class="form-control" formControlName="city" />
+        </div>
+
+        <div class="col-md-2">
+            <label for="state" class="form-label">Estado</label>
+            <input id="state" type="text" class="form-control" formControlName="state" />
+        </div>
+
+        <div class="col-md-2">
+            <label for="zipCode" class="form-label">CEP</label>
+            <input id="zipCode" type="text" class="form-control" formControlName="zipCode" mask="00000-000"
+                placeholder="00000-000" />
+        </div>
+
+        <div class="col-md-12">
+            <label for="country" class="form-label">País</label>
+            <input id="country" type="text" class="form-control" formControlName="country" />
+        </div>
+    </div>
+
+    <hr class="border-secondary my-4" />
+
+    <!-- Profissional -->
+    <h6 class="mb-3 text-warning">Informações Profissionais</h6>
+    <div class="row g-3">
+        <div class="col-md-4">
+            <label for="commission" class="form-label">Comissão (%)</label>
+            <input id="commission" type="number" class="form-control" formControlName="commission" />
+        </div>
+
+        <div class="col-md-12 d-flex align-items-center mt-2">
+            <input id="isActive" type="checkbox" class="form-check-input me-2" formControlName="isActive" />
+            <label for="isActive" class="form-check-label">
+                <i class="bi bi-check-circle-fill text-success me-1"></i> Ativo
+            </label>
+        </div>
+    </div>
+
+    <!-- Botão -->
+    <div class="d-flex justify-content-end mt-4">
+        <button type="submit" class="btn btn-warning text-dark" [disabled]="form.invalid">
+            <i class="bi bi-save me-2"></i>Salvar Profissional
+        </button>
+    </div>
+</form>
