@@ -4,16 +4,20 @@ import { employeeGuard } from './shared/guards/employee.guard';
 import { UsuarioGuard } from './shared/guards/usuario.guard';
 
 export const routes: Routes = [
-  // Página de Login
-  {
-    path: 'login',
-    loadComponent: () =>
-      import('./pages/auth/login/login.page').then((m) => m.LoginPage),
-  },
+  // Redirecionamento para nova tela de login
   {
     path: '',
-    redirectTo: 'login',
+    redirectTo: 'login-selector',
     pathMatch: 'full',
+  },
+
+  // Novo Login Selector Page
+  {
+    path: 'login-selector',
+    loadComponent: () =>
+      import('./pages/auth/login-selector/login-selector.page').then(
+        (m) => m.LoginSelectorPage
+      ),
   },
 
   // Recuperação de Senha
@@ -45,29 +49,21 @@ export const routes: Routes = [
     children: [
       {
         path: '',
-        redirectTo: 'dashboard-admin', // Redireciona para o dashboard principal
+        redirectTo: 'dashboard-admin',
         pathMatch: 'full',
       },
       {
-        path: 'dashboard-admin', // Rota padrão do dashboard
+        path: 'dashboard-admin',
         loadComponent: () =>
           import('./pages/admin/dashboard-admin/dashboard-admin.page').then(
             (m) => m.DashboardAdminPage
           ),
       },
-     
-      
-     
-      
-    
-     
-
-      
     ],
   },
 
   // -----------------------------
-  // employee Routes
+  // Employee Routes
   // -----------------------------
   {
     path: 'dashboard-employee',
@@ -89,9 +85,6 @@ export const routes: Routes = [
             './pages/employee/dashboard-employee/dashboard-employee.page'
           ).then((m) => m.DashboardEmployeePage),
       },
-      
-
-     
       {
         path: 'configuracao-employee',
         loadComponent: () =>
@@ -103,14 +96,14 @@ export const routes: Routes = [
   },
 
   // -----------------------------
-  // Usuário (client) Routes
+  // Client Routes
   // -----------------------------
   {
     path: 'dashboard-client',
     loadComponent: () =>
-      import(
-        './pages/client/dashboard-client/dashboard-client.page'
-      ).then((m) => m.DashboardClientPage),
+      import('./pages/client/dashboard-client/dashboard-client.page').then(
+        (m) => m.DashboardClientPage
+      ),
     canActivate: [UsuarioGuard],
     children: [
       {
@@ -121,17 +114,10 @@ export const routes: Routes = [
       {
         path: 'dashboard-client',
         loadComponent: () =>
-          import(
-            './pages/client/dashboard-client/dashboard-client.page'
-          ).then((m) => m.DashboardClientPage),
+          import('./pages/client/dashboard-client/dashboard-client.page').then(
+            (m) => m.DashboardClientPage
+          ),
       },
-      
-      
-     
-      
-      
-      
-     
       {
         path: 'personal-info',
         loadComponent: () =>
@@ -155,6 +141,7 @@ export const routes: Routes = [
       },
     ],
   },
+
   // Página de Registro de Novo Usuário
   {
     path: 'create-user',
@@ -164,7 +151,7 @@ export const routes: Routes = [
       ),
   },
 
-  // Navbar
+  // Navbar Pages
   {
     path: 'navbar-admin',
     loadComponent: () =>
@@ -180,6 +167,15 @@ export const routes: Routes = [
       ),
   },
   {
+    path: 'navbar-client',
+    loadComponent: () =>
+      import('./pages/client/navbar-client/navbar-client.page').then(
+        (m) => m.NavbarclientPage
+      ),
+  },
+
+  // Termos e Políticas
+  {
     path: 'termos',
     loadComponent: () =>
       import('./pages/auth/terms/terms.page').then((m) => m.TermsPage),
@@ -192,21 +188,5 @@ export const routes: Routes = [
       ),
   },
 
-  {
-    path: 'navbar-client',
-    loadComponent: () =>
-      import('./pages/client/navbar-client/navbar-client.page').then(
-        (m) => m.NavbarclientPage
-      ),
-  },
-  {
-    path: 'primeiro-acesso',
-    loadComponent: () =>
-      import('./pages/auth/first-access/first-access.page').then(
-        (m) => m.FirstAccessPage
-      ),
-  },
-
- 
  
 ];

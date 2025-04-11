@@ -1,16 +1,17 @@
-import { enableProdMode } from '@angular/core';
+import { enableProdMode, PLATFORM_ID, APP_INITIALIZER } from '@angular/core';
 import { bootstrapApplication } from '@angular/platform-browser';
 import {
   provideIonicAngular,
   IonicRouteStrategy,
 } from '@ionic/angular/standalone';
 import { RouteReuseStrategy } from '@angular/router';
+import { isPlatformBrowser } from '@angular/common';
 import { AppComponent } from './app/app.component';
 import { appConfig } from './app/app.config';
 import { environment } from './environments/environment';
-import { isPlatformBrowser } from '@angular/common';
-import { PLATFORM_ID, APP_INITIALIZER } from '@angular/core';
 import { registerIcons } from './app/icons';
+
+// Firebase Modular API
 import { initializeApp, provideFirebaseApp } from '@angular/fire/app';
 import { getAuth, provideAuth } from '@angular/fire/auth';
 import { getFirestore, provideFirestore } from '@angular/fire/firestore';
@@ -28,15 +29,14 @@ function initializeIcons(platformId: Object) {
   };
 }
 
-// Ativa o modo de produção, se necessário
+// Ativa o modo de produção
 if (environment.production) {
   enableProdMode();
 }
 
-// Inicializa a aplicação Angular com suporte ao Ionic
+// Bootstrap da aplicação com Firebase e config standalone
 bootstrapApplication(AppComponent, {
   providers: [
-    // Configure o Ionic aqui de forma única – removendo duplicidade
     provideIonicAngular({ mode: 'md' }),
     ...appConfig.providers,
     { provide: RouteReuseStrategy, useClass: IonicRouteStrategy },
@@ -45,6 +45,11 @@ bootstrapApplication(AppComponent, {
       useFactory: initializeIcons,
       deps: [PLATFORM_ID],
       multi: true,
-    }, provideFirebaseApp(() => initializeApp({ projectId: "salom-e7f92", appId: "1:842317744170:web:d8b3cf485e0339e4a7db53", storageBucket: "salom-e7f92.firebasestorage.app", apiKey: "AIzaSyDoXMqCvfHsT4A6kXZybvSFvq8kjBIOhQg", authDomain: "salom-e7f92.firebaseapp.com", messagingSenderId: "842317744170", measurementId: "G-EQ0LY8GC1Z" })), provideAuth(() => getAuth()), provideFirestore(() => getFirestore()), provideMessaging(() => getMessaging()), provideStorage(() => getStorage()),
+    },
+    provideFirebaseApp(() => initializeApp(environment.firebase)),
+    provideAuth(() => getAuth()),
+    provideFirestore(() => getFirestore()),
+    provideMessaging(() => getMessaging()),
+    provideStorage(() => getStorage()),
   ],
 }).catch((err) => console.error('❌ Erro ao inicializar a aplicação:', err));

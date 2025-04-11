@@ -28,9 +28,16 @@ export interface AuthState {
 
 // Requisição de Login (envio de CPF e senha)
 export interface LoginRequest {
-  cpf: string;
+  cpf?: string;
+  email?: string;
   password: string;
 }
+
+export interface ClientLoginWithCoupon {
+  email: string;
+  coupon: string;
+}
+
 
 // Resposta de Login do Backend
 export interface LoginResponse {

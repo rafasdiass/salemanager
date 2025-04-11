@@ -1,0 +1,54 @@
+<ion-content class="login-selector dark-theme">
+  <ion-grid>
+    <ion-row class="ion-justify-content-center">
+      <ion-col size="12" size-md="8" size-lg="5">
+        <ion-card class="login-card">
+          <ion-card-header>
+            <ion-card-title>Entrar no Salao Manager</ion-card-title>
+          </ion-card-header>
+
+          <ion-card-content>
+            <ion-segment [(ngModel)]="loginType" color="primary">
+              <ion-segment-button value="company">Empresa</ion-segment-button>
+              <ion-segment-button value="client">Cliente</ion-segment-button>
+            </ion-segment>
+
+            <form *ngIf="loginType === 'company'" [formGroup]="companyForm" (ngSubmit)="onCompanyLogin()">
+              <ion-item>
+                <ion-label position="floating">Email</ion-label>
+                <ion-input formControlName="email" type="email" />
+              </ion-item>
+
+              <ion-item>
+                <ion-label position="floating">Senha</ion-label>
+                <ion-input formControlName="password" type="password" />
+              </ion-item>
+
+              <ion-button expand="block" type="submit" [disabled]="isLoading()">Entrar</ion-button>
+            </form>
+
+            <form *ngIf="loginType === 'client'" [formGroup]="clientForm" (ngSubmit)="onClientLogin()">
+              <ion-item>
+                <ion-label position="floating">Email</ion-label>
+                <ion-input formControlName="email" type="email" />
+              </ion-item>
+
+              <ion-item>
+                <ion-label position="floating">Cupom do Salão</ion-label>
+                <ion-input formControlName="coupon" type="text" />
+              </ion-item>
+
+              <ion-button expand="block" type="submit" [disabled]="isLoading()">Entrar</ion-button>
+            </form>
+
+            <ion-text color="danger" *ngIf="errorMessage()">
+              <p class="error-msg">{{ errorMessage() }}</p>
+            </ion-text>
+
+            <ion-spinner name="crescent" *ngIf="isLoading()" class="spinner" />
+          </ion-card-content>
+        </ion-card>
+      </ion-col>
+    </ion-row>
+  </ion-grid>
+</ion-content>

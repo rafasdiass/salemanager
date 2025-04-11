@@ -1,24 +1,35 @@
-// src/app/shared/services/auth.service.ts
-
-import { Injectable, computed, signal, WritableSignal } from '@angular/core';
-import { Observable, throwError } from 'rxjs';
-import { catchError, map, tap } from 'rxjs/operators';
-import { ApiService } from './api.service';
-import { UserService } from './user.service';
+import { Injectable, WritableSignal, computed, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import {
+  Auth,
+  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
+  getIdToken,
+  signOut,
+} from '@angular/fire/auth';
+import {
+  Firestore,
+  collection,
+  query,
+  where,
+  getDocs,
+  doc,
+  getDoc,
+  setDoc,
+} from '@angular/fire/firestore';
+import {
   AuthState,
+  AuthenticatedUser,
   LoginRequest,
   LoginResponse,
-  AuthenticatedUser,
+  ClientLoginWithCoupon,
 } from '../models/auth.model';
+import { UserService } from './user.service';
 import { UserRole } from '../models/user-role.enum';
+import { from, map, switchMap, throwError, Observable } from 'rxjs';
 
-@Injectable({
-  providedIn: 'root',
-})
+@Injectable({ providedIn: 'root' })
 export class AuthService {
-  /** Estado de autenticação usando Signals */
   private authState: WritableSignal<AuthState> = signal<AuthState>({
     isAuthenticated: false,
     user: null,
@@ -28,10 +39,15 @@ export class AuthService {
   readonly currentUser = computed(() => this.authState().user);
   readonly isLoggedIn = computed(() => this.authState().isAuthenticated);
 
-  /** Computed do companyId principal baseado no usuário logado */
-  readonly primaryCompanyId = computed(() => {
+  // Getter seguro para obter usuário autenticado (não permite null)
+  readonly authenticatedUser = computed(() => {
     const user = this.authState().user;
     if (!user) throw new Error('Usuário não autenticado.');
+    return user;
+  });
+
+  readonly primaryCompanyId = computed(() => {
+    const user = this.authenticatedUser(); // seguro, nunca null
 
     if (user.role === UserRole.client) {
       if (!user.couponUsed) {
@@ -51,9 +67,10 @@ export class AuthService {
   });
 
   constructor(
-    private apiService: ApiService,
-    private userService: UserService,
-    private router: Router
+    private router: Router,
+    private firestore: Firestore,
+    private auth: Auth,
+    private userService: UserService
   ) {}
 
   getAuthState(): AuthState {
@@ -65,126 +82,158 @@ export class AuthService {
   }
 
   autoLogin(): void {
-    const storedUser: AuthenticatedUser | null = this.userService.getUserData();
-    const storedToken: string | null = this.userService.getToken();
+    const user = this.userService.getUserData();
+    const token = this.userService.getToken();
 
-    if (storedToken && storedUser) {
-      console.log('AutoLogin: Usuário e token encontrados.');
-      this.authState.set({
-        isAuthenticated: true,
-        user: storedUser,
-        token: storedToken,
-      });
-    } else {
-      console.log('AutoLogin: Nenhum usuário/token encontrado.');
+    this.authState.set({
+      isAuthenticated: !!user && !!token,
+      user,
+      token,
+    });
+  }
+
+  login(credentials: LoginRequest): Observable<LoginResponse> {
+    return from(
+      signInWithEmailAndPassword(
+        this.auth,
+        credentials.email!,
+        credentials.password!
+      )
+    ).pipe(
+      switchMap((userCredential) => {
+        return from(getIdToken(userCredential.user)).pipe(
+          switchMap((token) => {
+            return this.loadUserDataFromFirestore(userCredential.user.uid).pipe(
+              map((userData) => {
+                this.userService.setUserData(userData);
+                this.userService.setToken(token);
+
+                this.authState.set({
+                  isAuthenticated: true,
+                  user: userData,
+                  token,
+                });
+
+                if (!userData.password?.trim()) {
+                  this.router.navigate(['/definir-senha']);
+                }
+
+                return {
+                  access_token: token,
+                  user: userData,
+                };
+              })
+            );
+          })
+        );
+      })
+    );
+  }
+
+  loginOrRegisterClient(
+    data: ClientLoginWithCoupon
+  ): Observable<LoginResponse> {
+    const { email, coupon } = data;
+
+    const clientsRef = collection(this.firestore, 'clients');
+    const q = query(
+      clientsRef,
+      where('email', '==', email),
+      where('companyIds', 'array-contains', coupon)
+    );
+
+    return from(getDocs(q)).pipe(
+      switchMap((snapshot) => {
+        if (!snapshot.empty) {
+          const client = snapshot.docs[0].data() as AuthenticatedUser;
+          return this.signInWithEmailOnly(client.email);
+        }
+
+        const password = this.generateTempPassword();
+        return from(
+          createUserWithEmailAndPassword(this.auth, email, password)
+        ).pipe(
+          switchMap((cred) => {
+            const now = new Date();
+            const newClient: AuthenticatedUser = {
+              id: cred.user.uid,
+              email,
+              role: UserRole.client,
+              companyIds: [coupon],
+              couponUsed: coupon,
+              is_active: true,
+              createdAt: now,
+              updatedAt: now,
+              registration_date: now.toISOString(),
+              cpf: '',
+              first_name: '',
+              last_name: '',
+              phone: '',
+              password,
+            };
+
+            const newDocRef = doc(this.firestore, 'clients', cred.user.uid);
+            return from(setDoc(newDocRef, newClient)).pipe(
+              switchMap(() => this.signInWithEmailOnly(email))
+            );
+          })
+        );
+      })
+    );
+  }
+
+  private signInWithEmailOnly(email: string): Observable<LoginResponse> {
+    return throwError(
+      () =>
+        new Error(
+          'Login do cliente exige senha. Configure o fluxo de autenticação ou login com link.'
+        )
+    );
+  }
+
+  logout(): void {
+    signOut(this.auth).then(() => {
+      this.userService.clearUserData();
       this.authState.set({
         isAuthenticated: false,
         user: null,
         token: null,
       });
-    }
-  }
-
-  login(credentials: LoginRequest): Observable<LoginResponse> {
-    return this.apiService.post<LoginResponse>('auth/login', credentials).pipe(
-      tap((response: LoginResponse) => {
-        if (response.access_token && response.user) {
-          console.log('Login bem-sucedido:', response);
-
-          this.userService.setToken(response.access_token);
-          this.userService.setUserData(response.user);
-
-          this.authState.set({
-            isAuthenticated: true,
-            user: response.user,
-            token: response.access_token,
-          });
-
-          if (!response.user.password || response.user.password.trim() === '') {
-            console.log('Primeiro login detectado. Redirecionando...');
-            this.router.navigate(['/definir-senha']);
-          }
-        } else {
-          throw new Error('Erro: Resposta inválida do servidor.');
-        }
-      }),
-      catchError((error: unknown) => this.handleError(error))
-    );
-  }
-
-  definirSenhaPrimeiroAcesso(
-    cpf: string,
-    newPassword: string
-  ): Observable<void> {
-    const updateData = { cpf, password: newPassword };
-
-    return this.apiService.put<void>('users/first-access', updateData).pipe(
-      tap(() => {
-        console.log('Senha definida com sucesso.');
-        this.router.navigate(['/login']);
-      }),
-      catchError((error: unknown) => this.handleError(error))
-    );
-  }
-
-  logout(): void {
-    this.userService.clearUserData();
-    this.authState.set({
-      isAuthenticated: false,
-      user: null,
-      token: null,
+      this.router.navigate(['/login']);
     });
+  }
 
-    console.log('Logout realizado com sucesso.');
-    this.router.navigate(['/login']);
+  private loadUserDataFromFirestore(
+    uid: string
+  ): Observable<AuthenticatedUser> {
+    const userDocRef = doc(this.firestore, `users/${uid}`);
+    return from(getDoc(userDocRef)).pipe(
+      map((docSnap) => {
+        if (!docSnap.exists()) {
+          throw new Error('Usuário não encontrado no Firestore.');
+        }
+        return { ...docSnap.data(), id: uid } as AuthenticatedUser;
+      })
+    );
   }
 
   refreshToken(): Observable<string> {
-    return this.apiService
-      .post<{ access_token: string }>('refresh-token', {})
-      .pipe(
-        map((response: { access_token: string }) => {
-          if (response.access_token) {
-            console.log('Token renovado:', response.access_token);
+    const user = this.auth.currentUser;
 
-            this.userService.setToken(response.access_token);
-            this.authState.update((state) => ({
-              ...state,
-              token: response.access_token,
-            }));
-
-            return response.access_token;
-          } else {
-            throw new Error('Erro ao renovar o token.');
-          }
-        }),
-        catchError((error: unknown) => {
-          console.error('Erro ao renovar o token:', error);
-          this.logout();
-          return throwError(() => new Error('Erro ao renovar o token.'));
-        })
-      );
-  }
-
-  private handleError(error: unknown): Observable<never> {
-    console.error('Erro no AuthService:', error);
-
-    const errorMessage = this.getErrorMessage(error);
-    return throwError(() => new Error(errorMessage));
-  }
-
-  private getErrorMessage(error: unknown): string {
-    if (typeof error === 'object' && error !== null && 'status' in error) {
-      const status = (error as { status: number }).status;
-      switch (status) {
-        case 400:
-          return 'Requisição inválida.';
-        case 401:
-          return 'Credenciais inválidas.';
-        default:
-          return 'Erro desconhecido. Tente novamente mais tarde.';
-      }
+    if (!user) {
+      return throwError(() => new Error('Usuário não autenticado.'));
     }
-    return 'Erro inesperado. Tente novamente mais tarde.';
+
+    return from(getIdToken(user, true)).pipe(
+      map((newToken) => {
+        this.userService.setToken(newToken);
+        this.authState.update((state) => ({ ...state, token: newToken }));
+        return newToken;
+      })
+    );
+  }
+
+  private generateTempPassword(): string {
+    return Math.random().toString(36).slice(-10) + 'Aa1!';
   }
 }
