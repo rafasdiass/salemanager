@@ -142,15 +142,6 @@ export const routes: Routes = [
     ],
   },
 
-  // Página de Registro de Novo Usuário
-  {
-    path: 'create-user',
-    loadComponent: () =>
-      import('./pages/auth/create-user/create-user.page').then(
-        (m) => m.CreateUserPage
-      ),
-  },
-
   // Navbar Pages
   {
     path: 'navbar-admin',
@@ -187,6 +178,11 @@ export const routes: Routes = [
         (m) => m.PrivacyPolicyPage
       ),
   },
-
- 
+  {
+    path: 'cadastro-cliente',
+    loadComponent: () =>
+      import('./pages/auth/client-register/client-register.page').then(
+        (m) => m.ClientRegisterPage
+      ),
+  },
 ];

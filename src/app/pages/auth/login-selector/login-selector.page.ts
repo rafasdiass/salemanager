@@ -8,15 +8,12 @@ import {
 import { CommonModule } from '@angular/common';
 import {
   IonContent,
-  IonHeader,
-  IonTitle,
-  IonToolbar,
   IonSegment,
   IonSegmentButton,
   IonCard,
   IonCardHeader,
-  IonCardContent,
   IonCardTitle,
+  IonCardContent,
   IonItem,
   IonInput,
   IonLabel,
@@ -77,7 +74,6 @@ export class LoginSelectorPage implements OnInit {
   private _errorMessage = signal<string | null>(null);
   readonly errorMessage = computed(() => this._errorMessage());
 
-  // ✅ Correção: efeito reativo dentro de um field initializer
   private readonly autoClearErrors = effect(() => {
     if (this._errorMessage()) {
       setTimeout(() => this._errorMessage.set(null), 5000);
@@ -133,7 +129,7 @@ export class LoginSelectorPage implements OnInit {
           this.navigation.resetActivePage();
           this.redirectByRole(this.authService.currentUser());
         },
-        error: (err: unknown) =>
+        error: (err) =>
           this.setError(
             this.extractMessage(err, 'Erro ao autenticar empresa.')
           ),
@@ -154,11 +150,24 @@ export class LoginSelectorPage implements OnInit {
       .loginOrRegisterClient(data)
       .pipe(finalize(() => this._isLoading.set(false)))
       .subscribe({
-        next: () => {
-          this.navigation.resetActivePage();
-          this.redirectByRole(this.authService.currentUser());
+        next: (res) => {
+          // Se o usuário já tiver senha definida, significa que o cadastro está completo.
+          // Portanto, não o direciona para a tela de cadastro, mas para o dashboard.
+          if (res.user.password && res.user.password.trim() !== '') {
+            this.navigation.resetActivePage();
+            this.redirectByRole(res.user);
+          } else {
+            // Caso contrário, o cadastro ainda não foi finalizado; encaminha para a tela de cadastro
+            // passando email e cupom via queryParams para que esses dados sejam reaproveitados.
+            this.navigation.navigateTo('/cadastro-cliente', {
+              queryParams: {
+                email: res.user.email,
+                coupon: res.user.couponUsed ?? data.coupon,
+              },
+            });
+          }
         },
-        error: (err: unknown) =>
+        error: (err) =>
           this.setError(
             this.extractMessage(err, 'Erro ao autenticar cliente.')
           ),
@@ -166,7 +175,10 @@ export class LoginSelectorPage implements OnInit {
   }
 
   private redirectByRole(user: AuthenticatedUser | null): void {
-    if (!user) return this.setError('Usuário não encontrado.');
+    if (!user) {
+      this.setError('Usuário não encontrado.');
+      return;
+    }
 
     switch (user.role) {
       case UserRole.ADMIN:
@@ -192,10 +204,6 @@ export class LoginSelectorPage implements OnInit {
   }
 
   private extractMessage(error: unknown, fallback: string): string {
-    return error instanceof Error
-      ? error.message
-      : typeof error === 'string'
-      ? error
-      : fallback;
+    return error instanceof Error ? error.message : fallback;
   }
 }

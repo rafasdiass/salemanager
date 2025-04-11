@@ -3,7 +3,6 @@ import { Router } from '@angular/router';
 import {
   Auth,
   signInWithEmailAndPassword,
-  createUserWithEmailAndPassword,
   getIdToken,
   signOut,
 } from '@angular/fire/auth';
@@ -15,7 +14,8 @@ import {
   getDocs,
   doc,
   getDoc,
-  setDoc,
+  updateDoc,
+  addDoc,
 } from '@angular/fire/firestore';
 import {
   AuthState,
@@ -26,7 +26,7 @@ import {
 } from '../models/auth.model';
 import { UserService } from './user.service';
 import { UserRole } from '../models/user-role.enum';
-import { from, map, switchMap, throwError, Observable } from 'rxjs';
+import { from, map, switchMap, throwError, Observable, of } from 'rxjs';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
@@ -39,7 +39,6 @@ export class AuthService {
   readonly currentUser = computed(() => this.authState().user);
   readonly isLoggedIn = computed(() => this.authState().isAuthenticated);
 
-  // Getter seguro para obter usuário autenticado (não permite null)
   readonly authenticatedUser = computed(() => {
     const user = this.authState().user;
     if (!user) throw new Error('Usuário não autenticado.');
@@ -47,7 +46,7 @@ export class AuthService {
   });
 
   readonly primaryCompanyId = computed(() => {
-    const user = this.authenticatedUser(); // seguro, nunca null
+    const user = this.authenticatedUser();
 
     if (user.role === UserRole.client) {
       if (!user.couponUsed) {
@@ -73,14 +72,23 @@ export class AuthService {
     private userService: UserService
   ) {}
 
+  /**
+   * Retorna o estado atual de autenticação.
+   */
   getAuthState(): AuthState {
     return this.authState();
   }
 
+  /**
+   * Verifica se o usuário está autenticado.
+   */
   isAuthenticated(): boolean {
     return this.authState().isAuthenticated;
   }
 
+  /**
+   * Realiza o auto-login utilizando os dados armazenados no UserService.
+   */
   autoLogin(): void {
     const user = this.userService.getUserData();
     const token = this.userService.getToken();
@@ -92,6 +100,10 @@ export class AuthService {
     });
   }
 
+  /**
+   * Método de login para empresas e para clientes que já concluíram o cadastro.
+   * Utiliza email e senha para autenticação.
+   */
   login(credentials: LoginRequest): Observable<LoginResponse> {
     return from(
       signInWithEmailAndPassword(
@@ -100,97 +112,248 @@ export class AuthService {
         credentials.password!
       )
     ).pipe(
-      switchMap((userCredential) => {
-        return from(getIdToken(userCredential.user)).pipe(
-          switchMap((token) => {
-            return this.loadUserDataFromFirestore(userCredential.user.uid).pipe(
+      switchMap((userCredential) =>
+        from(getIdToken(userCredential.user)).pipe(
+          switchMap((token) =>
+            this.loadUserDataFromFirestore(userCredential.user.uid).pipe(
               map((userData) => {
                 this.userService.setUserData(userData);
                 this.userService.setToken(token);
-
                 this.authState.set({
                   isAuthenticated: true,
                   user: userData,
                   token,
                 });
-
-                if (!userData.password?.trim()) {
-                  this.router.navigate(['/definir-senha']);
-                }
-
                 return {
                   access_token: token,
                   user: userData,
-                };
+                } as LoginResponse;
               })
-            );
-          })
-        );
-      })
+            )
+          )
+        )
+      )
     );
   }
 
+  /**
+   * Método para login ou cadastro inicial do cliente utilizando cupom.
+   *
+   * Cenários:
+   * - Se o cliente não existir, ele é criado automaticamente com os dados básicos
+   *   (sem senha definida) e vinculado ao cupom informado.
+   *
+   * - Se o cliente existir mas ainda não tiver definido sua senha (cadastro incompleto),
+   *   se o cupom informado for diferente, atualiza o registro para refletir a nova associação.
+   *
+   * - Se o cliente já estiver completamente cadastrado (senha definida), recomenda-se
+   *   utilizar o fluxo de login padrão.
+   */
   loginOrRegisterClient(
     data: ClientLoginWithCoupon
   ): Observable<LoginResponse> {
     const { email, coupon } = data;
-
     const clientsRef = collection(this.firestore, 'clients');
-    const q = query(
-      clientsRef,
-      where('email', '==', email),
-      where('companyIds', 'array-contains', coupon)
-    );
+    const q = query(clientsRef, where('email', '==', email));
 
     return from(getDocs(q)).pipe(
       switchMap((snapshot) => {
-        if (!snapshot.empty) {
-          const client = snapshot.docs[0].data() as AuthenticatedUser;
-          return this.signInWithEmailOnly(client.email);
+        if (snapshot.empty) {
+          // Cliente não existe: cria um novo registro com dados mínimos.
+          const newClient: AuthenticatedUser = {
+            cpf: '',
+            email: email,
+            role: UserRole.client,
+            first_name: '',
+            last_name: '',
+            phone: '',
+            registration_date: new Date().toISOString(),
+            is_active: true,
+            couponUsed: coupon,
+            companyIds: [coupon],
+            password: '', // Cadastro incompleto (senha não definida)
+          };
+
+          return from(addDoc(clientsRef, newClient)).pipe(
+            switchMap((docRef) => {
+              newClient.id = docRef.id;
+              this.userService.setUserData(newClient);
+              this.authState.set({
+                isAuthenticated: true,
+                user: newClient,
+                token: '', // Token será atribuído no fluxo completo de login.
+              });
+              return of({
+                access_token: '',
+                user: newClient,
+              } as LoginResponse);
+            })
+          );
         }
 
-        const password = this.generateTempPassword();
-        return from(
-          createUserWithEmailAndPassword(this.auth, email, password)
-        ).pipe(
-          switchMap((cred) => {
-            const now = new Date();
-            const newClient: AuthenticatedUser = {
-              id: cred.user.uid,
-              email,
-              role: UserRole.client,
-              companyIds: [coupon],
+        // Cliente já existe.
+        const docSnap = snapshot.docs[0];
+        const client = docSnap.data() as AuthenticatedUser;
+
+        // Se o cliente já estiver completamente cadastrado (senha definida),
+        // recomenda-se utilizar o fluxo de login.
+        if (client.password && client.password.trim() !== '') {
+          return throwError(
+            () =>
+              new Error(
+                'Cliente já cadastrado. Utilize login e senha para acessar sua conta.'
+              )
+          );
+        } else {
+          // Cadastro incompleto: se o cupom informado for diferente, atualiza o registro.
+          if (client.couponUsed !== coupon) {
+            const updated: Partial<AuthenticatedUser> = {
               couponUsed: coupon,
-              is_active: true,
-              createdAt: now,
-              updatedAt: now,
-              registration_date: now.toISOString(),
-              cpf: '',
-              first_name: '',
-              last_name: '',
-              phone: '',
-              password,
+              updatedAt: new Date(),
+              companyIds: Array.from(
+                new Set([...(client.companyIds || []), coupon])
+              ),
             };
 
-            const newDocRef = doc(this.firestore, 'clients', cred.user.uid);
-            return from(setDoc(newDocRef, newClient)).pipe(
-              switchMap(() => this.signInWithEmailOnly(email))
+            return from(
+              updateDoc(doc(this.firestore, 'clients', docSnap.id), updated)
+            ).pipe(
+              switchMap(() => {
+                return from(
+                  getDoc(doc(this.firestore, `clients/${docSnap.id}`))
+                ).pipe(
+                  map((updatedDoc) => {
+                    if (!updatedDoc.exists()) {
+                      throw new Error(
+                        'Cliente não encontrado após atualização.'
+                      );
+                    }
+                    const updatedClient = {
+                      ...updatedDoc.data(),
+                      id: docSnap.id,
+                    } as AuthenticatedUser;
+                    return {
+                      access_token: '',
+                      user: updatedClient,
+                    } as LoginResponse;
+                  })
+                );
+              })
             );
-          })
+          }
+          // Se o cupom já estiver vinculado e o registro estiver incompleto,
+          // retorna os dados do cliente.
+          return of({
+            access_token: '',
+            user: client,
+          } as LoginResponse);
+        }
+      })
+    );
+  }
+
+  /**
+   * Método para vincular ou atualizar o cupom (estabelecimento) de um cliente.
+   * Utilizado quando for necessário atualizar o estabelecimento vinculado ao cliente.
+   */
+  vincularClientePorCupom(data: ClientLoginWithCoupon): Observable<void> {
+    const { email, coupon } = data;
+    const clientsRef = collection(this.firestore, 'clients');
+    const q = query(clientsRef, where('email', '==', email));
+
+    return from(getDocs(q)).pipe(
+      switchMap((snapshot) => {
+        if (snapshot.empty) {
+          this.router.navigate(['/cadastro-cliente'], {
+            queryParams: { email, coupon },
+          });
+          return of();
+        }
+        const docSnap = snapshot.docs[0];
+        const client = docSnap.data() as AuthenticatedUser;
+        const alreadyLinked = client.companyIds?.includes(coupon);
+        const isActive = client.couponUsed === coupon;
+        if (alreadyLinked && isActive) return of();
+        const updated: Partial<AuthenticatedUser> = {
+          couponUsed: coupon,
+          updatedAt: new Date(),
+          companyIds: Array.from(
+            new Set([...(client.companyIds || []), coupon])
+          ),
+        };
+        return from(
+          updateDoc(doc(this.firestore, 'clients', docSnap.id), updated)
         );
       })
     );
   }
 
-  private signInWithEmailOnly(email: string): Observable<LoginResponse> {
-    return throwError(
-      () =>
-        new Error(
-          'Login do cliente exige senha. Configure o fluxo de autenticação ou login com link.'
-        )
+  /**
+   * Método para definir ou atualizar a senha do cliente.
+   * Geralmente utilizado após a criação inicial (quando o registro foi feito sem senha)
+   * para que o cliente finalize o cadastro e possa realizar login.
+   */
+  definirSenhaCliente(
+    uid: string,
+    senha: string,
+    coupon: string
+  ): Observable<void> {
+    const userDocRef = doc(this.firestore, `clients/${uid}`);
+    const updatedFields: Partial<AuthenticatedUser> = {
+      password: senha,
+      updatedAt: new Date(),
+      couponUsed: coupon,
+      companyIds: [coupon],
+    };
+    return from(updateDoc(userDocRef, updatedFields)).pipe(
+      map(() => {
+        const user = this.authenticatedUser();
+        const updatedUser: AuthenticatedUser = {
+          ...user,
+          password: senha,
+          couponUsed: coupon,
+          companyIds: [coupon],
+          updatedAt: new Date(),
+        };
+        this.userService.setUserData(updatedUser);
+        this.authState.update((state) => ({
+          ...state,
+          user: updatedUser,
+        }));
+      })
     );
   }
 
+  /**
+   * Novo método: Completa o cadastro do cliente com os dados complementares,
+   * permitindo que ele informe informações pessoais e de endereço, além de definir sua senha.
+   * Esse método atualiza o registro do cliente no Firestore e o estado de autenticação.
+   */
+  completeClientRegistration(
+    uid: string,
+    registrationData: any
+  ): Observable<void> {
+    const userDocRef = doc(this.firestore, `clients/${uid}`);
+    return from(updateDoc(userDocRef, registrationData)).pipe(
+      map(() => {
+        const user = this.authenticatedUser();
+        const updatedUser: AuthenticatedUser = {
+          ...user,
+          ...registrationData,
+          updatedAt: new Date(),
+        };
+        this.userService.setUserData(updatedUser);
+        this.authState.update((state) => ({
+          ...state,
+          user: updatedUser,
+        }));
+      })
+    );
+  }
+
+  /**
+   * Realiza o logout, limpando os dados do usuário e redirecionando para a página de login.
+   */
   logout(): void {
     signOut(this.auth).then(() => {
       this.userService.clearUserData();
@@ -203,11 +366,14 @@ export class AuthService {
     });
   }
 
+  /**
+   * Carrega os dados do usuário (cliente) a partir do Firestore.
+   */
   private loadUserDataFromFirestore(
     uid: string
   ): Observable<AuthenticatedUser> {
-    const userDocRef = doc(this.firestore, `users/${uid}`);
-    return from(getDoc(userDocRef)).pipe(
+    const clientsDocRef = doc(this.firestore, `clients/${uid}`);
+    return from(getDoc(clientsDocRef)).pipe(
       map((docSnap) => {
         if (!docSnap.exists()) {
           throw new Error('Usuário não encontrado no Firestore.');
@@ -217,13 +383,14 @@ export class AuthService {
     );
   }
 
+  /**
+   * Atualiza o token de autenticação.
+   */
   refreshToken(): Observable<string> {
     const user = this.auth.currentUser;
-
     if (!user) {
       return throwError(() => new Error('Usuário não autenticado.'));
     }
-
     return from(getIdToken(user, true)).pipe(
       map((newToken) => {
         this.userService.setToken(newToken);
@@ -231,9 +398,5 @@ export class AuthService {
         return newToken;
       })
     );
-  }
-
-  private generateTempPassword(): string {
-    return Math.random().toString(36).slice(-10) + 'Aa1!';
   }
 }

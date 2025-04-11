@@ -4,7 +4,7 @@
       <ion-col size="12" size-md="8" size-lg="5">
         <ion-card class="login-card">
           <ion-card-header>
-            <ion-card-title>Entrar no Salao Manager</ion-card-title>
+            <ion-card-title>Entrar no Salão Manager</ion-card-title>
           </ion-card-header>
 
           <ion-card-content>
@@ -13,6 +13,7 @@
               <ion-segment-button value="client">Cliente</ion-segment-button>
             </ion-segment>
 
+            <!-- Formulário para login de empresa -->
             <form *ngIf="loginType === 'company'" [formGroup]="companyForm" (ngSubmit)="onCompanyLogin()">
               <ion-item>
                 <ion-label position="floating">Email</ion-label>
@@ -24,9 +25,12 @@
                 <ion-input formControlName="password" type="password" />
               </ion-item>
 
-              <ion-button expand="block" type="submit" [disabled]="isLoading()">Entrar</ion-button>
+              <ion-button expand="block" type="submit" [disabled]="isLoading()">
+                Entrar
+              </ion-button>
             </form>
 
+            <!-- Formulário para login de cliente via cupom -->
             <form *ngIf="loginType === 'client'" [formGroup]="clientForm" (ngSubmit)="onClientLogin()">
               <ion-item>
                 <ion-label position="floating">Email</ion-label>
@@ -38,7 +42,9 @@
                 <ion-input formControlName="coupon" type="text" />
               </ion-item>
 
-              <ion-button expand="block" type="submit" [disabled]="isLoading()">Entrar</ion-button>
+              <ion-button expand="block" type="submit" [disabled]="isLoading()">
+                Usar Cupom
+              </ion-button>
             </form>
 
             <ion-text color="danger" *ngIf="errorMessage()">
@@ -46,6 +52,10 @@
             </ion-text>
 
             <ion-spinner name="crescent" *ngIf="isLoading()" class="spinner" />
+
+            <ion-button expand="block" fill="clear" routerLink="/escolher-plano">
+              Ainda não é cliente? Escolher um plano
+            </ion-button>
           </ion-card-content>
         </ion-card>
       </ion-col>
