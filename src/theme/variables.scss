@@ -1,24 +1,25 @@
 @use 'sass:map';
 
 /**
- * Paleta emocional para salões/barbearias com base em percepção visual e psicologia das cores.
- *
- * Conceito: Elegância quente + confiança + requinte acessível
+ * Paleta emocional refinada com fidelidade visual ao design da tela de login (empresa e cliente).
+ * Ajustada para tons mais vivos e visíveis conforme screenshots.
  */
 
-$background-dark: #1A1614; // fundo escuro elegante e quente
-$card-background: #261F1C; // fundo dos cards com tom de couro queimado
-$primary-color: #D4AF37; // dourado médio (riqueza, prestígio, sem ostentação)
-$accent-color: #8C593B; // marrom canela (estabilidade, cuidado, conforto)
-$text-light: #FFF8F0; // bege claro quente (suave, sem cansaço visual)
-$text-muted: #C4B8A6; // tom neutro pastel (elegância e legibilidade)
-$input-background: #302724; // inputs visíveis porém integrados
-$error-color: #E74C3C; // alerta vibrante elegante
-$shadow-color: rgba(0, 0, 0, 0.65); // sombras com profundidade quente
-$border-color: #3C312D; // bordas quentes, suaves mas perceptíveis
+$background-dark: #1A1614; // fundo geral escuro, elegante e aconchegante
+$card-background: #241C19; // fundo de cards um pouco mais contrastante que o fundo geral
+$primary-color: #F7C873; // dourado quente, visível, sem exagero (mais vibrante que #D4AF37)
+$accent-color: #A97142; // marrom canela com mais saturação (para botões e destaques)
+$text-light: #FFF8F0; // texto claro legível no fundo escuro
+$text-muted: #CBB8A0; // tom neutro elegante, suavemente mais visível
+$input-background: #2D2522; // fundo dos inputs com leve contraste
+$error-color: #E74C3C; // vermelho elegante para erros
+$shadow-color: rgba(0, 0, 0, 0.6); // sombra suave porém profunda
+$border-color: #3C312D; // usado para segmentação e contornos sutis
 
-// Cores extras para diferenciação entre seções
-$company-section-color: #2C1E1A; // fundo exclusivo da área de empresa (chocolate escuro)
-$client-section-color: #1E2621; // fundo exclusivo da área de cliente (verde oliva escuro elegante)
-$client-highlight: #A3C9A8; // cor de ação cliente (tranquilidade, acesso facilitado)
-$company-highlight: #D7A86E; // cor de ação empresa (força, organização, decisão)
+// Seções específicas
+$company-section-color: #2C1E1A; // fundo da área de empresa, chocolate queimado
+$client-section-color: #1E2621; // fundo da área de cliente, oliva escuro puxado para o musgo
+
+// Destaques para botões e ações por perfil
+$company-highlight: #E4B072; // botão dourado de empresa (com leve brilho)
+$client-highlight: #B5D5B0; // botão verde-claro calmante e moderno

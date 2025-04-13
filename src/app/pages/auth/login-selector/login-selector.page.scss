@@ -1,90 +1,151 @@
-@use 'theme/variables' as *;
-
 .login-selector {
-    --background: $background-dark;
+    --background: #121212;
+
+    ion-content {
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .login-wrapper {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+    }
 
     .login-card {
-        background: $card-background;
+        width: 100%;
+        max-width: 400px;
+        background-color: #1e1e1e;
         border-radius: 12px;
-        box-shadow: 0 4px 12px $shadow-color;
-        color: $text-light;
-        padding: 16px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+        padding: 24px;
+    }
 
-        ion-card-title {
-            color: $primary-color;
-            font-size: 1.5rem;
-            text-align: center;
-            margin-bottom: 12px;
+    ion-card-content {
+        padding: 0;
+    }
+
+    .selector-item {
+        margin-bottom: 16px;
+
+        ion-label {
+            font-size: 16px;
+            color: #ffffff;
         }
 
-        ion-segment {
-            margin-bottom: 16px;
-            background-color: $border-color;
-            border-radius: 8px;
-            padding: 4px;
-
-            ion-segment-button {
-                --color: $text-light;
-                --color-checked: $primary-color;
-                --background-checked: transparent;
-                font-weight: bold;
-            }
-        }
-
-        // Formulário de login de empresa
-        form[formGroup].company-form {
-            background-color: $company-section-color;
-            border-radius: 8px;
-            padding: 16px;
-            margin-bottom: 12px;
-        }
-
-        // Formulário de login de cliente
-        form[formGroup].client-form {
-            background-color: $client-section-color;
-            border-radius: 8px;
-            padding: 16px;
-            margin-bottom: 12px;
-        }
-
-        ion-item {
-            --background: $input-background;
-            --color: $text-light;
+        ion-select {
+            background: #2b2b2b;
+            color: #ffffff;
             border-radius: 6px;
-            margin-bottom: 12px;
+            padding: 8px 12px;
+            margin-top: 6px;
+        }
+    }
+
+    ion-item {
+        background: #2b2b2b;
+        border-radius: 6px;
+        margin-bottom: 12px;
+        padding: 8px 12px;
+        color: #ffffff;
+
+        ion-icon {
+            color: #ffaa00;
+            font-size: 20px;
         }
 
-        ion-label,
         ion-input {
-            color: $text-light;
+            color: #ffffff;
+            --padding-start: 10px;
+        }
+    }
+
+    ion-input::placeholder {
+        color: #bbb;
+    }
+
+    ion-button {
+        border-radius: 8px;
+        font-weight: bold;
+        font-size: 16px;
+        margin-top: 10px;
+    }
+
+    ion-button[color="danger"] {
+        margin-left: 8px;
+        font-size: 14px;
+        font-weight: 600;
+    }
+
+    .cupom-box {
+        display: flex;
+        align-items: center;
+        background: #2b2b2b;
+        border-radius: 6px;
+        padding: 8px 12px;
+
+        ion-input {
+            flex: 1;
+            color: #fff;
+            margin-left: 8px;
         }
 
         ion-button {
-            margin-top: 12px;
-            text-transform: uppercase;
-            font-weight: 600;
+            margin-left: 8px;
+        }
+    }
+
+    .link-row {
+        text-align: center;
+        margin-top: 10px;
+
+        ion-text {
+            font-size: 14px;
+            color: #aaa;
+        }
+    }
+
+    .new-client-row {
+        text-align: center;
+        margin-top: 12px;
+
+        .link-button {
+            display: inline-flex;
+            align-items: center;
+            color: #ffaa00;
+            font-weight: bold;
+            font-size: 15px;
+            text-decoration: none;
+
+            ion-icon {
+                margin-right: 6px;
+            }
+        }
+    }
+
+    .spinner {
+        display: block;
+        margin: 16px auto;
+    }
+
+    .error-msg {
+        font-size: 14px;
+        text-align: center;
+        margin-top: 12px;
+        color: #ff4d4d;
+    }
+
+    // Responsivo para telas maiores
+    @media (min-width: 768px) {
+        .login-card {
+            padding: 32px;
         }
 
-        // Botão em destaque para empresa
-        form[formGroup].company-form ion-button {
-            --background: $company-highlight;
-        }
-
-        // Botão em destaque para cliente
-        form[formGroup].client-form ion-button {
-            --background: $client-highlight;
-        }
-
-        .error-msg {
-            text-align: center;
-            font-size: 0.95rem;
-            color: $error-color;
-            margin-top: 12px;
-        }
-
-        .spinner {
-            display: block;
-            margin: 16px auto;
+        ion-button {
+            font-size: 18px;
         }
     }
 }

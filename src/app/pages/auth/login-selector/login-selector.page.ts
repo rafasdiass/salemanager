@@ -8,28 +8,29 @@ import {
 import { CommonModule } from '@angular/common';
 import {
   IonContent,
-  IonSegment,
-  IonSegmentButton,
   IonCard,
-  IonCardHeader,
-  IonCardTitle,
   IonCardContent,
   IonItem,
   IonInput,
   IonLabel,
   IonButton,
+  IonText,
+  IonSpinner,
   IonGrid,
   IonRow,
   IonCol,
-  IonText,
-  IonSpinner,
+  IonIcon,
+  IonSelect,
+  IonSelectOption,
+  IonFooter,
+  IonRouterLink,
+  
 } from '@ionic/angular/standalone';
 import { finalize } from 'rxjs/operators';
 import { AuthService } from 'src/app/shared/services/auth.service';
 import { NavigationService } from 'src/app/shared/services/navigation.service';
 import {
   LoginRequest,
-  ClientLoginWithCoupon,
   AuthenticatedUser,
 } from 'src/app/shared/models/auth.model';
 import { UserRole } from 'src/app/shared/models/user-role.enum';
@@ -40,26 +41,24 @@ import { FormsModule } from '@angular/forms';
   templateUrl: './login-selector.page.html',
   styleUrls: ['./login-selector.page.scss'],
   standalone: true,
-  imports: [
+  imports: [IonRouterLink, 
     CommonModule,
     FormsModule,
     ReactiveFormsModule,
     IonContent,
-    IonSegment,
-    IonSegmentButton,
     IonCard,
-    IonCardHeader,
-    IonCardTitle,
     IonCardContent,
     IonItem,
     IonInput,
     IonLabel,
     IonButton,
-    IonGrid,
-    IonRow,
-    IonCol,
     IonText,
     IonSpinner,
+    
+    IonIcon,
+    IonSelect,
+    IonSelectOption,
+  
   ],
 })
 export class LoginSelectorPage implements OnInit {
@@ -68,7 +67,7 @@ export class LoginSelectorPage implements OnInit {
   companyForm!: FormGroup;
   clientForm!: FormGroup;
 
-  private _isLoading = signal(false);
+  private _isLoading = signal<boolean>(false);
   readonly isLoading = computed(() => this._isLoading());
 
   private _errorMessage = signal<string | null>(null);
@@ -107,6 +106,10 @@ export class LoginSelectorPage implements OnInit {
         Validators.required,
         Validators.email,
       ]),
+      password: this.fb.control<string>('', [
+        Validators.required,
+        Validators.minLength(6),
+      ]),
       coupon: this.fb.control<string>('', [Validators.required]),
     });
   }
@@ -129,48 +132,55 @@ export class LoginSelectorPage implements OnInit {
           this.navigation.resetActivePage();
           this.redirectByRole(this.authService.currentUser());
         },
-        error: (err) =>
-          this.setError(
-            this.extractMessage(err, 'Erro ao autenticar empresa.')
-          ),
+        error: (err: unknown) =>
+          this.setError(this.handleError(err, 'Erro ao autenticar empresa.')),
       });
   }
 
   onClientLogin(): void {
     if (this.clientForm.invalid) {
-      this.setError('Informe corretamente o e-mail e o cupom.');
+      this.setError('Informe corretamente o e-mail, senha e o cupom.');
       return;
     }
 
-    const data: ClientLoginWithCoupon = this.clientForm.getRawValue();
+    const data: { email: string; password: string; coupon: string } =
+      this.clientForm.getRawValue();
     this._isLoading.set(true);
     this.clearError();
 
     this.authService
-      .loginOrRegisterClient(data)
+      .login({ email: data.email, password: data.password })
       .pipe(finalize(() => this._isLoading.set(false)))
       .subscribe({
         next: (res) => {
-          // Se o usuário já tiver senha definida, significa que o cadastro está completo.
-          // Portanto, não o direciona para a tela de cadastro, mas para o dashboard.
-          if (res.user.password && res.user.password.trim() !== '') {
+          if (data.coupon && data.coupon !== res.user.couponUsed) {
+            this.authService
+              .vincularClientePorCupom({
+                email: data.email,
+                coupon: data.coupon,
+              })
+              .subscribe({
+                next: () => this.redirectByRole(res.user),
+                error: (err: unknown) =>
+                  this.setError(
+                    this.handleError(err, 'Erro ao atualizar cupom.')
+                  ),
+              });
+          } else {
             this.navigation.resetActivePage();
             this.redirectByRole(res.user);
-          } else {
-            // Caso contrário, o cadastro ainda não foi finalizado; encaminha para a tela de cadastro
-            // passando email e cupom via queryParams para que esses dados sejam reaproveitados.
-            this.navigation.navigateTo('/cadastro-cliente', {
-              queryParams: {
-                email: res.user.email,
-                coupon: res.user.couponUsed ?? data.coupon,
-              },
-            });
           }
         },
-        error: (err) =>
-          this.setError(
-            this.extractMessage(err, 'Erro ao autenticar cliente.')
-          ),
+        error: (err: unknown) => {
+          const message = this.handleError(err, 'Erro ao autenticar cliente.');
+          if (message.toLowerCase().includes('user-not-found')) {
+            this.navigation.navigateTo('/cadastro-cliente', {
+              queryParams: { email: data.email, coupon: data.coupon },
+            });
+          } else {
+            this.setError(message);
+          }
+        },
       });
   }
 
@@ -203,7 +213,10 @@ export class LoginSelectorPage implements OnInit {
     this._errorMessage.set(null);
   }
 
-  private extractMessage(error: unknown, fallback: string): string {
-    return error instanceof Error ? error.message : fallback;
+  private handleError(err: unknown, fallback: string): string {
+    if (err instanceof Error) {
+      return err.message;
+    }
+    return fallback;
   }
 }
