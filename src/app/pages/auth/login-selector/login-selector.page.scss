@@ -2,8 +2,8 @@
     --background: #121212;
 
     ion-content {
-        display: flex;
         height: 100vh;
+        display: flex;
         flex-direction: column;
     }
 
@@ -12,66 +12,62 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        padding: 16px;
+        padding: 12px;
     }
 
     .login-card {
         background-color: #1f1f1f;
         border-radius: 16px;
-        box-shadow: 0px 15px 30px rgba(0, 0, 0, 0.4);
+        box-shadow: 0px 10px 20px rgba(0, 0, 0, 0.5);
         width: 100%;
-        max-width: 420px;
-        padding: 24px 20px;
-        position: relative;
-        overflow-y: auto;
-        max-height: 90vh;
+        max-width: 400px;
+        padding: 16px;
         display: flex;
         flex-direction: column;
-        justify-content: center;
+        justify-content: space-between;
+        height: auto;
     }
 
     .login-title {
-        font-size: 22px;
+        font-size: 18px;
         font-weight: bold;
         color: #ffffff;
-        margin-bottom: 18px;
+        margin-bottom: 12px;
         text-align: center;
     }
 
     .select-area {
-        margin-bottom: 24px;
+        margin-bottom: 16px;
     }
 
     .select-wrapper {
         position: relative;
         background-color: #eeeeee;
-        border-radius: 12px;
-        height: 48px;
+        border-radius: 10px;
+        height: 42px;
         display: flex;
         align-items: center;
         justify-content: center;
         cursor: pointer;
-        z-index: 10;
 
         .select-icon {
             position: absolute;
             left: 12px;
-            font-size: 20px;
+            font-size: 18px;
             color: #ffaa00;
         }
 
         .select-chevron {
             position: absolute;
             right: 12px;
-            font-size: 20px;
+            font-size: 18px;
             color: #999999;
-            pointer-events: none;
         }
 
         .custom-select {
             width: 100%;
             text-align: center;
-            font-size: 16px;
+            font-size: 14px;
             font-weight: 500;
             color: #000000;
             padding: 0 36px;
@@ -81,21 +77,17 @@
     .custom-options {
         width: 100%;
         background-color: #eeeeee;
-        border-radius: 0 0 12px 12px;
-        box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.2);
+        border-radius: 0 0 10px 10px;
+        box-shadow: 0px 3px 10px rgba(0, 0, 0, 0.2);
         overflow: hidden;
-        z-index: 9;
-        position: relative;
-        border-top: 1px solid #cccccc;
-        margin-bottom: 20px;
+        border-top: 1px solid #ccc;
+        margin-bottom: 14px;
 
         .option {
-            padding: 12px 16px;
+            padding: 10px;
             text-align: center;
-            font-size: 16px;
-            font-weight: 500;
+            font-size: 14px;
             cursor: pointer;
-            transition: background-color 0.2s ease;
             color: #000;
 
             &:hover {
@@ -109,34 +101,33 @@
     }
 
     .field-group {
-        margin-bottom: 16px;
+        margin-bottom: 14px;
 
         .form-label {
-            font-size: 14px;
+            font-size: 13px;
             color: #cccccc;
-            margin-bottom: 6px;
-            margin-left: 6px;
+            margin: 0 0 4px 6px;
             display: block;
         }
     }
 
     .input-wrapper {
         background-color: #eeeeee;
-        border-radius: 12px;
+        border-radius: 10px;
         display: flex;
         align-items: center;
-        padding: 10px 12px;
+        padding: 8px 10px;
     }
 
     .input-icon {
         color: #ffaa00;
-        font-size: 20px;
-        margin-right: 10px;
+        font-size: 18px;
+        margin-right: 8px;
     }
 
     ion-input {
         color: #000000;
-        font-size: 15px;
+        font-size: 14px;
         flex: 1;
     }
 
@@ -148,35 +139,35 @@
         --background: #28a745;
         --color: #ffffff;
         font-weight: bold;
-        font-size: 16px;
-        border-radius: 12px;
-        margin-top: 6px;
-        height: 44px;
+        font-size: 14px;
+        border-radius: 10px;
+        height: 38px;
+        margin-top: 4px;
     }
 
     .coupon-button {
-        margin-top: 10px;
+        margin-top: 6px;
         --background: #ff4d4f;
         --color: #ffffff;
         font-weight: bold;
+        font-size: 13px;
+        height: 36px;
         border-radius: 10px;
-        font-size: 14px;
-        height: 40px;
     }
 
     .link-row {
         text-align: center;
-        margin-top: 10px;
+        margin-top: 8px;
 
         ion-text {
-            font-size: 13px;
+            font-size: 12px;
             color: #aaaaaa;
         }
     }
 
     .new-client-row {
         text-align: center;
-        margin-top: 10px;
+        margin-top: 8px;
 
         .link-button {
             display: inline-flex;
@@ -184,13 +175,12 @@
             justify-content: center;
             color: #ffaa00;
             font-weight: bold;
-            font-size: 14px;
+            font-size: 13px;
             text-decoration: none;
-            transition: all 0.2s ease;
 
             ion-icon {
-                margin-right: 6px;
-                font-size: 16px;
+                margin-right: 4px;
+                font-size: 14px;
             }
 
             &:hover {
@@ -200,15 +190,15 @@
     }
 
     .spinner {
-        margin: 20px auto 0px auto;
+        margin: 12px auto 0;
         display: block;
     }
 
     .error-msg {
         color: #ff4d4d;
         text-align: center;
-        margin-top: 16px;
-        font-size: 14px;
+        margin-top: 10px;
+        font-size: 13px;
         font-weight: 500;
     }
 }
