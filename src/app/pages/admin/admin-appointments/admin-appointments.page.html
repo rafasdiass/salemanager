@@ -1,0 +1,50 @@
+<ion-content class="admin-appointments dark-theme" fullscreen>
+  <ion-header>
+    <ion-toolbar>
+      <ion-title>Agenda da Empresa</ion-title>
+    </ion-toolbar>
+  </ion-header>
+
+  <div class="filter-section">
+
+    <ion-item class="select-status">
+      <ion-label>Status</ion-label>
+      <ion-select interface="popover" [ngModel]="selectedStatus()" (ngModelChange)="changeStatusFilter($event)">
+        <ion-select-option value="all">Todos</ion-select-option>
+        <ion-select-option value="scheduled">Agendados</ion-select-option>
+        <ion-select-option value="completed">Concluídos</ion-select-option>
+        <ion-select-option value="canceled">Cancelados</ion-select-option>
+      </ion-select>
+    </ion-item>
+
+    <ion-item class="date-picker">
+      <ion-label>De</ion-label>
+      <ion-datetime [value]="startDate()" (ionChange)="onStartDateChange(getDateFromEvent($event.detail.value))"
+        presentation="date" locale="pt-BR"></ion-datetime>
+    </ion-item>
+
+    <ion-item class="date-picker">
+      <ion-label>Até</ion-label>
+      <ion-datetime [value]="endDate()" (ionChange)="onEndDateChange(getDateFromEvent($event.detail.value))"
+        presentation="date" locale="pt-BR"></ion-datetime>
+    </ion-item>
+
+    <ion-button fill="clear" color="medium" (click)="resetFilters()" class="clear-filters">
+      <ion-icon name="calendar-clear" slot="start"></ion-icon>
+      Limpar Filtros
+    </ion-button>
+  </div>
+
+  <ng-container *ngIf="error(); else content">
+    <ion-card>
+      <ion-card-content class="error-message">
+        {{ error() }}
+      </ion-card-content>
+    </ion-card>
+  </ng-container>
+
+  <ng-template #content>
+    <app-admin-appointments-list [appointments]="filteredAppointments()"
+      [loading]="loading()"></app-admin-appointments-list>
+  </ng-template>
+</ion-content>

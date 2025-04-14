@@ -1,0 +1,41 @@
+<ion-card *ngIf="loading">
+  <ion-card-content>Carregando agendamentos...</ion-card-content>
+</ion-card>
+
+<ion-list *ngIf="!loading && appointments.length > 0">
+  <ion-item *ngFor="let appt of appointments">
+    <ion-label>
+      <h3>
+        {{ appt.startTime | date: 'dd/MM/yyyy HH:mm':'':'pt-BR' }}
+        —
+        {{ appt.endTime | date: 'HH:mm':'':'pt-BR' }}
+      </h3>
+      <p><strong>Cliente:</strong> {{ getClientName(appt.clientId) }}</p>
+      <p><strong>Serviço:</strong> {{ getServiceName(appt.serviceId) }}</p>
+      <p><strong>Profissional:</strong> {{ getEmployeeName(appt.employeeId) }}</p>
+      <p><strong>Status:</strong> {{ appt.status }}</p>
+    </ion-label>
+
+    <ion-button fill="clear" color="success" (click)="complete(appt.id!)" [disabled]="isProcessing() === appt.id">
+      <ion-icon name="checkmark-circle" slot="icon-only"></ion-icon>
+    </ion-button>
+
+    <ion-button fill="clear" color="danger" (click)="cancel(appt.id!)" [disabled]="isProcessing() === appt.id">
+      <ion-icon name="trash-bin" slot="icon-only"></ion-icon>
+    </ion-button>
+  </ion-item>
+</ion-list>
+
+<ion-card *ngIf="!loading && appointments.length === 0">
+  <ion-card-content class="empty-message">
+    <ion-icon name="calendar-clear" size="large"></ion-icon>
+    <p>Nenhum agendamento encontrado para o período selecionado.</p>
+  </ion-card-content>
+</ion-card>
+
+<ion-card *ngIf="error()">
+  <ion-card-content class="error-message">
+    <ion-icon name="alert-circle" color="danger" slot="start"></ion-icon>
+    {{ error() }}
+  </ion-card-content>
+</ion-card>
