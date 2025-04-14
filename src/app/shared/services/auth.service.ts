@@ -35,6 +35,10 @@ export class AuthService {
     user: null,
     token: null,
   });
+  /**
+   * Signal computado para acessar o usuário autenticado (ou null).
+   */
+  readonly user = computed(() => this.authState().user);
 
   readonly currentUser = computed(() => this.authState().user);
   readonly isLoggedIn = computed(() => this.authState().isAuthenticated);

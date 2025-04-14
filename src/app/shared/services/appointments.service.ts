@@ -10,6 +10,8 @@ import { Observable } from 'rxjs';
 export class AppointmentsService extends BaseFirestoreCrudService<Appointment> {
   private readonly companyId = this.authService.primaryCompanyId;
   private readonly _appointments = signal<Appointment[]>([]);
+
+  readonly loading = signal<boolean>(true); // ✅ agora disponível!
   readonly appointments = computed(() =>
     this._appointments().filter((a) => a.companyId === this.companyId())
   );
@@ -21,17 +23,15 @@ export class AppointmentsService extends BaseFirestoreCrudService<Appointment> {
   ) {
     super('appointments');
     this.businessRules = this.rules;
-
     this.initializeFilteredList();
   }
 
-  /**
-   * Carrega os agendamentos filtrados por empresa.
-   */
   private initializeFilteredList(): void {
     effect(() => {
+      this.loading.set(true);
       const signal$ = toSignal(this.listAll(), { initialValue: [] });
       this._appointments.set(signal$());
+      this.loading.set(false);
     });
   }
 

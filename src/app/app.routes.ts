@@ -185,4 +185,16 @@ export const routes: Routes = [
         (m) => m.ClientRegisterPage
       ),
   },
+  {
+    path: 'client-appointments',
+    loadComponent: () => import('./pages/client/client-appointments/client-appointments.page').then( m => m.ClientAppointmentsPage)
+  },
+  {
+    path: 'client-appointments-form',
+    loadComponent: () => import('./pages/client/client-appointments-form/client-appointments-form.page').then( m => m.ClientAppointmentsFormPage)
+  },
+  {
+    path: 'client-appointments-list',
+    loadComponent: () => import('./pages/client/client-appointments-list/client-appointments-list.page').then( m => m.ClientAppointmentsListPage)
+  },
 ];
