@@ -217,4 +217,13 @@
         font-size: 14px;
         font-weight: 500;
     }
+           .coupon-button {
+               margin-top: 10px;
+               --background: #ff4d4f;
+               --color: #ffffff;
+               font-weight: bold;
+               border-radius: 10px;
+               font-size: 14px;
+               height: 40px;
+           }
 }

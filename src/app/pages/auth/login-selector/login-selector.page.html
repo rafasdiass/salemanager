@@ -86,15 +86,18 @@
 
             <div class="field-group">
               <label class="form-label">Cupom</label>
-              <div class="input-wrapper coupon-wrapper">
+              <div class="input-wrapper">
                 <ion-icon name="pricetag" class="input-icon"></ion-icon>
                 <ion-input formControlName="coupon" placeholder="Digite seu cupom"></ion-input>
-                <ion-button type="submit" size="small" color="danger">Aplicar</ion-button>
               </div>
+              <ion-button expand="block" type="submit" size="small" color="danger" class="coupon-button">
+                Aplicar
+              </ion-button>
             </div>
           </form>
         </ng-container>
 
+        <!-- Carregando ou Erro -->
         <ion-spinner *ngIf="isLoading()" name="crescent" class="spinner"></ion-spinner>
 
         <ion-text color="danger" *ngIf="errorMessage()">
