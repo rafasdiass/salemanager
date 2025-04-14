@@ -2,8 +2,8 @@
     --background: #121212;
 
     ion-content {
-        height: 100%;
         display: flex;
+        height: 100%;
         flex-direction: column;
     }
 
@@ -12,112 +12,135 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        padding: 20px;
-    }
-
-    .login-card {
-        width: 100%;
-        max-width: 400px;
-        background-color: #1e1e1e;
-        border-radius: 12px;
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
         padding: 24px;
     }
 
-    ion-card-content {
-        padding: 0;
+    .login-card {
+        background: #1f1f1f;
+        border-radius: 16px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        width: 100%;
+        max-width: 400px;
+        padding: 32px 24px;
     }
 
-    .selector-item {
+    .login-title {
+        font-size: 20px;
+        font-weight: bold;
+        color: #fff;
+        margin-bottom: 10px;
+    }
+
+    .form-label {
+        font-size: 14px;
+        color: #ccc;
+        margin: 12px 0 6px 6px;
+        display: block;
+    }
+
+    .select-container {
+        background: #eeeeee;
+        border-radius: 12px;
         margin-bottom: 16px;
+        overflow: hidden;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 48px;
 
-        ion-label {
+        ion-select.custom-select {
+            --background: transparent;
+            --placeholder-color: #000;
+            --color: #000;
+            --padding-start: 0;
+            --padding-end: 0;
+            --border-radius: 0;
+
+            width: 100%;
             font-size: 16px;
-            color: #ffffff;
+            font-weight: 500;
+            text-align: center;
         }
 
-        ion-select {
-            background: #2b2b2b;
-            color: #ffffff;
-            border-radius: 6px;
-            padding: 8px 12px;
-            margin-top: 6px;
-        }
-    }
-
-    ion-item {
-        background: #2b2b2b;
-        border-radius: 6px;
-        margin-bottom: 12px;
-        padding: 8px 12px;
-        color: #ffffff;
-
-        ion-icon {
-            color: #ffaa00;
-            font-size: 20px;
+        ion-select::part(text) {
+            width: 100%;
+            text-align: center;
+            display: flex;
+            justify-content: center;
+            align-items: center;
         }
 
-        ion-input {
-            color: #ffffff;
-            --padding-start: 10px;
+        ion-select::part(icon) {
+            display: none; // pode ser removido se quiser seta
         }
     }
 
-    ion-input::placeholder {
-        color: #bbb;
+    .input-wrapper {
+        background: #eeeeee;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        padding: 10px 12px;
+        margin-bottom: 14px;
+    }
+
+    .input-icon {
+        color: #ffaa00;
+        font-size: 20px;
+        margin-right: 10px;
+    }
+
+    ion-input {
+        color: #000;
+        font-size: 15px;
+        flex: 1;
+    }
+
+    ion-input::part(native) {
+        color: #999;
+    }
+
+    .coupon-wrapper {
+        gap: 10px;
+
+        ion-button {
+            --background: #ff4d4f;
+            --color: #fff;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 14px;
+        }
     }
 
     ion-button {
-        border-radius: 8px;
+        --background: #28a745;
+        --color: #ffffff;
         font-weight: bold;
         font-size: 16px;
+        border-radius: 12px;
         margin-top: 10px;
-    }
-
-    ion-button[color="danger"] {
-        margin-left: 8px;
-        font-size: 14px;
-        font-weight: 600;
-    }
-
-    .cupom-box {
-        display: flex;
-        align-items: center;
-        background: #2b2b2b;
-        border-radius: 6px;
-        padding: 8px 12px;
-
-        ion-input {
-            flex: 1;
-            color: #fff;
-            margin-left: 8px;
-        }
-
-        ion-button {
-            margin-left: 8px;
-        }
     }
 
     .link-row {
         text-align: center;
-        margin-top: 10px;
+        margin-top: 12px;
 
         ion-text {
-            font-size: 14px;
+            font-size: 13px;
             color: #aaa;
         }
     }
 
     .new-client-row {
         text-align: center;
-        margin-top: 12px;
+        margin-top: 10px;
 
         .link-button {
             display: inline-flex;
             align-items: center;
             color: #ffaa00;
             font-weight: bold;
-            font-size: 15px;
+            font-size: 14px;
             text-decoration: none;
 
             ion-icon {
@@ -127,25 +150,14 @@
     }
 
     .spinner {
+        margin: 20px auto 0;
         display: block;
-        margin: 16px auto;
     }
 
     .error-msg {
-        font-size: 14px;
-        text-align: center;
-        margin-top: 12px;
         color: #ff4d4d;
-    }
-
-    // Responsivo para telas maiores
-    @media (min-width: 768px) {
-        .login-card {
-            padding: 32px;
-        }
-
-        ion-button {
-            font-size: 18px;
-        }
+        text-align: center;
+        margin-top: 16px;
+        font-size: 14px;
     }
 }

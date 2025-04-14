@@ -3,38 +3,39 @@
     <ion-card class="login-card">
       <ion-card-content>
 
-        <!-- Seletor de tipo de login -->
-        <ion-item lines="none" class="selector-item">
-          <ion-label>Login como:</ion-label>
-          <ion-select [(ngModel)]="loginType" interface="popover">
+        <h2 class="login-title">Login como:</h2>
+
+        <!-- Seletor com ion-select estilizado -->
+        <label class="form-label">Tipo de conta</label>
+        <div class="select-container">
+          <ion-select interface="popover" placeholder="Selecione" [(ngModel)]="loginType" class="custom-select">
             <ion-select-option value="company">Empresa</ion-select-option>
             <ion-select-option value="client">Cliente</ion-select-option>
           </ion-select>
-        </ion-item>
+        </div>
 
         <!-- FORMULÁRIO PARA EMPRESA -->
-        <form *ngIf="loginType === 'company'" [formGroup]="companyForm" (ngSubmit)="onCompanyLogin()"
-          class="company-form">
-          <ion-item>
-            <ion-icon slot="start" name="mail"></ion-icon>
+        <form *ngIf="loginType === 'company'" [formGroup]="companyForm" (ngSubmit)="onCompanyLogin()">
+          <label class="form-label">Email</label>
+          <div class="input-wrapper">
+            <ion-icon name="mail" class="input-icon"></ion-icon>
             <ion-input formControlName="email" type="email" placeholder="Digite seu email"></ion-input>
-          </ion-item>
+          </div>
 
-          <ion-item>
-            <ion-icon slot="start" name="lock-closed"></ion-icon>
+          <label class="form-label">Senha</label>
+          <div class="input-wrapper">
+            <ion-icon name="lock-closed" class="input-icon"></ion-icon>
             <ion-input formControlName="password" type="password" placeholder="Digite sua senha"></ion-input>
-          </ion-item>
+          </div>
 
-          <ion-button expand="block" type="submit" [disabled]="isLoading()">
-            Entrar
-          </ion-button>
+          <ion-button expand="block" type="submit" [disabled]="isLoading()">Entrar</ion-button>
 
           <div class="link-row">
             <ion-text>Esqueci a senha</ion-text>
           </div>
 
           <div class="new-client-row">
-            <ion-router-link routerLink="/escolher-plano" class="link-button" color="warning">
+            <ion-router-link routerLink="/escolher-plano" class="link-button">
               <ion-icon name="pricetag" slot="start"></ion-icon>
               Compre um plano
             </ion-router-link>
@@ -42,38 +43,37 @@
         </form>
 
         <!-- FORMULÁRIO PARA CLIENTE -->
-        <form *ngIf="loginType === 'client'" [formGroup]="clientForm" (ngSubmit)="onClientLogin()" class="client-form">
-          <ion-item>
-            <ion-icon slot="start" name="mail"></ion-icon>
+        <form *ngIf="loginType === 'client'" [formGroup]="clientForm" (ngSubmit)="onClientLogin()">
+          <label class="form-label">Email</label>
+          <div class="input-wrapper">
+            <ion-icon name="mail" class="input-icon"></ion-icon>
             <ion-input formControlName="email" type="email" placeholder="Digite seu email"></ion-input>
-          </ion-item>
+          </div>
 
-          <ion-item>
-            <ion-icon slot="start" name="lock-closed"></ion-icon>
+          <label class="form-label">Senha</label>
+          <div class="input-wrapper">
+            <ion-icon name="lock-closed" class="input-icon"></ion-icon>
             <ion-input formControlName="password" type="password" placeholder="Digite sua senha"></ion-input>
-          </ion-item>
+          </div>
 
-          <ion-button expand="block" type="submit" [disabled]="isLoading()">
-            Entrar
-          </ion-button>
+          <ion-button expand="block" type="submit" [disabled]="isLoading()">Entrar</ion-button>
 
           <div class="link-row">
             <ion-text>Esqueci a senha</ion-text>
           </div>
 
-          <ion-item class="cupom-box">
-            <ion-icon slot="start" name="pricetag"></ion-icon>
-            <ion-input placeholder="Digite seu cupom" formControlName="coupon"></ion-input>
-            <ion-button type="submit" size="small" color="danger" slot="end">
-              Aplicar
-            </ion-button>
-          </ion-item>
+          <label class="form-label">Cupom</label>
+          <div class="input-wrapper coupon-wrapper">
+            <ion-icon name="pricetag" class="input-icon"></ion-icon>
+            <ion-input formControlName="coupon" placeholder="Digite seu cupom"></ion-input>
+            <ion-button type="submit" size="small" color="danger">Aplicar</ion-button>
+          </div>
         </form>
 
-        <!-- SPINNER DE CARREGAMENTO -->
+        <!-- SPINNER -->
         <ion-spinner *ngIf="isLoading()" name="crescent" class="spinner"></ion-spinner>
 
-        <!-- MENSAGEM DE ERRO -->
+        <!-- ERRO -->
         <ion-text color="danger" *ngIf="errorMessage()">
           <p class="error-msg">{{ errorMessage() }}</p>
         </ion-text>
@@ -81,6 +81,4 @@
       </ion-card-content>
     </ion-card>
   </div>
-
- 
 </ion-content>

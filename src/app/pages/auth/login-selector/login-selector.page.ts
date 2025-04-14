@@ -23,9 +23,7 @@ import {
   IonSelect,
   IonSelectOption,
   IonFooter,
-  IonRouterLink,
-  
-} from '@ionic/angular/standalone';
+  IonRouterLink, IonSegmentButton, IonCheckbox } from '@ionic/angular/standalone';
 import { finalize } from 'rxjs/operators';
 import { AuthService } from 'src/app/shared/services/auth.service';
 import { NavigationService } from 'src/app/shared/services/navigation.service';
@@ -35,30 +33,34 @@ import {
 } from 'src/app/shared/models/auth.model';
 import { UserRole } from 'src/app/shared/models/user-role.enum';
 import { FormsModule } from '@angular/forms';
+import { RouterModule } from '@angular/router';
 
 @Component({
   selector: 'app-login-selector',
   templateUrl: './login-selector.page.html',
   styleUrls: ['./login-selector.page.scss'],
   standalone: true,
-  imports: [IonRouterLink, 
+  imports: [
+    IonCheckbox,
+    IonSegmentButton,
+    IonRouterLink,
     CommonModule,
     FormsModule,
     ReactiveFormsModule,
     IonContent,
     IonCard,
     IonCardContent,
+    RouterModule,
     IonItem,
     IonInput,
     IonLabel,
     IonButton,
     IonText,
     IonSpinner,
-    
+
     IonIcon,
     IonSelect,
     IonSelectOption,
-  
   ],
 })
 export class LoginSelectorPage implements OnInit {
