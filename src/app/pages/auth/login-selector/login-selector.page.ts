@@ -1,4 +1,12 @@
-import { Component, OnInit, signal, computed, effect } from '@angular/core';
+import {
+  Component,
+  OnInit,
+  signal,
+  computed,
+  effect,
+  HostListener,
+  ElementRef,
+} from '@angular/core';
 import {
   FormBuilder,
   FormGroup,
@@ -10,22 +18,12 @@ import {
   IonContent,
   IonCard,
   IonCardContent,
-  IonItem,
   IonInput,
-  IonLabel,
+  IonIcon,
   IonButton,
   IonText,
   IonSpinner,
-  IonGrid,
-  IonRow,
-  IonCol,
-  IonIcon,
-  IonSelect,
-  IonSelectOption,
-  IonFooter,
   IonRouterLink,
-  IonSegmentButton,
-  IonCheckbox,
 } from '@ionic/angular/standalone';
 
 import { finalize } from 'rxjs/operators';
@@ -46,29 +44,24 @@ import { registerIcons } from 'src/app/icons';
   styleUrls: ['./login-selector.page.scss'],
   standalone: true,
   imports: [
-    IonCheckbox,
-    IonSegmentButton,
-    IonRouterLink,
     CommonModule,
     FormsModule,
     ReactiveFormsModule,
+    RouterModule,
     IonContent,
     IonCard,
     IonCardContent,
-    RouterModule,
-    IonItem,
     IonInput,
-    IonLabel,
+    IonIcon,
     IonButton,
     IonText,
     IonSpinner,
-    IonIcon,
-    IonSelect,
-    IonSelectOption,
+    IonRouterLink,
   ],
 })
 export class LoginSelectorPage implements OnInit {
-  loginType: 'company' | 'client' = 'company';
+  loginType: 'company' | 'client' | null = null;
+  dropdownOpen = false;
 
   companyForm!: FormGroup;
   clientForm!: FormGroup;
@@ -88,37 +81,54 @@ export class LoginSelectorPage implements OnInit {
   constructor(
     private fb: FormBuilder,
     private authService: AuthService,
-    private navigation: NavigationService
+    private navigation: NavigationService,
+    private elRef: ElementRef
   ) {
-    registerIcons(); // chama a função de registro dos ícones
+    registerIcons();
   }
 
   ngOnInit(): void {
     this.initializeForms();
   }
 
+  toggleDropdown(): void {
+    this.dropdownOpen = !this.dropdownOpen;
+  }
+
+  selectLoginType(type: 'client' | 'company'): void {
+    this.loginType = type;
+    this.dropdownOpen = false;
+
+    // Aguarda renderização total do DOM antes de aplicar foco
+    setTimeout(() => {
+      requestAnimationFrame(() => {
+        const ionInput = this.elRef.nativeElement.querySelector(
+          'ion-input'
+        ) as HTMLIonInputElement | null;
+        ionInput?.setFocus?.();
+      });
+    }, 100);
+  }
+
+  @HostListener('document:click', ['$event'])
+  handleClickOutside(event: MouseEvent): void {
+    const target = event.target as HTMLElement;
+    const clickedInside = this.elRef.nativeElement.contains(target);
+    if (!clickedInside) {
+      this.dropdownOpen = false;
+    }
+  }
+
   private initializeForms(): void {
     this.companyForm = this.fb.group({
-      email: this.fb.control<string>('', [
-        Validators.required,
-        Validators.email,
-      ]),
-      password: this.fb.control<string>('', [
-        Validators.required,
-        Validators.minLength(6),
-      ]),
+      email: ['', [Validators.required, Validators.email]],
+      password: ['', [Validators.required, Validators.minLength(6)]],
     });
 
     this.clientForm = this.fb.group({
-      email: this.fb.control<string>('', [
-        Validators.required,
-        Validators.email,
-      ]),
-      password: this.fb.control<string>('', [
-        Validators.required,
-        Validators.minLength(6),
-      ]),
-      coupon: this.fb.control<string>('', [Validators.required]),
+      email: ['', [Validators.required, Validators.email]],
+      password: ['', [Validators.required, Validators.minLength(6)]],
+      coupon: ['', Validators.required],
     });
   }
 
@@ -151,8 +161,7 @@ export class LoginSelectorPage implements OnInit {
       return;
     }
 
-    const data: { email: string; password: string; coupon: string } =
-      this.clientForm.getRawValue();
+    const data = this.clientForm.getRawValue();
     this._isLoading.set(true);
     this.clearError();
 
@@ -222,9 +231,7 @@ export class LoginSelectorPage implements OnInit {
   }
 
   private handleError(err: unknown, fallback: string): string {
-    if (err instanceof Error) {
-      return err.message;
-    }
+    if (err instanceof Error) return err.message;
     return fallback;
   }
 }

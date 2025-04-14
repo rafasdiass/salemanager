@@ -22,6 +22,8 @@
         width: 100%;
         max-width: 400px;
         padding: 32px 24px;
+        position: relative;
+        overflow: visible; // necessário para dropdown funcionar
     }
 
     .login-title {
@@ -32,13 +34,6 @@
         text-align: center;
     }
 
-    .form-label {
-        font-size: 14px;
-        color: #cccccc;
-        margin: 12px 0px 6px 6px;
-        display: block;
-    }
-
     .select-wrapper {
         position: relative;
         background-color: #eeeeee;
@@ -47,14 +42,16 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        margin-bottom: 20px;
+        margin-bottom: 0; // tiramos o margin-bottom
+        cursor: pointer;
+        z-index: 10;
 
         .select-icon {
             position: absolute;
             left: 12px;
             font-size: 20px;
             color: #ffaa00;
-            z-index: 1;
+            z-index: 2;
         }
 
         .select-chevron {
@@ -62,36 +59,47 @@
             right: 12px;
             font-size: 20px;
             color: #999999;
-            z-index: 1;
+            z-index: 2;
             pointer-events: none;
         }
 
-        ion-select.custom-select {
-            --background: transparent;
-            --placeholder-color: #000000;
-            --color: #000000;
-            --padding-start: 36px;
-            --padding-end: 36px;
-            --border-radius: 12px;
-            --text-align: center;
-
+        .custom-select {
             width: 100%;
-            height: 100%;
+            text-align: center;
             font-size: 16px;
             font-weight: 500;
-            text-align: center;
+            color: #000000;
+            padding: 0 36px;
         }
+    }
 
-        ion-select::part(text) {
-            width: 100%;
+    .custom-options {
+        width: 100%;
+        background-color: #eeeeee;
+        border-bottom-left-radius: 12px;
+        border-bottom-right-radius: 12px;
+        box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.2);
+        overflow: hidden;
+        z-index: 9;
+        position: relative; // ⚠️ isso faz com que o dropdown "desça" abaixo do wrapper
+        border-top: 1px solid #cccccc;
+
+        .option {
+            padding: 12px 16px;
             text-align: center;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+            color: #000;
 
-        ion-select::part(icon) {
-            display: none;
+            &:hover {
+                background-color: #dddddd;
+            }
+
+            &.selected {
+                background-color: #cccccc;
+            }
         }
     }
 
@@ -101,7 +109,7 @@
         display: flex;
         align-items: center;
         padding: 10px 12px;
-        margin-bottom: 14px;
+        margin: 20px 0 14px 0; // espaçamento abaixo do seletor
     }
 
     .input-icon {
