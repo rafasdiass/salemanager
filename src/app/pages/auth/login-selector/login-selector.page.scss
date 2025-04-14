@@ -16,9 +16,9 @@
     }
 
     .login-card {
-        background: #1f1f1f;
+        background-color: #1f1f1f;
         border-radius: 16px;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        box-shadow: 0px 10px 30px rgba(0, 0, 0, 0.5);
         width: 100%;
         max-width: 400px;
         padding: 32px 24px;
@@ -27,36 +27,56 @@
     .login-title {
         font-size: 20px;
         font-weight: bold;
-        color: #fff;
+        color: #ffffff;
         margin-bottom: 10px;
+        text-align: center;
     }
 
     .form-label {
         font-size: 14px;
-        color: #ccc;
-        margin: 12px 0 6px 6px;
+        color: #cccccc;
+        margin: 12px 0px 6px 6px;
         display: block;
     }
 
-    .select-container {
-        background: #eeeeee;
+    .select-wrapper {
+        position: relative;
+        background-color: #eeeeee;
         border-radius: 12px;
-        margin-bottom: 16px;
-        overflow: hidden;
+        height: 48px;
         display: flex;
         align-items: center;
         justify-content: center;
-        height: 48px;
+        margin-bottom: 20px;
+
+        .select-icon {
+            position: absolute;
+            left: 12px;
+            font-size: 20px;
+            color: #ffaa00;
+            z-index: 1;
+        }
+
+        .select-chevron {
+            position: absolute;
+            right: 12px;
+            font-size: 20px;
+            color: #999999;
+            z-index: 1;
+            pointer-events: none;
+        }
 
         ion-select.custom-select {
             --background: transparent;
-            --placeholder-color: #000;
-            --color: #000;
-            --padding-start: 0;
-            --padding-end: 0;
-            --border-radius: 0;
+            --placeholder-color: #000000;
+            --color: #000000;
+            --padding-start: 36px;
+            --padding-end: 36px;
+            --border-radius: 12px;
+            --text-align: center;
 
             width: 100%;
+            height: 100%;
             font-size: 16px;
             font-weight: 500;
             text-align: center;
@@ -71,12 +91,12 @@
         }
 
         ion-select::part(icon) {
-            display: none; // pode ser removido se quiser seta
+            display: none;
         }
     }
 
     .input-wrapper {
-        background: #eeeeee;
+        background-color: #eeeeee;
         border-radius: 12px;
         display: flex;
         align-items: center;
@@ -91,24 +111,32 @@
     }
 
     ion-input {
-        color: #000;
+        color: #000000;
         font-size: 15px;
         flex: 1;
     }
 
     ion-input::part(native) {
-        color: #999;
+        color: #999999;
     }
 
     .coupon-wrapper {
+        display: flex;
+        align-items: center;
         gap: 10px;
+
+        ion-input {
+            flex: 1;
+        }
 
         ion-button {
             --background: #ff4d4f;
-            --color: #fff;
+            --color: #ffffff;
             border-radius: 10px;
             font-weight: 600;
             font-size: 14px;
+            padding: 0px 12px;
+            height: 36px;
         }
     }
 
@@ -119,6 +147,7 @@
         font-size: 16px;
         border-radius: 12px;
         margin-top: 10px;
+        height: 44px;
     }
 
     .link-row {
@@ -127,7 +156,7 @@
 
         ion-text {
             font-size: 13px;
-            color: #aaa;
+            color: #aaaaaa;
         }
     }
 
@@ -138,19 +167,26 @@
         .link-button {
             display: inline-flex;
             align-items: center;
+            justify-content: center;
             color: #ffaa00;
             font-weight: bold;
             font-size: 14px;
             text-decoration: none;
+            transition: all 0.2s ease;
 
             ion-icon {
                 margin-right: 6px;
+                font-size: 16px;
+            }
+
+            &:hover {
+                text-decoration: underline;
             }
         }
     }
 
     .spinner {
-        margin: 20px auto 0;
+        margin: 20px auto 0px auto;
         display: block;
     }
 
@@ -159,5 +195,6 @@
         text-align: center;
         margin-top: 16px;
         font-size: 14px;
+        font-weight: 500;
     }
 }

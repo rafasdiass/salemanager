@@ -23,7 +23,11 @@ import {
   IonSelect,
   IonSelectOption,
   IonFooter,
-  IonRouterLink, IonSegmentButton, IonCheckbox } from '@ionic/angular/standalone';
+  IonRouterLink,
+  IonSegmentButton,
+  IonCheckbox,
+} from '@ionic/angular/standalone';
+
 import { finalize } from 'rxjs/operators';
 import { AuthService } from 'src/app/shared/services/auth.service';
 import { NavigationService } from 'src/app/shared/services/navigation.service';
@@ -34,6 +38,7 @@ import {
 import { UserRole } from 'src/app/shared/models/user-role.enum';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
+import { registerIcons } from 'src/app/icons';
 
 @Component({
   selector: 'app-login-selector',
@@ -57,7 +62,6 @@ import { RouterModule } from '@angular/router';
     IonButton,
     IonText,
     IonSpinner,
-
     IonIcon,
     IonSelect,
     IonSelectOption,
@@ -85,7 +89,9 @@ export class LoginSelectorPage implements OnInit {
     private fb: FormBuilder,
     private authService: AuthService,
     private navigation: NavigationService
-  ) {}
+  ) {
+    registerIcons(); // chama a função de registro dos ícones
+  }
 
   ngOnInit(): void {
     this.initializeForms();

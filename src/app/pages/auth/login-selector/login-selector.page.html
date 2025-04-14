@@ -6,13 +6,17 @@
         <h2 class="login-title">Login como:</h2>
 
         <!-- Seletor com ion-select estilizado -->
-        <label class="form-label">Tipo de conta</label>
-        <div class="select-container">
-          <ion-select interface="popover" placeholder="Selecione" [(ngModel)]="loginType" class="custom-select">
-            <ion-select-option value="company">Empresa</ion-select-option>
-            <ion-select-option value="client">Cliente</ion-select-option>
-          </ion-select>
-        </div>
+       
+        
+      <div class="select-wrapper">
+        <ion-icon name="person-circle" class="select-icon"></ion-icon>
+        <ion-select [(ngModel)]="loginType" interface="popover" class="custom-select" placeholder="Selecione o tipo de login">
+          <ion-select-option value="client">Cliente</ion-select-option>
+          <ion-select-option value="company">Empresa</ion-select-option>
+        </ion-select>
+        <ion-icon name="chevron-down" class="select-chevron"></ion-icon>
+      </div>
+
 
         <!-- FORMULÁRIO PARA EMPRESA -->
         <form *ngIf="loginType === 'company'" [formGroup]="companyForm" (ngSubmit)="onCompanyLogin()">
