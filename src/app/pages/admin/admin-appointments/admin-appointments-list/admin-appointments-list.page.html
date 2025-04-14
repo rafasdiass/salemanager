@@ -6,14 +6,17 @@
   <ion-item *ngFor="let appt of appointments">
     <ion-label>
       <h3>
-        {{ appt.startTime | date: 'dd/MM/yyyy HH:mm':'':'pt-BR' }}
-        —
+        {{ appt.startTime | date: 'dd/MM/yyyy HH:mm':'':'pt-BR' }} —
         {{ appt.endTime | date: 'HH:mm':'':'pt-BR' }}
       </h3>
       <p><strong>Cliente:</strong> {{ getClientName(appt.clientId) }}</p>
       <p><strong>Serviço:</strong> {{ getServiceName(appt.serviceId) }}</p>
       <p><strong>Profissional:</strong> {{ getEmployeeName(appt.employeeId) }}</p>
-      <p><strong>Status:</strong> {{ appt.status }}</p>
+      <p class="status-line">
+        <strong>Status:</strong> {{ appt.status }}
+        <ion-icon class="status-icon" [name]="getStatusIcon(appt.status)" [color]="getStatusColor(appt.status)"
+          (click)="openPopover($event, appt.status)"></ion-icon>
+      </p>
     </ion-label>
 
     <ion-button fill="clear" color="success" (click)="complete(appt.id!)" [disabled]="isProcessing() === appt.id">
@@ -25,6 +28,15 @@
     </ion-button>
   </ion-item>
 </ion-list>
+
+<ion-popover [isOpen]="popoverOpen()" [event]="popoverEvent()" (didDismiss)="popoverOpen.set(false)">
+  <ng-template>
+    <div class="popover-content">
+      <ion-icon [name]="getStatusIcon(popoverStatus())" size="large"></ion-icon>
+      <p>Status: {{ popoverStatus() }}</p>
+    </div>
+  </ng-template>
+</ion-popover>
 
 <ion-card *ngIf="!loading && appointments.length === 0">
   <ion-card-content class="empty-message">

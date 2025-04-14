@@ -15,6 +15,7 @@ import {
   IonIcon,
   IonCard,
   IonCardContent,
+  IonPopover,
 } from '@ionic/angular/standalone';
 
 import { Appointment } from 'src/app/shared/models/appointments.model';
@@ -41,6 +42,7 @@ import { AuthenticatedUser } from 'src/app/shared/models/auth.model';
     IonIcon,
     IonCard,
     IonCardContent,
+    IonPopover,
   ],
 })
 export class AdminAppointmentsListPage {
@@ -58,6 +60,11 @@ export class AdminAppointmentsListPage {
   readonly clientMap = signal<Record<string, Client>>({});
   readonly serviceMap = signal<Record<string, Service>>({});
   readonly employeeMap = signal<Record<string, AuthenticatedUser>>({});
+
+  // Popover
+  popoverOpen = signal(false);
+  popoverEvent = signal<Event | null>(null);
+  popoverStatus = signal<string>('scheduled');
 
   constructor() {
     this.loadEntities();
@@ -131,5 +138,35 @@ export class AdminAppointmentsListPage {
     } finally {
       this.isProcessing.set(null);
     }
+  }
+
+  getStatusIcon(status: string): string {
+    const map: Record<string, string> = {
+      scheduled: 'time-outline',
+      confirmed: 'checkmark',
+      completed: 'checkmark-circle',
+      canceled: 'close-circle',
+      'no-show': 'alert-circle',
+      rescheduled: 'refresh-circle',
+    };
+    return map[status] || 'help';
+  }
+
+  getStatusColor(status: string): string {
+    const map: Record<string, string> = {
+      scheduled: 'medium',
+      confirmed: 'success',
+      completed: 'success',
+      canceled: 'danger',
+      'no-show': 'warning',
+      rescheduled: 'tertiary',
+    };
+    return map[status] || 'dark';
+  }
+
+  openPopover(event: Event, status: string): void {
+    this.popoverEvent.set(event);
+    this.popoverStatus.set(status);
+    this.popoverOpen.set(true);
   }
 }
