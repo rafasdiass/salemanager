@@ -4,14 +4,11 @@ import { Appointment } from '../models/appointments.model';
 import { AppointmentBusinessRulesService } from '../regras/appointment-business-rules.service';
 import { AuthService } from './auth.service';
 import { toSignal } from '@angular/core/rxjs-interop';
-import { Observable } from 'rxjs';
 
 @Injectable({ providedIn: 'root' })
 export class AppointmentsService extends BaseFirestoreCrudService<Appointment> {
-  private readonly companyId = this.authService.primaryCompanyId;
   private readonly _appointments = signal<Appointment[]>([]);
-
-  readonly loading = signal<boolean>(true); // ✅ agora disponível!
+  readonly loading = signal<boolean>(true);
   readonly appointments = computed(() =>
     this._appointments().filter((a) => a.companyId === this.companyId())
   );
@@ -23,44 +20,34 @@ export class AppointmentsService extends BaseFirestoreCrudService<Appointment> {
   ) {
     super('appointments');
     this.businessRules = this.rules;
-    this.initializeFilteredList();
+    this.loadAppointments();
   }
 
-  private initializeFilteredList(): void {
+  private companyId = computed(() => this.authService.primaryCompanyId());
+
+  private loadAppointments(): void {
     effect(() => {
       this.loading.set(true);
-      const signal$ = toSignal(this.listAll(), { initialValue: [] });
-      this._appointments.set(signal$());
+      const all$ = toSignal(this.listAll(), { initialValue: [] });
+      this._appointments.set(all$());
       this.loading.set(false);
     });
   }
 
-  /**
-   * Retorna todos os agendamentos futuros da empresa atual.
-   */
   getUpcomingAppointments(): Appointment[] {
     const now = new Date();
     return this.appointments().filter((a) => new Date(a.startTime) > now);
   }
 
-  /**
-   * Retorna os agendamentos passados (para histórico).
-   */
   getPastAppointments(): Appointment[] {
     const now = new Date();
     return this.appointments().filter((a) => new Date(a.endTime) < now);
   }
 
-  /**
-   * Retorna os agendamentos ativos de um cliente específico.
-   */
   getClientAppointments(clientId: string): Appointment[] {
     return this.appointments().filter((a) => a.clientId === clientId);
   }
 
-  /**
-   * Retorna os agendamentos futuros de um funcionário específico.
-   */
   getEmployeeUpcomingAppointments(employeeId: string): Appointment[] {
     const now = new Date();
     return this.appointments().filter(
@@ -68,36 +55,26 @@ export class AppointmentsService extends BaseFirestoreCrudService<Appointment> {
     );
   }
 
-  /**
-   * Cancela um agendamento com justificativa.
-   */
   async cancelAppointment(id: string, reason: string): Promise<void> {
-    const appointment = await this.getById(id).toPromise();
-    if (!appointment) throw new Error('Agendamento não encontrado.');
+    const appt = await this.getById(id).toPromise();
+    if (!appt) throw new Error('Agendamento não encontrado.');
 
-    const update: Appointment = {
-      ...appointment,
+    await this.update(id, {
+      ...appt,
       status: 'canceled',
       cancellationReason: reason,
       updatedAt: new Date(),
-    };
-
-    await this.update(id, update).toPromise();
+    }).toPromise();
   }
 
-  /**
-   * Marca um agendamento como concluído.
-   */
   async markAsCompleted(id: string): Promise<void> {
-    const appointment = await this.getById(id).toPromise();
-    if (!appointment) throw new Error('Agendamento não encontrado.');
+    const appt = await this.getById(id).toPromise();
+    if (!appt) throw new Error('Agendamento não encontrado.');
 
-    const update: Appointment = {
-      ...appointment,
+    await this.update(id, {
+      ...appt,
       status: 'completed',
       updatedAt: new Date(),
-    };
-
-    await this.update(id, update).toPromise();
+    }).toPromise();
   }
 }

@@ -1,11 +1,4 @@
-import {
-  Component,
-  Input,
-  computed,
-  signal,
-  inject,
-  effect,
-} from '@angular/core';
+import { Component, Input, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
   IonList,
@@ -18,15 +11,19 @@ import {
   IonPopover,
 } from '@ionic/angular/standalone';
 
-import { Appointment } from 'src/app/shared/models/appointments.model';
-import { AppointmentsService } from 'src/app/shared/services/appointments.service';
-import { ServicesService } from 'src/app/shared/services/services.service';
-import { ClientService } from 'src/app/shared/services/clients.service';
-import { EmployeeService } from 'src/app/shared/services/employee.service';
+import {
+  getStatusIcon,
+  getStatusColor,
+} from 'src/app/shared/utils/appointment-status.utils';
 
+import {
+  Appointment,
+  AppointmentStatus,
+} from 'src/app/shared/models/appointments.model';
 import { Client } from 'src/app/shared/models/client.model';
 import { Service } from 'src/app/shared/models/service.model';
 import { AuthenticatedUser } from 'src/app/shared/models/auth.model';
+import { AppointmentsService } from 'src/app/shared/services/appointments.service';
 
 @Component({
   selector: 'app-admin-appointments-list',
@@ -48,73 +45,36 @@ import { AuthenticatedUser } from 'src/app/shared/models/auth.model';
 export class AdminAppointmentsListPage {
   @Input() appointments: Appointment[] = [];
   @Input() loading = false;
-
-  private readonly appointmentService = inject(AppointmentsService);
-  private readonly clientService = inject(ClientService);
-  private readonly serviceService = inject(ServicesService);
-  private readonly employeeService = inject(EmployeeService);
+  @Input() clients: Record<string, Client> = {};
+  @Input() services: Record<string, Service> = {};
+  @Input() employees: Record<string, AuthenticatedUser> = {};
 
   readonly isProcessing = signal<string | null>(null);
   readonly error = signal<string | null>(null);
 
-  readonly clientMap = signal<Record<string, Client>>({});
-  readonly serviceMap = signal<Record<string, Service>>({});
-  readonly employeeMap = signal<Record<string, AuthenticatedUser>>({});
-
-  // Popover
   popoverOpen = signal(false);
   popoverEvent = signal<Event | null>(null);
-  popoverStatus = signal<string>('scheduled');
+  popoverStatus = signal<AppointmentStatus>('scheduled');
 
-  constructor() {
-    this.loadEntities();
-  }
-
-  private async loadEntities(): Promise<void> {
-    try {
-      const [clients, services, employees] = await Promise.all([
-        this.clientService.listAll().toPromise(),
-        this.serviceService.listAll().toPromise(),
-        this.employeeService.listAll().toPromise(),
-      ]);
-
-      this.clientMap.set(
-        Object.fromEntries((clients ?? []).map((c) => [c.id!, c]))
-      );
-      this.serviceMap.set(
-        Object.fromEntries((services ?? []).map((s) => [s.id!, s]))
-      );
-      this.employeeMap.set(
-        Object.fromEntries((employees ?? []).map((e) => [e.id!, e]))
-      );
-    } catch (err: any) {
-      this.error.set('Erro ao carregar dados dos agendamentos.');
-      console.error('[AdminAppointmentsListPage] Erro:', err);
-    }
-  }
+  constructor(private readonly appointmentService: AppointmentsService) {}
 
   getClientName(id: string): string {
-    const client = this.clientMap()[id];
-    return client?.name || 'Cliente não encontrado';
+    return this.clients[id]?.name || 'Cliente não encontrado';
   }
 
   getServiceName(id: string): string {
-    const service = this.serviceMap()[id];
-    return service?.name || 'Serviço não encontrado';
+    return this.services[id]?.name || 'Serviço não encontrado';
   }
 
   getEmployeeName(id: string): string {
-    const emp = this.employeeMap()[id];
-    const fullName =
-      emp?.first_name && emp?.last_name
-        ? `${emp.first_name} ${emp.last_name}`
-        : emp?.first_name || 'Profissional não encontrado';
-    return fullName;
+    const emp = this.employees[id];
+    return emp?.first_name && emp?.last_name
+      ? `${emp.first_name} ${emp.last_name}`
+      : emp?.first_name || 'Profissional não encontrado';
   }
 
   async cancel(id: string): Promise<void> {
-    const confirmed = confirm('Cancelar este agendamento?');
-    if (!confirmed) return;
+    if (!confirm('Cancelar este agendamento?')) return;
 
     this.isProcessing.set(id);
     try {
@@ -122,8 +82,8 @@ export class AdminAppointmentsListPage {
         id,
         'Cancelado pelo admin'
       );
-    } catch (e) {
-      this.error.set('Erro ao cancelar o agendamento.');
+    } catch {
+      this.error.set('Erro ao cancelar agendamento.');
     } finally {
       this.isProcessing.set(null);
     }
@@ -133,40 +93,24 @@ export class AdminAppointmentsListPage {
     this.isProcessing.set(id);
     try {
       await this.appointmentService.markAsCompleted(id);
-    } catch (e) {
-      this.error.set('Erro ao concluir o agendamento.');
+    } catch {
+      this.error.set('Erro ao concluir agendamento.');
     } finally {
       this.isProcessing.set(null);
     }
   }
 
-  getStatusIcon(status: string): string {
-    const map: Record<string, string> = {
-      scheduled: 'time-outline',
-      confirmed: 'checkmark',
-      completed: 'checkmark-circle',
-      canceled: 'close-circle',
-      'no-show': 'alert-circle',
-      rescheduled: 'refresh-circle',
-    };
-    return map[status] || 'help';
-  }
-
-  getStatusColor(status: string): string {
-    const map: Record<string, string> = {
-      scheduled: 'medium',
-      confirmed: 'success',
-      completed: 'success',
-      canceled: 'danger',
-      'no-show': 'warning',
-      rescheduled: 'tertiary',
-    };
-    return map[status] || 'dark';
-  }
-
-  openPopover(event: Event, status: string): void {
+  openPopover(event: Event, status: AppointmentStatus): void {
     this.popoverEvent.set(event);
     this.popoverStatus.set(status);
     this.popoverOpen.set(true);
+  }
+
+  getIcon(status: AppointmentStatus): string {
+    return getStatusIcon(status);
+  }
+
+  getColor(status: AppointmentStatus): string {
+    return getStatusColor(status);
   }
 }

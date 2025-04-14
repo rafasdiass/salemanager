@@ -6,10 +6,15 @@
   </ion-header>
 
   <div class="filter-section">
+    <ion-item>
+      <ion-label position="floating">Buscar cliente</ion-label>
+      <ion-input [ngModel]="searchTerm()" (ngModelChange)="updateSearchTerm($event)">
+      </ion-input>
+    </ion-item>
 
     <ion-item class="select-status">
       <ion-label>Status</ion-label>
-      <ion-select interface="popover" [ngModel]="selectedStatus()" (ngModelChange)="changeStatusFilter($event)">
+      <ion-select interface="popover" [ngModel]="selectedStatus()" (ngModelChange)="updateStatus($event)">
         <ion-select-option value="all">Todos</ion-select-option>
         <ion-select-option value="scheduled">Agendados</ion-select-option>
         <ion-select-option value="completed">Concluídos</ion-select-option>
@@ -20,16 +25,21 @@
     <ion-item class="date-picker">
       <ion-label>De</ion-label>
       <ion-datetime [value]="startDate()" (ionChange)="onStartDateChange(getDateFromEvent($event.detail.value))"
-        presentation="date" locale="pt-BR"></ion-datetime>
+
+
+        presentation="date-time" locale="pt-BR">
+      </ion-datetime>
     </ion-item>
 
     <ion-item class="date-picker">
       <ion-label>Até</ion-label>
       <ion-datetime [value]="endDate()" (ionChange)="onEndDateChange(getDateFromEvent($event.detail.value))"
-        presentation="date" locale="pt-BR"></ion-datetime>
+
+        presentation="date-time" locale="pt-BR">
+      </ion-datetime>
     </ion-item>
 
-    <ion-button fill="clear" color="medium" (click)="resetFilters()" class="clear-filters">
+    <ion-button fill="clear" color="medium" (click)="resetFilters()">
       <ion-icon name="calendar-clear" slot="start"></ion-icon>
       Limpar Filtros
     </ion-button>
@@ -38,13 +48,14 @@
   <ng-container *ngIf="error(); else content">
     <ion-card>
       <ion-card-content class="error-message">
+        <ion-icon name="alert-circle" color="danger" slot="start"></ion-icon>
         {{ error() }}
       </ion-card-content>
     </ion-card>
   </ng-container>
 
   <ng-template #content>
-    <app-admin-appointments-list [appointments]="filteredAppointments()"
-      [loading]="loading()"></app-admin-appointments-list>
+    <app-admin-appointments-list [appointments]="filteredAppointments()" [loading]="loading()">
+    </app-admin-appointments-list>
   </ng-template>
 </ion-content>

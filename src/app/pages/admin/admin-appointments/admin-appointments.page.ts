@@ -1,9 +1,9 @@
 import {
   Component,
   OnInit,
+  inject,
   computed,
   effect,
-  inject,
   signal,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
@@ -22,12 +22,14 @@ import {
   IonIcon,
   IonCard,
   IonCardContent,
+  IonInput,
 } from '@ionic/angular/standalone';
 
 import { AppointmentsService } from 'src/app/shared/services/appointments.service';
-import { AuthService } from 'src/app/shared/services/auth.service';
+import { ClientService } from 'src/app/shared/services/clients.service';
 import { AdminAppointmentsListPage } from './admin-appointments-list/admin-appointments-list.page';
-import { Appointment } from 'src/app/shared/models/appointments.model';
+import { AdminAppointmentsFilterService } from 'src/app/shared/services/admin-appointments-filter.service';
+import { Client } from 'src/app/shared/models/client.model';
 
 @Component({
   selector: 'app-admin-appointments',
@@ -50,82 +52,71 @@ import { Appointment } from 'src/app/shared/models/appointments.model';
     IonIcon,
     IonCard,
     IonCardContent,
+    IonInput,
     AdminAppointmentsListPage,
   ],
 })
 export class AdminAppointmentsPage implements OnInit {
   private readonly appointmentsService = inject(AppointmentsService);
-  private readonly authService = inject(AuthService);
+  private readonly clientService = inject(ClientService);
+  private readonly filterService = inject(AdminAppointmentsFilterService);
 
-  readonly companyId = this.authService.primaryCompanyId;
   readonly loading = this.appointmentsService.loading;
-  readonly allAppointments = this.appointmentsService.appointments;
-  readonly error = signal<string | null>(null);
+  readonly error = this.filterService.error;
 
-  readonly selectedStatus = signal<
-    'scheduled' | 'completed' | 'canceled' | 'all'
-  >('all');
+  readonly appointments = this.appointmentsService.appointments;
 
-  readonly startDate = signal<string>(
-    new Date(new Date().setHours(0, 0, 0, 0)).toISOString()
-  );
-  readonly endDate = signal<string>(
-    new Date(new Date().setHours(23, 59, 59, 999)).toISOString()
+  readonly clientMap = signal<Record<string, Client>>({});
+
+  readonly filteredAppointments = computed(() =>
+    this.filterService.filter(this.appointments(), this.clientMap())
   );
 
-  readonly filteredAppointments = computed<Appointment[]>(() => {
-    try {
-      const status = this.selectedStatus();
-      const start = new Date(this.startDate());
-      const end = new Date(this.endDate());
-
-      return this.allAppointments().filter((appt) => {
-        const apptDate = new Date(appt.startTime);
-        const byCompany = appt.companyId === this.companyId();
-        const byStatus = status === 'all' || appt.status === status;
-        const inRange = apptDate >= start && apptDate <= end;
-        return byCompany && byStatus && inRange;
-      });
-    } catch {
-      this.error.set('Erro ao filtrar os agendamentos.');
-      return [];
-    }
-  });
+  readonly selectedStatus = this.filterService.selectedStatus;
+  readonly searchTerm = this.filterService.searchTerm;
+  readonly startDate = this.filterService.startDate;
+  readonly endDate = this.filterService.endDate;
 
   ngOnInit(): void {
+    this.loadClients();
+
     effect(() => {
-      if (!this.loading()) {
-        this.error.set(null); // limpa erro se os dados chegaram
-        console.log(
-          '[AdminAppointmentsPage] Agendamentos filtrados:',
-          this.filteredAppointments()
-        );
-      }
+      if (!this.loading()) this.error.set(null);
     });
   }
 
-  changeStatusFilter(value: 'scheduled' | 'completed' | 'canceled' | 'all') {
-    this.selectedStatus.set(value);
-  }
-
-  onStartDateChange(value: string | null | undefined) {
-    if (typeof value === 'string') {
-      this.startDate.set(value);
-    }
-  }
-
-  onEndDateChange(value: string | null | undefined) {
-    if (typeof value === 'string') {
-      this.endDate.set(value);
+  private async loadClients(): Promise<void> {
+    try {
+      const clients = await this.clientService.listAll().toPromise();
+      this.clientMap.set(
+        Object.fromEntries((clients ?? []).map((c) => [c.id!, c]))
+      );
+    } catch (err) {
+      this.error.set('Erro ao carregar clientes.');
+      console.error('[AdminAppointmentsPage] Erro ao carregar clientes:', err);
     }
   }
 
   resetFilters(): void {
-    this.selectedStatus.set('all');
-    const today = new Date();
-    this.startDate.set(new Date(today.setHours(0, 0, 0, 0)).toISOString());
-    this.endDate.set(new Date(today.setHours(23, 59, 59, 999)).toISOString());
+    this.filterService.reset();
   }
+
+  onStartDateChange(value: string | null | undefined) {
+    if (typeof value === 'string') this.startDate.set(value);
+  }
+
+  onEndDateChange(value: string | null | undefined) {
+    if (typeof value === 'string') this.endDate.set(value);
+  }
+
+  updateSearchTerm(value: string) {
+    this.searchTerm.set(value);
+  }
+
+  updateStatus(value: 'scheduled' | 'completed' | 'canceled' | 'all') {
+    this.selectedStatus.set(value);
+  }
+
   getDateFromEvent(value: string | string[] | null | undefined): string | null {
     if (Array.isArray(value)) return value[0] || null;
     return value ?? null;
