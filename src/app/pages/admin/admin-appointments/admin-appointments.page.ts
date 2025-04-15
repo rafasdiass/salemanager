@@ -88,9 +88,13 @@ export class AdminAppointmentsPage implements OnInit {
   private async loadClients(): Promise<void> {
     try {
       const clients = await this.clientService.listAll().toPromise();
-      this.clientMap.set(
-        Object.fromEntries((clients ?? []).map((c) => [c.id!, c]))
-      );
+
+      const map = (clients ?? []).reduce((acc, client) => {
+        if (client.id) acc[client.id] = client;
+        return acc;
+      }, {} as Record<string, Client>);
+
+      this.clientMap.set(map);
     } catch (err) {
       this.error.set('Erro ao carregar clientes.');
       console.error('[AdminAppointmentsPage] Erro ao carregar clientes:', err);

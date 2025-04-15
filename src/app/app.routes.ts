@@ -197,10 +197,7 @@ export const routes: Routes = [
     path: 'client-appointments-list',
     loadComponent: () => import('./pages/client/client-appointments-list/client-appointments-list.page').then( m => m.ClientAppointmentsListPage)
   },
-  {
-    path: 'admin-appointments.page.ts',
-    loadComponent: () => import('./pages/admin/admin-appointments.page.ts/admin-appointments.page.ts.page').then( m => m.AdminAppointmentsPageTsPage)
-  },
+
   {
     path: 'admin-appointments',
     loadComponent: () => import('./pages/admin/admin-appointments/admin-appointments.page').then( m => m.AdminAppointmentsPage)
