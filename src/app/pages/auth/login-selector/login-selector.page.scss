@@ -201,4 +201,35 @@
         font-size: 13px;
         font-weight: 500;
     }
+
+    // 🎯 Adição do estilo para o radio seletor de tipo de identificação
+    .radio-group {
+        display: flex;
+        gap: 16px;
+        padding: 6px 10px;
+        border-radius: 10px;
+        background-color: #eeeeee;
+        align-items: center;
+        justify-content: space-around;
+        width: 100%;
+    }
+
+    .radio-option {
+        display: flex;
+        align-items: center;
+        font-size: 13px;
+        color: #444444;
+        font-weight: 500;
+
+        input[type='radio'] {
+            margin-right: 6px;
+            accent-color: #ffaa00;
+            width: 16px;
+            height: 16px;
+        }
+
+        span {
+            font-size: 13px;
+        }
+    }
 }

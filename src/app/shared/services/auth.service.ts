@@ -109,34 +109,59 @@ export class AuthService {
    * Utiliza email e senha para autenticação.
    */
   login(credentials: LoginRequest): Observable<LoginResponse> {
-    return from(
-      signInWithEmailAndPassword(
-        this.auth,
-        credentials.email!,
-        credentials.password!
-      )
-    ).pipe(
-      switchMap((userCredential) =>
-        from(getIdToken(userCredential.user)).pipe(
-          switchMap((token) =>
-            this.loadUserDataFromFirestore(userCredential.user.uid).pipe(
-              map((userData) => {
-                this.userService.setUserData(userData);
+    const identifier = credentials.email ?? credentials.cpf;
+
+    if (!identifier || !credentials.password) {
+      return throwError(() => new Error('CPF/Email e senha são obrigatórios.'));
+    }
+
+    const clientsRef = collection(this.firestore, 'clients');
+    const isCpf = !!credentials.cpf;
+    const q = query(
+      clientsRef,
+      where(isCpf ? 'cpf' : 'email', '==', identifier)
+    );
+
+    return from(getDocs(q)).pipe(
+      switchMap((snapshot) => {
+        if (snapshot.empty) {
+          return throwError(() => new Error('Usuário não encontrado.'));
+        }
+
+        const clientDoc = snapshot.docs[0];
+        const client = clientDoc.data() as AuthenticatedUser;
+
+        if (!client.email) {
+          return throwError(() => new Error('Usuário sem email cadastrado.'));
+        }
+
+        return from(
+          signInWithEmailAndPassword(
+            this.auth,
+            client.email,
+            credentials.password
+          )
+        ).pipe(
+          switchMap((userCredential) =>
+            from(getIdToken(userCredential.user)).pipe(
+              map((token) => {
+                client.id = userCredential.user.uid;
+                this.userService.setUserData(client);
                 this.userService.setToken(token);
                 this.authState.set({
                   isAuthenticated: true,
-                  user: userData,
+                  user: client,
                   token,
                 });
                 return {
                   access_token: token,
-                  user: userData,
+                  user: client,
                 } as LoginResponse;
               })
             )
           )
-        )
-      )
+        );
+      })
     );
   }
 

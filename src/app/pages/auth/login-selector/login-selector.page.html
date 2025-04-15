@@ -25,14 +25,30 @@
           </div>
         </div>
 
+        <!-- Radio para tipo de identificação -->
+        <div class="field-group">
+          <label class="form-label">Tipo de identificação</label>
+          <div class="input-wrapper radio-group">
+            <label class="radio-option">
+              <input type="radio" name="identifierType" [(ngModel)]="identifierType" value="email" />
+              <span>Email</span>
+            </label>
+            <label class="radio-option">
+              <input type="radio" name="identifierType" [(ngModel)]="identifierType" value="cpf" />
+              <span>CPF</span>
+            </label>
+          </div>
+        </div>
+
         <!-- Formulário Empresa -->
         <ng-container *ngIf="loginType === 'company'">
           <form [formGroup]="companyForm" (ngSubmit)="onCompanyLogin()">
             <div class="field-group">
-              <label class="form-label">Email</label>
+              <label class="form-label">{{ identifierType === 'cpf' ? 'CPF' : 'Email' }}</label>
               <div class="input-wrapper">
-                <ion-icon name="mail" class="input-icon"></ion-icon>
-                <ion-input formControlName="email" type="email" placeholder="Digite seu email"></ion-input>
+                <ion-icon [name]="identifierType === 'cpf' ? 'card' : 'mail'" class="input-icon"></ion-icon>
+                <ion-input formControlName="identifier" [type]="identifierType === 'cpf' ? 'text' : 'email'"
+                  [placeholder]="identifierType === 'cpf' ? 'Digite seu CPF' : 'Digite seu email'"></ion-input>
               </div>
             </div>
 
@@ -63,10 +79,11 @@
         <ng-container *ngIf="loginType === 'client'">
           <form [formGroup]="clientForm" (ngSubmit)="onClientLogin()">
             <div class="field-group">
-              <label class="form-label">Email</label>
+              <label class="form-label">{{ identifierType === 'cpf' ? 'CPF' : 'Email' }}</label>
               <div class="input-wrapper">
-                <ion-icon name="mail" class="input-icon"></ion-icon>
-                <ion-input formControlName="email" type="email" placeholder="Digite seu email"></ion-input>
+                <ion-icon [name]="identifierType === 'cpf' ? 'card' : 'mail'" class="input-icon"></ion-icon>
+                <ion-input formControlName="identifier" [type]="identifierType === 'cpf' ? 'text' : 'email'"
+                  [placeholder]="identifierType === 'cpf' ? 'Digite seu CPF' : 'Digite seu email'"></ion-input>
               </div>
             </div>
 

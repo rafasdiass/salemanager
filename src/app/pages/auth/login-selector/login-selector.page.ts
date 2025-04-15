@@ -37,7 +37,6 @@ import { UserRole } from 'src/app/shared/models/user-role.enum';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { registerIcons } from 'src/app/icons';
-
 @Component({
   selector: 'app-login-selector',
   templateUrl: './login-selector.page.html',
@@ -61,6 +60,8 @@ import { registerIcons } from 'src/app/icons';
 })
 export class LoginSelectorPage implements OnInit {
   loginType: 'company' | 'client' | null = null;
+  identifierType: 'cpf' | 'email' = 'email'; // ✅ Adicionado
+
   dropdownOpen = false;
 
   companyForm!: FormGroup;
@@ -99,7 +100,6 @@ export class LoginSelectorPage implements OnInit {
     this.loginType = type;
     this.dropdownOpen = false;
 
-    // Aguarda renderização total do DOM antes de aplicar foco
     setTimeout(() => {
       requestAnimationFrame(() => {
         const ionInput = this.elRef.nativeElement.querySelector(
@@ -121,12 +121,12 @@ export class LoginSelectorPage implements OnInit {
 
   private initializeForms(): void {
     this.companyForm = this.fb.group({
-      email: ['', [Validators.required, Validators.email]],
+      identifier: ['', [Validators.required]],
       password: ['', [Validators.required, Validators.minLength(6)]],
     });
 
     this.clientForm = this.fb.group({
-      email: ['', [Validators.required, Validators.email]],
+      identifier: ['', [Validators.required]],
       password: ['', [Validators.required, Validators.minLength(6)]],
       coupon: ['', Validators.required],
     });
@@ -138,7 +138,18 @@ export class LoginSelectorPage implements OnInit {
       return;
     }
 
-    const credentials: LoginRequest = this.companyForm.getRawValue();
+    const raw = this.companyForm.getRawValue();
+    const credentials: LoginRequest = {
+      password: raw.password,
+    };
+
+    // ✅ Usa a seleção do radio button
+    if (this.identifierType === 'email') {
+      credentials.email = raw.identifier.trim().toLowerCase();
+    } else {
+      credentials.cpf = raw.identifier.replace(/\D/g, '');
+    }
+
     this._isLoading.set(true);
     this.clearError();
 
@@ -157,23 +168,34 @@ export class LoginSelectorPage implements OnInit {
 
   onClientLogin(): void {
     if (this.clientForm.invalid) {
-      this.setError('Informe corretamente o e-mail, senha e o cupom.');
+      this.setError('Informe corretamente os dados de login e o cupom.');
       return;
     }
 
     const data = this.clientForm.getRawValue();
+    const credentials: LoginRequest = {
+      password: data.password,
+    };
+
+    // ✅ Usa a seleção do radio button
+    if (this.identifierType === 'email') {
+      credentials.email = data.identifier.trim().toLowerCase();
+    } else {
+      credentials.cpf = data.identifier.replace(/\D/g, '');
+    }
+
     this._isLoading.set(true);
     this.clearError();
 
     this.authService
-      .login({ email: data.email, password: data.password })
+      .login(credentials)
       .pipe(finalize(() => this._isLoading.set(false)))
       .subscribe({
         next: (res) => {
           if (data.coupon && data.coupon !== res.user.couponUsed) {
             this.authService
               .vincularClientePorCupom({
-                email: data.email,
+                email: res.user.email,
                 coupon: data.coupon,
               })
               .subscribe({
@@ -192,7 +214,7 @@ export class LoginSelectorPage implements OnInit {
           const message = this.handleError(err, 'Erro ao autenticar cliente.');
           if (message.toLowerCase().includes('user-not-found')) {
             this.navigation.navigateTo('/cadastro-cliente', {
-              queryParams: { email: data.email, coupon: data.coupon },
+              queryParams: { email: data.identifier, coupon: data.coupon },
             });
           } else {
             this.setError(message);
