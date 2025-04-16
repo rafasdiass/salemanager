@@ -1,6 +1,7 @@
 import { Component, computed, effect, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
+import { FormsModule } from '@angular/forms';
 import { AuthService } from 'src/app/shared/services/auth.service';
 import { AppointmentsService } from 'src/app/shared/services/appointments.service';
 import { Appointment } from 'src/app/shared/models/appointments.model';
@@ -11,10 +12,10 @@ import { Service } from 'src/app/shared/models/service.model';
 
 @Component({
   selector: 'app-dashboard-client',
+  standalone: true,
+  imports: [CommonModule, IonicModule, FormsModule],
   templateUrl: './dashboard-client.page.html',
   styleUrls: ['./dashboard-client.page.scss'],
-  standalone: true,
-  imports: [CommonModule, IonicModule],
 })
 export class DashboardClientPage {
   private auth = inject(AuthService);
@@ -22,7 +23,8 @@ export class DashboardClientPage {
   private establishmentService = inject(EstablishmentService);
   private servicesService = inject(ServicesService);
 
-  client = this.auth.currentUser;
+  // Agora usa computed moderno diretamente
+  client = this.auth.user; // computed<AuthenticatedUser | null>
 
   allAppointments = signal<Appointment[]>([]);
   company = signal<Company | null>(null);
@@ -40,8 +42,20 @@ export class DashboardClientPage {
 
   totalVisits = computed(() => this.pastAppointments().length);
 
+  // Inputs do formulário
+  selectedDate = '';
+  selectedTime = '';
+  selectedProfessionalId = '';
+  selectedServiceId = '';
+
+  // Temporário
+  professionals = [
+    { id: 'prof-001', name: 'Ana Silva' },
+    { id: 'prof-002', name: 'Carlos Souza' },
+  ];
+
   constructor() {
-    // Carrega os agendamentos do cliente
+    // Carrega agendamentos do cliente
     effect(() => {
       const clientId = this.client()?.id;
       if (!clientId) return;
@@ -50,7 +64,7 @@ export class DashboardClientPage {
       this.allAppointments.set(appts);
     });
 
-    // Carrega os dados da empresa vinculada
+    // Carrega dados da empresa vinculada
     effect(() => {
       const companyId = this.client()?.companyIds?.[0];
       if (!companyId) return;
@@ -60,14 +74,13 @@ export class DashboardClientPage {
       });
     });
 
-    // Carrega e mapeia os serviços da empresa
+    // Mapeia serviços da empresa
     effect(() => {
       const companyId = this.client()?.companyIds?.[0];
       if (!companyId) return;
 
       const allServices = this.servicesService.services();
       const map = new Map<string, string>();
-
       allServices.forEach((s: Service) => {
         if (s.companyId === companyId) {
           map.set(s.id!, s.name);
@@ -78,11 +91,62 @@ export class DashboardClientPage {
     });
   }
 
-  logout() {
-    this.auth.logout();
+  getServiceMapAsArray(): [string, string][] {
+    return Array.from(this.servicesMap().entries());
   }
 
   getServiceName(serviceId: string): string {
     return this.servicesMap().get(serviceId) ?? 'Serviço desconhecido';
+  }
+
+  createAppointment() {
+    const clientId = this.client()?.id;
+    const companyId = this.client()?.companyIds?.[0];
+    const serviceId = this.selectedServiceId;
+    const employeeId = this.selectedProfessionalId;
+
+    if (
+      !clientId ||
+      !companyId ||
+      !serviceId ||
+      !employeeId ||
+      !this.selectedDate ||
+      !this.selectedTime
+    ) {
+      alert('Preencha todos os campos.');
+      return;
+    }
+
+    const start = new Date(`${this.selectedDate}T${this.selectedTime}`);
+    const end = new Date(start);
+    end.setMinutes(start.getMinutes() + 30);
+
+    const newAppointment: Appointment = {
+      companyId,
+      clientId,
+      employeeId,
+      serviceId,
+      startTime: start,
+      endTime: end,
+      status: 'scheduled',
+      paymentStatus: 'pending',
+      price: 0,
+      createdBy: clientId,
+    };
+
+    this.appointmentsService.create(newAppointment).subscribe({
+      next: () => {
+        alert('Agendamento criado com sucesso!');
+        this.allAppointments.update((appts) => [...appts, newAppointment]);
+      },
+      error: (err) => {
+        console.error(err);
+        alert('Erro ao criar agendamento.');
+      },
+    });
+  }
+
+  logout() {
+    this.auth.logout();
   }
 }

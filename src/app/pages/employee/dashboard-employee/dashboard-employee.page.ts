@@ -16,7 +16,8 @@ export class DashboardEmployeePage {
   private auth = inject(AuthService);
   private appointmentsService = inject(AppointmentsService);
 
-  user = this.auth.currentUser;
+  // Substituído o getter antigo por signal moderno
+  user = this.auth.user; // computed<AuthenticatedUser | null>
 
   upcomingAppointments = signal<Appointment[]>([]);
   totalUpcoming = signal(0);

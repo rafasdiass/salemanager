@@ -1,17 +1,21 @@
 import {
   Component,
   OnInit,
+  OnDestroy,
   signal,
   computed,
   effect,
   HostListener,
   ElementRef,
+  inject,
+  EnvironmentInjector,
 } from '@angular/core';
 import {
   FormBuilder,
   FormGroup,
   Validators,
   ReactiveFormsModule,
+  FormsModule,
 } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import {
@@ -25,8 +29,9 @@ import {
   IonSpinner,
   IonRouterLink,
 } from '@ionic/angular/standalone';
-
-import { finalize } from 'rxjs/operators';
+import { RouterModule } from '@angular/router';
+import { finalize, takeUntil } from 'rxjs/operators';
+import { Subject, of } from 'rxjs';
 import { AuthService } from 'src/app/shared/services/auth.service';
 import { NavigationService } from 'src/app/shared/services/navigation.service';
 import {
@@ -34,9 +39,8 @@ import {
   AuthenticatedUser,
 } from 'src/app/shared/models/auth.model';
 import { UserRole } from 'src/app/shared/models/user-role.enum';
-import { FormsModule } from '@angular/forms';
-import { RouterModule } from '@angular/router';
 import { registerIcons } from 'src/app/icons';
+
 @Component({
   selector: 'app-login-selector',
   templateUrl: './login-selector.page.html',
@@ -58,19 +62,25 @@ import { registerIcons } from 'src/app/icons';
     IonRouterLink,
   ],
 })
-export class LoginSelectorPage implements OnInit {
+export class LoginSelectorPage implements OnInit, OnDestroy {
   loginType: 'company' | 'client' | null = null;
-  identifierType: 'cpf' | 'email' = 'email'; // ✅ Adicionado
-
+  identifierType: 'cpf' | 'email' = 'email';
   dropdownOpen = false;
 
   companyForm!: FormGroup;
   clientForm!: FormGroup;
 
-  private _isLoading = signal<boolean>(false);
+  private readonly fb = inject(FormBuilder);
+  private readonly authService = inject(AuthService);
+  private readonly navigation = inject(NavigationService);
+  private readonly elRef = inject(ElementRef);
+  private readonly injector = inject(EnvironmentInjector);
+
+  private destroy$ = new Subject<void>();
+  private readonly _isLoading = signal(false);
   readonly isLoading = computed(() => this._isLoading());
 
-  private _errorMessage = signal<string | null>(null);
+  private readonly _errorMessage = signal<string | null>(null);
   readonly errorMessage = computed(() => this._errorMessage());
 
   private readonly autoClearErrors = effect(() => {
@@ -79,17 +89,13 @@ export class LoginSelectorPage implements OnInit {
     }
   });
 
-  constructor(
-    private fb: FormBuilder,
-    private authService: AuthService,
-    private navigation: NavigationService,
-    private elRef: ElementRef
-  ) {
-    registerIcons();
-  }
-
   ngOnInit(): void {
     this.initializeForms();
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   toggleDropdown(): void {
@@ -143,7 +149,6 @@ export class LoginSelectorPage implements OnInit {
       password: raw.password,
     };
 
-    // ✅ Usa a seleção do radio button
     if (this.identifierType === 'email') {
       credentials.email = raw.identifier.trim().toLowerCase();
     } else {
@@ -153,17 +158,18 @@ export class LoginSelectorPage implements OnInit {
     this._isLoading.set(true);
     this.clearError();
 
-    this.authService
-      .login(credentials)
-      .pipe(finalize(() => this._isLoading.set(false)))
-      .subscribe({
-        next: () => {
-          this.navigation.resetActivePage();
-          this.redirectByRole(this.authService.currentUser());
-        },
-        error: (err: unknown) =>
-          this.setError(this.handleError(err, 'Erro ao autenticar empresa.')),
-      });
+    this.injector.runInContext(() => {
+      this.authService
+        .login(credentials)
+        .pipe(
+          finalize(() => this._isLoading.set(false)),
+          takeUntil(this.destroy$)
+        )
+        .subscribe({
+          next: () => this.handleLoginSuccess(),
+          error: (err: any) => this.handleLoginError(err),
+        });
+    });
   }
 
   onClientLogin(): void {
@@ -177,7 +183,6 @@ export class LoginSelectorPage implements OnInit {
       password: data.password,
     };
 
-    // ✅ Usa a seleção do radio button
     if (this.identifierType === 'email') {
       credentials.email = data.identifier.trim().toLowerCase();
     } else {
@@ -187,40 +192,66 @@ export class LoginSelectorPage implements OnInit {
     this._isLoading.set(true);
     this.clearError();
 
-    this.authService
-      .login(credentials)
-      .pipe(finalize(() => this._isLoading.set(false)))
-      .subscribe({
-        next: (res) => {
-          if (data.coupon && data.coupon !== res.user.couponUsed) {
-            this.authService
-              .vincularClientePorCupom({
-                email: res.user.email,
-                coupon: data.coupon,
-              })
-              .subscribe({
-                next: () => this.redirectByRole(res.user),
-                error: (err: unknown) =>
-                  this.setError(
-                    this.handleError(err, 'Erro ao atualizar cupom.')
-                  ),
+    this.injector.runInContext(() => {
+      this.authService
+        .login(credentials)
+        .pipe(
+          finalize(() => this._isLoading.set(false)),
+          takeUntil(this.destroy$)
+        )
+        .subscribe({
+          next: (res) => {
+            if (data.coupon && data.coupon !== res.user.couponUsed) {
+              this.authService
+                .vincularClientePorCupom({
+                  email: res.user.email,
+                  coupon: data.coupon,
+                })
+                .pipe(takeUntil(this.destroy$))
+                .subscribe({
+                  next: () => this.redirectByRole(res.user),
+                  error: (err: any) =>
+                    this.setError(
+                      this.handleError(err, 'Erro ao atualizar cupom.')
+                    ),
+                });
+            } else {
+              this.navigation.resetActivePage();
+              this.redirectByRole(res.user);
+            }
+          },
+          error: (err: any) => {
+            const message = this.handleError(
+              err,
+              'Erro ao autenticar cliente.'
+            );
+            if (message.toLowerCase().includes('user-not-found')) {
+              this.navigation.navigateTo('/cadastro-cliente', {
+                queryParams: { email: data.identifier, coupon: data.coupon },
               });
-          } else {
-            this.navigation.resetActivePage();
-            this.redirectByRole(res.user);
-          }
-        },
-        error: (err: unknown) => {
-          const message = this.handleError(err, 'Erro ao autenticar cliente.');
-          if (message.toLowerCase().includes('user-not-found')) {
-            this.navigation.navigateTo('/cadastro-cliente', {
-              queryParams: { email: data.identifier, coupon: data.coupon },
-            });
-          } else {
-            this.setError(message);
-          }
-        },
-      });
+            } else {
+              this.setError(message);
+            }
+          },
+        });
+    });
+  }
+
+  private handleLoginSuccess(): void {
+    this.navigation.resetActivePage();
+
+    const user = this.authService.user(); // computed
+    if (user) {
+      this.redirectByRole(user);
+    } else {
+      this.handleLoginError(new Error('Usuário não encontrado.'));
+    }
+  }
+
+  private handleLoginError(err: any): void {
+    this._isLoading.set(false);
+    const errorMessage = this.handleError(err, 'Erro ao fazer login');
+    this.setError(errorMessage);
   }
 
   private redirectByRole(user: AuthenticatedUser | null): void {
@@ -252,8 +283,9 @@ export class LoginSelectorPage implements OnInit {
     this._errorMessage.set(null);
   }
 
-  private handleError(err: unknown, fallback: string): string {
+  private handleError(err: any, fallback: string): string {
     if (err instanceof Error) return err.message;
+    if (typeof err === 'string') return err;
     return fallback;
   }
 }

@@ -12,11 +12,11 @@ import { environment } from './environments/environment';
 import { registerIcons } from './app/icons';
 
 // Firebase Modular API
-import { initializeApp, provideFirebaseApp } from '@angular/fire/app';
-import { getAuth, provideAuth } from '@angular/fire/auth';
-import { getFirestore, provideFirestore } from '@angular/fire/firestore';
-import { getMessaging, provideMessaging } from '@angular/fire/messaging';
-import { getStorage, provideStorage } from '@angular/fire/storage';
+import { provideFirebaseApp, initializeApp } from '@angular/fire/app';
+import { provideAuth, getAuth } from '@angular/fire/auth';
+import { provideFirestore, getFirestore } from '@angular/fire/firestore';
+import { provideMessaging, getMessaging } from '@angular/fire/messaging';
+import { provideStorage, getStorage } from '@angular/fire/storage';
 
 /**
  * Inicializa ícones personalizados no navegador.
@@ -29,23 +29,27 @@ function initializeIcons(platformId: Object) {
   };
 }
 
-// Ativa o modo de produção
 if (environment.production) {
   enableProdMode();
 }
 
-// Bootstrap da aplicação com Firebase e config standalone
 bootstrapApplication(AppComponent, {
   providers: [
     provideIonicAngular({ mode: 'md' }),
     ...appConfig.providers,
+
+    // Estratégia de rota para Ionic
     { provide: RouteReuseStrategy, useClass: IonicRouteStrategy },
+
+    // Inicialização de ícones (somente no navegador)
     {
       provide: APP_INITIALIZER,
       useFactory: initializeIcons,
       deps: [PLATFORM_ID],
       multi: true,
     },
+
+    // Inicialização do Firebase Modular
     provideFirebaseApp(() => initializeApp(environment.firebase)),
     provideAuth(() => getAuth()),
     provideFirestore(() => getFirestore()),

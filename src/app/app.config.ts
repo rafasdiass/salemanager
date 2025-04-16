@@ -10,23 +10,23 @@ import {
   withPreloading,
 } from '@angular/router';
 import { provideAnimations } from '@angular/platform-browser/animations';
-import { DeviceDetectorService } from 'ngx-device-detector';
 
 import { routes } from './app.routes';
 import { authInterceptor } from './shared/interceptors/auth.interceptor';
+import { DeviceDetectorService } from 'ngx-device-detector';
 
 export const appConfig: ApplicationConfig = {
   providers: [
-    // Cliente HTTP com suporte a interceptadores e fetch API
+    // Cliente HTTP com suporte a interceptores e API Fetch
     provideHttpClient(withFetch(), withInterceptors([authInterceptor])),
 
-    // Rotas com pré-carregamento otimizado
+    // Roteamento com pré-carregamento inteligente
     provideRouter(routes, withPreloading(PreloadAllModules)),
 
     // Suporte a animações Angular
     provideAnimations(),
 
-    // Serviço de detecção de dispositivo
+    // Serviço de detecção de dispositivos (desktop/mobile/tablet)
     DeviceDetectorService,
   ],
 };

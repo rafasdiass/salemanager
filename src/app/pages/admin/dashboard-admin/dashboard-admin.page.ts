@@ -1,4 +1,4 @@
-import { Component, effect, inject, signal } from '@angular/core';
+import { Component, effect, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
 import { AuthService } from 'src/app/shared/services/auth.service';
@@ -6,6 +6,7 @@ import { ClientService } from 'src/app/shared/services/clients.service';
 import { EmployeeService } from 'src/app/shared/services/employee.service';
 import { AppointmentsService } from 'src/app/shared/services/appointments.service';
 import { ServicesService } from 'src/app/shared/services/services.service';
+import { AuthenticatedUser } from 'src/app/shared/models/auth.model';
 
 @Component({
   selector: 'app-dashboard-admin',
@@ -21,7 +22,8 @@ export class DashboardAdminPage {
   private appointments = inject(AppointmentsService);
   private services = inject(ServicesService);
 
-  admin = this.auth.currentUser;
+  // Substituição do currentUser antigo por signal moderno
+  admin = this.auth.user; // já é um computed<AuthenticatedUser | null>
 
   totalClients = signal(0);
   totalEmployees = signal(0);

@@ -187,23 +187,38 @@ export const routes: Routes = [
   },
   {
     path: 'client-appointments',
-    loadComponent: () => import('./pages/client/client-appointments/client-appointments.page').then( m => m.ClientAppointmentsPage)
+    loadComponent: () =>
+      import(
+        './pages/client/client-appointments/client-appointments.page'
+      ).then((m) => m.ClientAppointmentsPage),
   },
   {
     path: 'client-appointments-form',
-    loadComponent: () => import('./pages/client/client-appointments-form/client-appointments-form.page').then( m => m.ClientAppointmentsFormPage)
+    loadComponent: () =>
+      import(
+        './pages/client/client-appointments-form/client-appointments-form.page'
+      ).then((m) => m.ClientAppointmentsFormPage),
   },
   {
     path: 'client-appointments-list',
-    loadComponent: () => import('./pages/client/client-appointments-list/client-appointments-list.page').then( m => m.ClientAppointmentsListPage)
+    loadComponent: () =>
+      import(
+        './pages/client/client-appointments-list/client-appointments-list.page'
+      ).then((m) => m.ClientAppointmentsListPage),
   },
 
   {
     path: 'admin-appointments',
-    loadComponent: () => import('./pages/admin/admin-appointments/admin-appointments.page').then( m => m.AdminAppointmentsPage)
+    loadComponent: () =>
+      import('./pages/admin/admin-appointments/admin-appointments.page').then(
+        (m) => m.AdminAppointmentsPage
+      ),
   },
   {
     path: 'admin-appointments-list',
-    loadComponent: () => import('./pages/admin/admin-appointments/admin-appointments-list/admin-appointments-list.page').then( m => m.AdminAppointmentsListPage)
+    loadComponent: () =>
+      import(
+        './pages/admin/admin-appointments/admin-appointments-list/admin-appointments-list.page'
+      ).then((m) => m.AdminAppointmentsListPage),
   },
 ];
