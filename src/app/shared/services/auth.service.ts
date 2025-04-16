@@ -33,7 +33,7 @@ import {
 } from '../models/auth.model';
 import { UserRole } from '../models/user-role.enum';
 import { UserService } from './user.service';
-import { from, of, throwError, switchMap, map, Observable } from 'rxjs';
+import { from, of, throwError, switchMap, map, Observable, catchError } from 'rxjs';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
@@ -86,60 +86,86 @@ export class AuthService {
       token,
     });
   }
-
   login(credentials: LoginRequest): Observable<LoginResponse> {
     const firestore = inject(Firestore);
     const identifier = credentials.email ?? credentials.cpf;
 
     if (!identifier || !credentials.password) {
+      console.warn('[AuthService] Credenciais incompletas:', credentials);
       return throwError(() => new Error('CPF/Email e senha são obrigatórios.'));
     }
 
-    const clientsRef = collection(firestore, 'clients');
+    // ⚠️ Escolhe a coleção certa com base no tipo de login
     const isCpf = !!credentials.cpf;
-    const q = query(
-      clientsRef,
-      where(isCpf ? 'cpf' : 'email', '==', identifier)
-    );
+    const field = isCpf ? 'cpf' : 'email';
 
-    return from(this.ngZone.run(() => getDocs(q))).pipe(
-      switchMap((snapshot) => {
-        if (snapshot.empty) {
-          return throwError(() => new Error('Usuário não encontrado.'));
-        }
+    // 🔄 Buscar tanto em 'clients' quanto em 'users'
+    const clientsRef = collection(firestore, 'clients');
+    const usersRef = collection(firestore, 'users');
 
-        const docSnap = snapshot.docs[0];
-        const client = docSnap.data() as AuthenticatedUser;
+    // Primeiro tentamos na coleção de clientes
+    const clientQuery = query(clientsRef, where(field, '==', identifier));
+    const userQuery = query(usersRef, where(field, '==', identifier));
 
-        if (!client.email) {
-          return throwError(() => new Error('Usuário sem email cadastrado.'));
-        }
+    const runQuery = (queryRef: any, tipo: 'client' | 'user') => {
+      return from(this.ngZone.run(() => getDocs(queryRef))).pipe(
+        switchMap((snapshot) => {
+          console.log(
+            `[AuthService] Resultado da busca na coleção '${tipo}': ${snapshot.docs.length}`
+          );
 
-        return from(
-          this.ngZone.run(() =>
-            signInWithEmailAndPassword(
-              this.auth,
-              client.email!,
-              credentials.password!
+          if (snapshot.empty) {
+            return throwError(() => new Error('Usuário não encontrado.'));
+          }
+
+          const docSnap = snapshot.docs[0];
+          const userData = docSnap.data() as AuthenticatedUser;
+
+          if (!userData.email) {
+            return throwError(() => new Error('Usuário sem email cadastrado.'));
+          }
+
+          return from(
+            this.ngZone.run(() =>
+              signInWithEmailAndPassword(
+                this.auth,
+                userData.email!,
+                credentials.password!
+              )
             )
-          )
-        ).pipe(
-          switchMap((userCredential) =>
-            from(this.ngZone.run(() => getIdToken(userCredential.user))).pipe(
-              map((token) => {
-                client.id = userCredential.user.uid;
-                this.userService.setUserData(client);
-                this.userService.setToken(token);
-                this.authState.set({
-                  isAuthenticated: true,
-                  user: client,
-                  token,
-                });
-                return { access_token: token, user: client };
-              })
+          ).pipe(
+            switchMap((userCredential) =>
+              from(this.ngZone.run(() => getIdToken(userCredential.user))).pipe(
+                map((token) => {
+                  userData.id = userCredential.user.uid;
+                  this.userService.setUserData(userData);
+                  this.userService.setToken(token);
+                  this.authState.set({
+                    isAuthenticated: true,
+                    user: userData,
+                    token,
+                  });
+                  return { access_token: token, user: userData };
+                })
+              )
             )
-          )
+          );
+        })
+      );
+    };
+
+    // Tenta primeiro em clients. Se falhar, tenta users.
+    return runQuery(clientQuery, 'client').pipe(
+      catchError((err1) => {
+        console.warn(
+          '[AuthService] Não encontrado em clients, tentando em users...',
+          err1.message
         );
+        return runQuery(userQuery, 'user');
+      }),
+      catchError((err2) => {
+        console.error('[AuthService] Erro final no login:', err2.message);
+        return throwError(() => err2);
       })
     );
   }

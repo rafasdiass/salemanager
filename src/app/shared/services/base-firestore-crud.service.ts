@@ -1,9 +1,19 @@
 // src/app/shared/services/base-firestore-crud.service.ts
 
 import { inject, signal, computed, effect } from '@angular/core';
-import { AngularFirestore } from '@angular/fire/compat/firestore';
-import { FirestoreCrudService } from 'firestore-crud-lib';
-import { Observable, from, switchMap } from 'rxjs';
+import {
+  Firestore,
+  collection,
+  doc,
+  getDoc,
+  setDoc,
+  updateDoc,
+  deleteDoc,
+  getDocs,
+  CollectionReference,
+  DocumentData,
+} from '@angular/fire/firestore';
+import { Observable, from, switchMap, map } from 'rxjs';
 import { toSignal } from '@angular/core/rxjs-interop';
 
 /**
@@ -23,61 +33,85 @@ export interface EntityBusinessRules<T> {
 }
 
 /**
- * Serviço base genérico com reatividade moderna (signals), integração com FirestoreCrudLib
+ * Serviço base genérico com reatividade moderna (signals), integração com Firestore
  * e suporte a validação de regras de negócio antes das operações.
  */
 export abstract class BaseFirestoreCrudService<
   T extends { id?: string } & Partial<Timestamps>
-> extends FirestoreCrudService<T> {
+> {
   protected readonly _items = signal<T[]>([]);
   readonly items = computed(() => this._items());
   readonly hasItems = computed(() => this._items().length > 0);
 
-  protected readonly db = inject(AngularFirestore);
+  // 🔓 Acesso público para Firestore e referência da coleção
+  public readonly firestore: Firestore = inject(Firestore);
+  public readonly collectionRef: CollectionReference<DocumentData>;
   protected businessRules?: EntityBusinessRules<T>;
 
-  constructor(dbPath: string) {
-    super(dbPath, inject(AngularFirestore));
+  constructor(public readonly dbPath: string) {
+    this.collectionRef = collection(this.firestore, dbPath);
     this.initializeReactiveList();
   }
 
-  override listAll(): Observable<T[]> {
-    return super.listAll();
+  listAll(): Observable<T[]> {
+    return from(getDocs(this.collectionRef)).pipe(
+      map((snapshot) =>
+        snapshot.docs.map(
+          (docSnap) => ({ id: docSnap.id, ...docSnap.data() } as T)
+        )
+      )
+    );
   }
 
-  override getById(id: string): Observable<T> {
-    return super.getById(id);
+  getById(id: string): Observable<T> {
+    const ref = doc(this.firestore, this.dbPath, id);
+    return from(getDoc(ref)).pipe(
+      map((docSnap) => {
+        if (!docSnap.exists())
+          throw new Error(`Documento ${id} não encontrado`);
+        return { id: docSnap.id, ...docSnap.data() } as T;
+      })
+    );
   }
 
-  override create(value: T, id?: string): Observable<T> {
+  create(value: T, id?: string): Observable<T> {
     return from(this.applyBusinessRulesBeforeCreate(value)).pipe(
-      switchMap((processed) => {
-        const result = super.create(processed, id);
+      switchMap(async (processed) => {
+        const now = new Date();
+        processed.createdAt = now;
+        processed.updatedAt = now;
+        const docId = id || crypto.randomUUID();
+        const ref = doc(this.firestore, this.dbPath, docId);
+        await setDoc(ref, processed);
+        processed.id = docId;
         this.refreshList();
-        return result;
+        return processed;
       })
     );
   }
 
-  override update(id: string, value: T): Observable<string> {
+  update(id: string, value: T): Observable<string> {
     return from(this.applyBusinessRulesBeforeUpdate(id, value)).pipe(
-      switchMap((processed) => {
-        const result = super.update(id, processed);
+      switchMap(async (processed) => {
+        processed.updatedAt = new Date();
+        const ref = doc(this.firestore, this.dbPath, id);
+        await updateDoc(ref, processed);
         this.refreshList();
-        return result;
+        return id;
       })
     );
   }
 
-  override delete(id: string): Observable<string> {
-    const result = super.delete(id);
-    this.refreshList();
-    return result;
+  delete(id: string): Observable<string> {
+    const ref = doc(this.firestore, this.dbPath, id);
+    return from(deleteDoc(ref)).pipe(
+      map(() => {
+        this.refreshList();
+        return id;
+      })
+    );
   }
 
-  /**
-   * Inicializa a lista reativa com os dados da coleção Firestore.
-   */
   private initializeReactiveList(): void {
     effect(() => {
       this._items.set(toSignal(this.listAll(), { initialValue: [] })());

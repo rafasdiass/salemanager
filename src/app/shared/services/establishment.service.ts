@@ -1,5 +1,3 @@
-// src/app/shared/services/establishment.service.ts
-
 import {
   Injectable,
   computed,
@@ -7,6 +5,14 @@ import {
   signal,
   WritableSignal,
 } from '@angular/core';
+import {
+  Firestore,
+  doc,
+  docData,
+  getDoc,
+  DocumentReference,
+  DocumentData,
+} from '@angular/fire/firestore';
 import { BaseFirestoreCrudService } from './base-firestore-crud.service';
 import { Company } from '../models/company.model';
 import { EstablishmentBusinessRulesService } from '../regras/establishment-business-rules.service';
@@ -32,14 +38,15 @@ export class EstablishmentService extends BaseFirestoreCrudService<Company> {
       const companyId = this.auth.primaryCompanyId();
       if (!companyId) return;
 
-      const companySignal = toSignal(
-        this.db
-          .doc<Company>(`empresas/${companyId}`)
-          .valueChanges({ idField: 'id' }),
-        { initialValue: null }
-      );
+      const companyDocRef: DocumentReference<Company> = doc(
+        this.firestore,
+        `empresas/${companyId}`
+      ) as DocumentReference<Company>;
 
-      // 🔥 Corrigido: força o valor como null se for undefined
+      const companySignal = toSignal(docData<Company>(companyDocRef), {
+        initialValue: null,
+      });
+
       this._company.set(companySignal() ?? null);
     });
   }
@@ -51,8 +58,14 @@ export class EstablishmentService extends BaseFirestoreCrudService<Company> {
     const companyId = this.auth.primaryCompanyId();
     if (!companyId) return null;
 
-    const company = await this.getById(companyId).toPromise();
-    return company ?? null; // 🔥 Corrigido
+    const companyDocRef = doc(
+      this.firestore,
+      `empresas/${companyId}`
+    ) as DocumentReference<Company>;
+
+    const snapshot = await getDoc(companyDocRef);
+    const data = snapshot.data();
+    return data ?? null;
   }
 
   /**
@@ -68,6 +81,6 @@ export class EstablishmentService extends BaseFirestoreCrudService<Company> {
    */
   async getCompanyName(): Promise<string | null> {
     const company = await this.getCurrentCompany();
-    return company?.name || null;
+    return company?.name ?? null;
   }
 }

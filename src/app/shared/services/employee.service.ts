@@ -1,3 +1,5 @@
+// src/app/shared/services/employee.service.ts
+
 import {
   Injectable,
   signal,
@@ -11,6 +13,13 @@ import { UserRole } from '../models/user-role.enum';
 import { UserBusinessRulesService } from '../regras/user-business-rules.service';
 import { AuthService } from './auth.service';
 import { toSignal } from '@angular/core/rxjs-interop';
+import {
+  collection,
+  query,
+  where,
+  collectionData,
+} from '@angular/fire/firestore';
+import { Observable } from 'rxjs'; // 👈 Import necessário
 
 @Injectable({ providedIn: 'root' })
 export class EmployeeService extends BaseFirestoreCrudService<AuthenticatedUser> {
@@ -28,19 +37,28 @@ export class EmployeeService extends BaseFirestoreCrudService<AuthenticatedUser>
 
   private initFilteredEmployees(): void {
     effect(() => {
-      const companyId = this.authService.primaryCompanyId();
-      const employeeSignal = toSignal(
-        this.db
-          .collection<AuthenticatedUser>('employees', (ref) =>
-            ref
-              .where('role', '==', UserRole.employee)
-              .where('companyIds', 'array-contains', companyId)
-          )
-          .valueChanges({ idField: 'id' }),
-        { initialValue: [] }
-      );
+      try {
+        const companyId = this.authService.primaryCompanyId();
 
-      this._employees.set(employeeSignal());
+        const q = query(
+          collection(this.firestore, 'employees'),
+          where('role', '==', UserRole.employee),
+          where('companyIds', 'array-contains', companyId)
+        );
+
+        const employeeObs = collectionData(q, {
+          idField: 'id',
+        }) as unknown as Observable<AuthenticatedUser[]>; // 👈 Cast necessário
+
+        const employeeSignal = toSignal(employeeObs, {
+          initialValue: [],
+        });
+
+        this._employees.set(employeeSignal());
+      } catch (err) {
+        console.error('[EmployeeService] Erro ao carregar funcionários:', err);
+        this._employees.set([]);
+      }
     });
   }
 

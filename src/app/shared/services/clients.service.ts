@@ -7,11 +7,14 @@ import {
   effect,
   WritableSignal,
 } from '@angular/core';
-import { BaseFirestoreCrudService } from './base-firestore-crud.service';
 import { Client } from '../models/client.model';
-import { ClientBusinessRulesService } from '../regras/client-business-rules.service';
 import { AuthService } from './auth.service';
+import { ClientBusinessRulesService } from '../regras/client-business-rules.service';
 import { toSignal } from '@angular/core/rxjs-interop';
+import { BaseFirestoreCrudService } from './base-firestore-crud.service';
+import { collection, query, where } from '@angular/fire/firestore';
+import { collectionData } from 'rxfire/firestore';
+import { Observable } from 'rxjs';
 
 @Injectable({ providedIn: 'root' })
 export class ClientService extends BaseFirestoreCrudService<Client> {
@@ -33,16 +36,17 @@ export class ClientService extends BaseFirestoreCrudService<Client> {
     effect(() => {
       const companyId = this.authService.primaryCompanyId();
 
-      const clientsSignal = toSignal(
-        this.db
-          .collection<Client>('clients', (ref) =>
-            ref.where('companyIds', 'array-contains', companyId)
-          )
-          .valueChanges({ idField: 'id' }),
-        { initialValue: [] }
+      const q = query(
+        collection(this.firestore, 'clients'),
+        where('companyIds', 'array-contains', companyId)
       );
 
-      this._filteredClients.set(clientsSignal());
+      const obs$: Observable<Client[]> = collectionData(q, {
+        idField: 'id',
+      }) as Observable<Client[]>;
+
+      const signalClientes = toSignal(obs$, { initialValue: [] });
+      this._filteredClients.set(signalClientes());
     });
   }
 

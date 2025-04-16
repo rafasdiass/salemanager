@@ -90,6 +90,7 @@ export class LoginSelectorPage implements OnInit, OnDestroy {
   });
 
   ngOnInit(): void {
+    registerIcons();
     this.initializeForms();
   }
 
@@ -139,7 +140,13 @@ export class LoginSelectorPage implements OnInit, OnDestroy {
   }
 
   onCompanyLogin(): void {
+    console.log('[LoginSelectorPage] onCompanyLogin chamado');
+
     if (this.companyForm.invalid) {
+      console.warn(
+        '[LoginSelectorPage] companyForm inválido:',
+        this.companyForm.value
+      );
       this.setError('Preencha os dados da empresa corretamente.');
       return;
     }
@@ -155,25 +162,50 @@ export class LoginSelectorPage implements OnInit, OnDestroy {
       credentials.cpf = raw.identifier.replace(/\D/g, '');
     }
 
+    console.log('[LoginSelectorPage] Credenciais da empresa:', credentials);
+
     this._isLoading.set(true);
     this.clearError();
 
     this.injector.runInContext(() => {
-      this.authService
-        .login(credentials)
-        .pipe(
-          finalize(() => this._isLoading.set(false)),
-          takeUntil(this.destroy$)
-        )
-        .subscribe({
-          next: () => this.handleLoginSuccess(),
-          error: (err: any) => this.handleLoginError(err),
-        });
+      try {
+        this.authService
+          .login(credentials)
+          .pipe(
+            finalize(() => this._isLoading.set(false)),
+            takeUntil(this.destroy$)
+          )
+          .subscribe({
+            next: (res) => {
+              console.log(
+                '[LoginSelectorPage] Login empresa bem-sucedido:',
+                res
+              );
+              this.handleLoginSuccess();
+            },
+            error: (err: any) => {
+              console.error('[LoginSelectorPage] Erro login empresa:', err);
+              this.handleLoginError(err);
+            },
+          });
+      } catch (err) {
+        console.error(
+          '[LoginSelectorPage] Exceção capturada no login empresa:',
+          err
+        );
+        this.handleLoginError(err);
+      }
     });
   }
 
   onClientLogin(): void {
+    console.log('[LoginSelectorPage] onClientLogin chamado');
+
     if (this.clientForm.invalid) {
+      console.warn(
+        '[LoginSelectorPage] clientForm inválido:',
+        this.clientForm.value
+      );
       this.setError('Informe corretamente os dados de login e o cupom.');
       return;
     }
@@ -189,61 +221,105 @@ export class LoginSelectorPage implements OnInit, OnDestroy {
       credentials.cpf = data.identifier.replace(/\D/g, '');
     }
 
+    console.log('[LoginSelectorPage] Credenciais do cliente:', credentials);
+
     this._isLoading.set(true);
     this.clearError();
 
     this.injector.runInContext(() => {
-      this.authService
-        .login(credentials)
-        .pipe(
-          finalize(() => this._isLoading.set(false)),
-          takeUntil(this.destroy$)
-        )
-        .subscribe({
-          next: (res) => {
-            if (data.coupon && data.coupon !== res.user.couponUsed) {
-              this.authService
-                .vincularClientePorCupom({
-                  email: res.user.email,
-                  coupon: data.coupon,
-                })
-                .pipe(takeUntil(this.destroy$))
-                .subscribe({
-                  next: () => this.redirectByRole(res.user),
-                  error: (err: any) =>
-                    this.setError(
-                      this.handleError(err, 'Erro ao atualizar cupom.')
-                    ),
+      try {
+        this.authService
+          .login(credentials)
+          .pipe(
+            finalize(() => this._isLoading.set(false)),
+            takeUntil(this.destroy$)
+          )
+          .subscribe({
+            next: (res) => {
+              console.log(
+                '[LoginSelectorPage] Login cliente bem-sucedido:',
+                res
+              );
+
+              if (data.coupon && data.coupon !== res.user.couponUsed) {
+                console.log(
+                  '[LoginSelectorPage] Atualizando cupom para:',
+                  data.coupon
+                );
+                this.authService
+                  .vincularClientePorCupom({
+                    email: res.user.email,
+                    coupon: data.coupon,
+                  })
+                  .pipe(takeUntil(this.destroy$))
+                  .subscribe({
+                    next: () => {
+                      console.log(
+                        '[LoginSelectorPage] Cupom atualizado com sucesso'
+                      );
+                      this.redirectByRole(res.user);
+                    },
+                    error: (err: any) => {
+                      console.error(
+                        '[LoginSelectorPage] Erro ao atualizar cupom:',
+                        err
+                      );
+                      this.setError(
+                        this.handleError(err, 'Erro ao atualizar cupom.')
+                      );
+                    },
+                  });
+              } else {
+                console.log(
+                  '[LoginSelectorPage] Cupom já vinculado. Redirecionando...'
+                );
+                this.navigation.resetActivePage();
+                this.redirectByRole(res.user);
+              }
+            },
+            error: (err: any) => {
+              console.error('[LoginSelectorPage] Erro login cliente:', err);
+              const message = this.handleError(
+                err,
+                'Erro ao autenticar cliente.'
+              );
+
+              if (message.toLowerCase().includes('user-not-found')) {
+                console.warn(
+                  '[LoginSelectorPage] Redirecionando para cadastro-cliente'
+                );
+                this.navigation.navigateTo('/cadastro-cliente', {
+                  queryParams: {
+                    email: data.identifier,
+                    coupon: data.coupon,
+                  },
                 });
-            } else {
-              this.navigation.resetActivePage();
-              this.redirectByRole(res.user);
-            }
-          },
-          error: (err: any) => {
-            const message = this.handleError(
-              err,
-              'Erro ao autenticar cliente.'
-            );
-            if (message.toLowerCase().includes('user-not-found')) {
-              this.navigation.navigateTo('/cadastro-cliente', {
-                queryParams: { email: data.identifier, coupon: data.coupon },
-              });
-            } else {
-              this.setError(message);
-            }
-          },
-        });
+              } else {
+                this.setError(message);
+              }
+            },
+          });
+      } catch (err) {
+        console.error(
+          '[LoginSelectorPage] Exceção capturada no login cliente:',
+          err
+        );
+        this.handleLoginError(err);
+      }
     });
   }
 
   private handleLoginSuccess(): void {
+    console.log('[LoginSelectorPage] handleLoginSuccess chamado');
     this.navigation.resetActivePage();
 
-    const user = this.authService.user(); // computed
+    const user = this.authService.user();
+    console.log('[LoginSelectorPage] Usuário autenticado retornado:', user);
+
     if (user) {
       this.redirectByRole(user);
     } else {
+      console.error('[LoginSelectorPage] ERRO: Usuário autenticado está null');
       this.handleLoginError(new Error('Usuário não encontrado.'));
     }
   }
@@ -251,10 +327,16 @@ export class LoginSelectorPage implements OnInit, OnDestroy {
   private handleLoginError(err: any): void {
     this._isLoading.set(false);
     const errorMessage = this.handleError(err, 'Erro ao fazer login');
+    console.error(
+      '[LoginSelectorPage] Mensagem de erro formatada:',
+      errorMessage
+    );
     this.setError(errorMessage);
   }
 
   private redirectByRole(user: AuthenticatedUser | null): void {
+    console.log('[LoginSelectorPage] Redirecionando usuário:', user);
+
     if (!user) {
       this.setError('Usuário não encontrado.');
       return;

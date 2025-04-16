@@ -1,15 +1,24 @@
+// src/app/shared/services/services.service.ts
+
 import {
   Injectable,
+  signal,
   computed,
   effect,
-  signal,
   WritableSignal,
 } from '@angular/core';
 import { BaseFirestoreCrudService } from './base-firestore-crud.service';
 import { Service } from '../models/service.model';
 import { ServiceBusinessRulesService } from '../regras/service-business-rules.service';
 import { AuthService } from './auth.service';
+import {
+  collection,
+  query,
+  where,
+  collectionData,
+} from '@angular/fire/firestore';
 import { toSignal } from '@angular/core/rxjs-interop';
+import { Observable } from 'rxjs';
 
 @Injectable({ providedIn: 'root' })
 export class ServicesService extends BaseFirestoreCrudService<Service> {
@@ -42,14 +51,18 @@ export class ServicesService extends BaseFirestoreCrudService<Service> {
     effect(() => {
       const companyId = this.authService.primaryCompanyId();
 
-      const servicesSignal = toSignal(
-        this.db
-          .collection<Service>('services', (ref) =>
-            ref.where('companyId', '==', companyId)
-          )
-          .valueChanges({ idField: 'id' }),
-        { initialValue: [] }
+      const servicesQuery = query(
+        collection(this.firestore, 'services'),
+        where('companyId', '==', companyId)
       );
+
+      const servicesObservable = collectionData(servicesQuery, {
+        idField: 'id',
+      }) as Observable<Service[]>;
+
+      const servicesSignal = toSignal(servicesObservable, {
+        initialValue: [],
+      });
 
       this._services.set(servicesSignal());
     });
