@@ -1,7 +1,11 @@
-// src/app/shared/regras/appointment-business-rules.service.ts
-
-import { Injectable } from '@angular/core';
-import { AngularFirestore } from '@angular/fire/compat/firestore';
+import { Injectable, inject } from '@angular/core';
+import {
+  Firestore,
+  collection,
+  query,
+  where,
+  getDocs,
+} from '@angular/fire/firestore';
 import { EntityBusinessRules } from '../services/base-firestore-crud.service';
 import { Appointment } from '../models/appointments.model';
 
@@ -9,7 +13,7 @@ import { Appointment } from '../models/appointments.model';
 export class AppointmentBusinessRulesService
   implements EntityBusinessRules<Appointment>
 {
-  constructor(private firestore: AngularFirestore) {}
+  private readonly firestore = inject(Firestore);
 
   async prepareForCreate(appointment: Appointment): Promise<Appointment> {
     const now = new Date();
@@ -67,27 +71,23 @@ export class AppointmentBusinessRulesService
     appointment: Appointment,
     excludeId?: string
   ): Promise<void> {
-    const snapshot = await this.firestore
-      .collection<Appointment>('appointments', (ref) =>
-        ref
-          .where('companyId', '==', appointment.companyId)
-          .where('employeeId', '==', appointment.employeeId)
-          .where('startTime', '<', appointment.endTime)
-          .where('endTime', '>', appointment.startTime)
-      )
-      .get()
-      .toPromise();
+    const appointmentsRef = collection(this.firestore, 'appointments');
+    const q = query(
+      appointmentsRef,
+      where('companyId', '==', appointment.companyId),
+      where('employeeId', '==', appointment.employeeId),
+      where('startTime', '<', appointment.endTime),
+      where('endTime', '>', appointment.startTime)
+    );
 
-    if (snapshot && !snapshot.empty) {
-      const conflict = snapshot.docs.find(
-        (doc) => doc.id !== excludeId // Permite sobrepor o próprio horário em edição
+    const snapshot = await getDocs(q);
+
+    const conflict = snapshot.docs.find((doc) => doc.id !== excludeId);
+
+    if (conflict) {
+      throw new Error(
+        'Já existe um agendamento para esse funcionário neste horário.'
       );
-
-      if (conflict) {
-        throw new Error(
-          'Já existe um agendamento para esse funcionário neste horário.'
-        );
-      }
     }
   }
 }

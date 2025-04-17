@@ -1,18 +1,26 @@
 // src/app/features/users/user-business-rules.service.ts
 
-import { Injectable } from '@angular/core';
-import { AngularFirestore } from '@angular/fire/compat/firestore';
+import { Injectable, inject } from '@angular/core';
 import { EntityBusinessRules } from '../services/base-firestore-crud.service';
 import { AuthenticatedUser } from '../models/auth.model';
 import { Company } from '../models/company.model';
 import { UserRole } from '../models/user-role.enum';
 import { getPrimaryCompanyId } from '../utils/get-primary-company-id.util';
+import {
+  Firestore,
+  collection,
+  query,
+  where,
+  getDocs,
+  doc,
+  getDoc,
+} from '@angular/fire/firestore';
 
 @Injectable({ providedIn: 'root' })
 export class UserBusinessRulesService
   implements EntityBusinessRules<AuthenticatedUser>
 {
-  constructor(private firestore: AngularFirestore) {}
+  private firestore = inject(Firestore);
 
   async prepareForCreate(user: AuthenticatedUser): Promise<AuthenticatedUser> {
     try {
@@ -76,14 +84,11 @@ export class UserBusinessRulesService
   }
 
   private async assertSingleAdmin(companyId: string): Promise<void> {
-    const snapshot = await this.firestore
-      .collection<AuthenticatedUser>(`empresas/${companyId}/users`, (ref) =>
-        ref.where('role', '==', UserRole.ADMIN)
-      )
-      .get()
-      .toPromise();
+    const ref = collection(this.firestore, `empresas/${companyId}/users`);
+    const q = query(ref, where('role', '==', UserRole.ADMIN));
+    const snapshot = await getDocs(q);
 
-    if (snapshot && !snapshot.empty) {
+    if (!snapshot.empty) {
       throw new Error('Já existe um administrador neste estabelecimento.');
     }
   }
@@ -92,25 +97,24 @@ export class UserBusinessRulesService
     email: string,
     companyId: string
   ): Promise<void> {
-    const snapshot = await this.firestore
-      .collection<AuthenticatedUser>(`empresas/${companyId}/users`, (ref) =>
-        ref.where('email', '==', email).where('role', '==', UserRole.client)
-      )
-      .get()
-      .toPromise();
+    const ref = collection(this.firestore, `empresas/${companyId}/users`);
+    const q = query(
+      ref,
+      where('email', '==', email),
+      where('role', '==', UserRole.client)
+    );
+    const snapshot = await getDocs(q);
 
-    if (snapshot && !snapshot.empty) {
+    if (!snapshot.empty) {
       throw new Error('Este cliente já está cadastrado neste estabelecimento.');
     }
   }
 
   private async assertClientLimit(companyId: string): Promise<void> {
-    const empresaSnap = await this.firestore
-      .doc<Company>(`empresas/${companyId}`)
-      .get()
-      .toPromise();
+    const empresaRef = doc(this.firestore, `empresas/${companyId}`);
+    const empresaSnap = await getDoc(empresaRef);
 
-    if (!empresaSnap?.exists) {
+    if (!empresaSnap.exists()) {
       throw new Error('Estabelecimento não encontrado.');
     }
 
@@ -124,14 +128,15 @@ export class UserBusinessRulesService
 
     const limite = limites[plano] ?? 10;
 
-    const snapshot = await this.firestore
-      .collection<AuthenticatedUser>(`empresas/${companyId}/users`, (ref) =>
-        ref.where('role', '==', UserRole.client).where('is_active', '==', true)
-      )
-      .get()
-      .toPromise();
+    const usersRef = collection(this.firestore, `empresas/${companyId}/users`);
+    const q = query(
+      usersRef,
+      where('role', '==', UserRole.client),
+      where('is_active', '==', true)
+    );
+    const snapshot = await getDocs(q);
 
-    const totalAtivos = snapshot?.size || 0;
+    const totalAtivos = snapshot.size || 0;
 
     if (totalAtivos >= limite) {
       throw new Error(

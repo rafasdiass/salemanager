@@ -1,6 +1,6 @@
 // src/app/shared/services/base-firestore-crud.service.ts
 
-import { inject, signal, computed, effect } from '@angular/core';
+import { inject, signal, computed } from '@angular/core';
 import {
   Firestore,
   collection,
@@ -14,7 +14,6 @@ import {
   DocumentData,
 } from '@angular/fire/firestore';
 import { Observable, from, switchMap, map } from 'rxjs';
-import { toSignal } from '@angular/core/rxjs-interop';
 
 /**
  * Interface para timestamps automáticos nas entidades.
@@ -39,20 +38,26 @@ export interface EntityBusinessRules<T> {
 export abstract class BaseFirestoreCrudService<
   T extends { id?: string } & Partial<Timestamps>
 > {
+  // 🎯 sinal que guarda a lista atual
   protected readonly _items = signal<T[]>([]);
   readonly items = computed(() => this._items());
-  readonly hasItems = computed(() => this._items().length > 0);
+  readonly hasItems = computed(() => this.items().length > 0);
 
-  // 🔓 Acesso público para Firestore e referência da coleção
+  // 🔓 injeta o Firestore e monta a referência da coleção
   public readonly firestore: Firestore = inject(Firestore);
   public readonly collectionRef: CollectionReference<DocumentData>;
+
   protected businessRules?: EntityBusinessRules<T>;
 
   constructor(public readonly dbPath: string) {
     this.collectionRef = collection(this.firestore, dbPath);
-    this.initializeReactiveList();
+    // popula a lista imediatamente
+    this.loadItems().catch(console.error);
   }
 
+  /**
+   * Retorna um Observable que emite TODOS os documentos (um fetch one-shot).
+   */
   listAll(): Observable<T[]> {
     return from(getDocs(this.collectionRef)).pipe(
       map((snapshot) =>
@@ -63,65 +68,83 @@ export abstract class BaseFirestoreCrudService<
     );
   }
 
+  /**
+   * Busca um documento por ID (one-shot).
+   */
   getById(id: string): Observable<T> {
     const ref = doc(this.firestore, this.dbPath, id);
     return from(getDoc(ref)).pipe(
       map((docSnap) => {
-        if (!docSnap.exists())
+        if (!docSnap.exists()) {
           throw new Error(`Documento ${id} não encontrado`);
+        }
         return { id: docSnap.id, ...docSnap.data() } as T;
       })
     );
   }
 
+  /**
+   * Cria um novo documento, aplica regras de negócio, atualiza timestamps e faz refresh da lista.
+   */
   create(value: T, id?: string): Observable<T> {
     return from(this.applyBusinessRulesBeforeCreate(value)).pipe(
       switchMap(async (processed) => {
         const now = new Date();
         processed.createdAt = now;
         processed.updatedAt = now;
+
         const docId = id || crypto.randomUUID();
         const ref = doc(this.firestore, this.dbPath, docId);
         await setDoc(ref, processed);
+
         processed.id = docId;
-        this.refreshList();
+        // 🔄 refresh manual
+        await this.loadItems();
         return processed;
       })
     );
   }
 
+  /**
+   * Atualiza documento por ID, aplica regras de negócio, ajusta timestamp e faz refresh da lista.
+   */
   update(id: string, value: T): Observable<string> {
     return from(this.applyBusinessRulesBeforeUpdate(id, value)).pipe(
       switchMap(async (processed) => {
         processed.updatedAt = new Date();
         const ref = doc(this.firestore, this.dbPath, id);
         await updateDoc(ref, processed);
-        this.refreshList();
+
+        // 🔄 refresh manual
+        await this.loadItems();
         return id;
       })
     );
   }
 
+  /**
+   * Deleta documento por ID e faz refresh da lista.
+   */
   delete(id: string): Observable<string> {
     const ref = doc(this.firestore, this.dbPath, id);
     return from(deleteDoc(ref)).pipe(
-      map(() => {
-        this.refreshList();
+      switchMap(async () => {
+        // 🔄 refresh manual
+        await this.loadItems();
         return id;
       })
     );
   }
 
-  private initializeReactiveList(): void {
-    effect(() => {
-      this._items.set(toSignal(this.listAll(), { initialValue: [] })());
-    });
-  }
-
-  private refreshList(): void {
-    effect(() => {
-      this._items.set(toSignal(this.listAll(), { initialValue: [] })());
-    });
+  /**
+   * Método interno para recarregar todos os itens no sinal.
+   */
+  private async loadItems(): Promise<void> {
+    const snapshot = await getDocs(this.collectionRef);
+    const data = snapshot.docs.map(
+      (docSnap) => ({ id: docSnap.id, ...docSnap.data() } as T)
+    );
+    this._items.set(data);
   }
 
   private async applyBusinessRulesBeforeCreate(value: T): Promise<T> {
@@ -136,13 +159,14 @@ export abstract class BaseFirestoreCrudService<
     value: T
   ): Promise<T> {
     if (this.businessRules?.prepareForUpdate) {
-      const oldValue = await this.getById(id).toPromise();
-      if (!oldValue) {
+      // obtém o valor antigo para comparação
+      const old = await this.getById(id).toPromise();
+      if (!old) {
         throw new Error(
           `Entidade com ID ${id} não encontrada para atualização.`
         );
       }
-      return await this.businessRules.prepareForUpdate(value, oldValue);
+      return await this.businessRules.prepareForUpdate(value, old);
     }
     return value;
   }

@@ -1,15 +1,23 @@
 // src/app/shared/services/establishment-business-rules.service.ts
 
-import { Injectable } from '@angular/core';
-import { AngularFirestore } from '@angular/fire/compat/firestore';
+import { Injectable, inject } from '@angular/core';
 import { EntityBusinessRules } from '../services/base-firestore-crud.service';
 import { Company } from '../models/company.model';
+import {
+  Firestore,
+  collection,
+  query,
+  where,
+  getDocs,
+  doc,
+  getDoc,
+} from '@angular/fire/firestore';
 
 @Injectable({ providedIn: 'root' })
 export class EstablishmentBusinessRulesService
   implements EntityBusinessRules<Company>
 {
-  constructor(private firestore: AngularFirestore) {}
+  private firestore = inject(Firestore);
 
   async prepareForCreate(company: Company): Promise<Company> {
     const now = new Date();
@@ -44,32 +52,27 @@ export class EstablishmentBusinessRulesService
   }
 
   private async assertUniqueName(company: Company): Promise<void> {
-    const snapshot = await this.firestore
-      .collection<Company>('empresas', (ref) =>
-        ref.where('name', '==', company.name)
-      )
-      .get()
-      .toPromise();
+    const ref = collection(this.firestore, 'empresas');
+    const q = query(ref, where('name', '==', company.name));
+    const snapshot = await getDocs(q);
 
-    if (snapshot && !snapshot.empty) {
+    if (!snapshot.empty) {
       throw new Error('Já existe uma empresa com este nome.');
     }
   }
 
   private async assertUniqueAddress(company: Company): Promise<void> {
     const { address } = company;
+    const ref = collection(this.firestore, 'empresas');
+    const q = query(
+      ref,
+      where('address.postal_code', '==', address.postal_code),
+      where('address.number', '==', address.number),
+      where('address.city', '==', address.city)
+    );
+    const snapshot = await getDocs(q);
 
-    const snapshot = await this.firestore
-      .collection<Company>('empresas', (ref) =>
-        ref
-          .where('address.postal_code', '==', address.postal_code)
-          .where('address.number', '==', address.number)
-          .where('address.city', '==', address.city)
-      )
-      .get()
-      .toPromise();
-
-    if (snapshot && !snapshot.empty) {
+    if (!snapshot.empty) {
       throw new Error('Endereço já está vinculado a outro estabelecimento.');
     }
   }
@@ -78,16 +81,15 @@ export class EstablishmentBusinessRulesService
     const { location } = company;
     if (!location) return;
 
-    const snapshot = await this.firestore
-      .collection<Company>('empresas', (ref) =>
-        ref
-          .where('location.latitude', '==', location.latitude)
-          .where('location.longitude', '==', location.longitude)
-      )
-      .get()
-      .toPromise();
+    const ref = collection(this.firestore, 'empresas');
+    const q = query(
+      ref,
+      where('location.latitude', '==', location.latitude),
+      where('location.longitude', '==', location.longitude)
+    );
+    const snapshot = await getDocs(q);
 
-    if (snapshot && !snapshot.empty) {
+    if (!snapshot.empty) {
       throw new Error(
         'Já existe uma empresa cadastrada com estas coordenadas.'
       );

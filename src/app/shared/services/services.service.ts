@@ -6,6 +6,7 @@ import {
   computed,
   effect,
   WritableSignal,
+  inject,
 } from '@angular/core';
 import { BaseFirestoreCrudService } from './base-firestore-crud.service';
 import { Service } from '../models/service.model';
@@ -16,6 +17,7 @@ import {
   query,
   where,
   collectionData,
+  Firestore,
 } from '@angular/fire/firestore';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { Observable } from 'rxjs';
@@ -23,7 +25,9 @@ import { Observable } from 'rxjs';
 @Injectable({ providedIn: 'root' })
 export class ServicesService extends BaseFirestoreCrudService<Service> {
   private readonly _services: WritableSignal<Service[]> = signal([]);
-  readonly services = computed(() => this._services());
+  readonly services = computed(() => this._services()); // 🔧 Sem override
+
+  override readonly firestore = inject(Firestore); // ✅ Com override
 
   /** Serviços ativos somente */
   readonly activeServices = computed(() =>
@@ -34,6 +38,8 @@ export class ServicesService extends BaseFirestoreCrudService<Service> {
   readonly serviceNames = computed(() =>
     this.activeServices().map((s) => s.name)
   );
+
+  
 
   constructor(
     private readonly rules: ServiceBusinessRulesService,
@@ -50,6 +56,7 @@ export class ServicesService extends BaseFirestoreCrudService<Service> {
   private initFilteredServices(): void {
     effect(() => {
       const companyId = this.authService.primaryCompanyId();
+      if (!companyId) return;
 
       const servicesQuery = query(
         collection(this.firestore, 'services'),
@@ -76,7 +83,7 @@ export class ServicesService extends BaseFirestoreCrudService<Service> {
   }
 
   /**
-   * Retorna todos os serviços oferecidos por um profissional específico (caso associe IDs).
+   * Retorna todos os serviços oferecidos por um profissional específico.
    */
   getByProfessional(professionalId: string): Service[] {
     return this.activeServices().filter((s) =>

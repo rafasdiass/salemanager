@@ -1,3 +1,5 @@
+// src/app/login-selector/login-selector.page.ts
+
 import {
   Component,
   OnInit,
@@ -8,7 +10,6 @@ import {
   HostListener,
   ElementRef,
   inject,
-  EnvironmentInjector,
 } from '@angular/core';
 import {
   FormBuilder,
@@ -31,7 +32,7 @@ import {
 } from '@ionic/angular/standalone';
 import { RouterModule } from '@angular/router';
 import { finalize, takeUntil } from 'rxjs/operators';
-import { Subject, of } from 'rxjs';
+import { Subject } from 'rxjs';
 import { AuthService } from 'src/app/shared/services/auth.service';
 import { NavigationService } from 'src/app/shared/services/navigation.service';
 import {
@@ -63,8 +64,12 @@ import { registerIcons } from 'src/app/icons';
   ],
 })
 export class LoginSelectorPage implements OnInit, OnDestroy {
+  /** Define se o usuário escolheu empresa ou cliente */
   loginType: 'company' | 'client' | null = null;
+
+  /** Define se o identificador é CPF ou email */
   identifierType: 'cpf' | 'email' = 'email';
+
   dropdownOpen = false;
 
   companyForm!: FormGroup;
@@ -74,15 +79,17 @@ export class LoginSelectorPage implements OnInit, OnDestroy {
   private readonly authService = inject(AuthService);
   private readonly navigation = inject(NavigationService);
   private readonly elRef = inject(ElementRef);
-  private readonly injector = inject(EnvironmentInjector);
 
   private destroy$ = new Subject<void>();
+
+  // Estado de loading e mensagem de erro
   private readonly _isLoading = signal(false);
   readonly isLoading = computed(() => this._isLoading());
 
   private readonly _errorMessage = signal<string | null>(null);
   readonly errorMessage = computed(() => this._errorMessage());
 
+  // Limpa erros automaticamente após 5 segundos
   private readonly autoClearErrors = effect(() => {
     if (this._errorMessage()) {
       setTimeout(() => this._errorMessage.set(null), 5000);
@@ -106,7 +113,7 @@ export class LoginSelectorPage implements OnInit, OnDestroy {
   selectLoginType(type: 'client' | 'company'): void {
     this.loginType = type;
     this.dropdownOpen = false;
-
+    // dá foco ao input após a seleção
     setTimeout(() => {
       requestAnimationFrame(() => {
         const ionInput = this.elRef.nativeElement.querySelector(
@@ -120,8 +127,7 @@ export class LoginSelectorPage implements OnInit, OnDestroy {
   @HostListener('document:click', ['$event'])
   handleClickOutside(event: MouseEvent): void {
     const target = event.target as HTMLElement;
-    const clickedInside = this.elRef.nativeElement.contains(target);
-    if (!clickedInside) {
+    if (!this.elRef.nativeElement.contains(target)) {
       this.dropdownOpen = false;
     }
   }
@@ -135,10 +141,11 @@ export class LoginSelectorPage implements OnInit, OnDestroy {
     this.clientForm = this.fb.group({
       identifier: ['', [Validators.required]],
       password: ['', [Validators.required, Validators.minLength(6)]],
-      coupon: ['', Validators.required],
+      coupon: ['', [Validators.required]],
     });
   }
 
+  /** Quando o usuário escolhe “Empresa” */
   onCompanyLogin(): void {
     console.log('[LoginSelectorPage] onCompanyLogin chamado');
 
@@ -152,9 +159,7 @@ export class LoginSelectorPage implements OnInit, OnDestroy {
     }
 
     const raw = this.companyForm.getRawValue();
-    const credentials: LoginRequest = {
-      password: raw.password,
-    };
+    const credentials: LoginRequest = { password: raw.password };
 
     if (this.identifierType === 'email') {
       credentials.email = raw.identifier.trim().toLowerCase();
@@ -167,37 +172,26 @@ export class LoginSelectorPage implements OnInit, OnDestroy {
     this._isLoading.set(true);
     this.clearError();
 
-    this.injector.runInContext(() => {
-      try {
-        this.authService
-          .login(credentials)
-          .pipe(
-            finalize(() => this._isLoading.set(false)),
-            takeUntil(this.destroy$)
-          )
-          .subscribe({
-            next: (res) => {
-              console.log(
-                '[LoginSelectorPage] Login empresa bem-sucedido:',
-                res
-              );
-              this.handleLoginSuccess();
-            },
-            error: (err: any) => {
-              console.error('[LoginSelectorPage] Erro login empresa:', err);
-              this.handleLoginError(err);
-            },
-          });
-      } catch (err) {
-        console.error(
-          '[LoginSelectorPage] Exceção capturada no login empresa:',
-          err
-        );
-        this.handleLoginError(err);
-      }
-    });
+    this.authService
+      // passa 'user' para consultar a coleção de usuários empresariais
+      .login(credentials, 'user')
+      .pipe(
+        finalize(() => this._isLoading.set(false)),
+        takeUntil(this.destroy$)
+      )
+      .subscribe({
+        next: (res) => {
+          console.log('[LoginSelectorPage] Login empresa bem-sucedido:', res);
+          this.handleLoginSuccess();
+        },
+        error: (err: any) => {
+          console.error('[LoginSelectorPage] Erro login empresa:', err);
+          this.handleLoginError(err);
+        },
+      });
   }
 
+  /** Quando o usuário escolhe “Cliente” */
   onClientLogin(): void {
     console.log('[LoginSelectorPage] onClientLogin chamado');
 
@@ -211,9 +205,7 @@ export class LoginSelectorPage implements OnInit, OnDestroy {
     }
 
     const data = this.clientForm.getRawValue();
-    const credentials: LoginRequest = {
-      password: data.password,
-    };
+    const credentials: LoginRequest = { password: data.password };
 
     if (this.identifierType === 'email') {
       credentials.email = data.identifier.trim().toLowerCase();
@@ -226,87 +218,73 @@ export class LoginSelectorPage implements OnInit, OnDestroy {
     this._isLoading.set(true);
     this.clearError();
 
-    this.injector.runInContext(() => {
-      try {
-        this.authService
-          .login(credentials)
-          .pipe(
-            finalize(() => this._isLoading.set(false)),
-            takeUntil(this.destroy$)
-          )
-          .subscribe({
-            next: (res) => {
-              console.log(
-                '[LoginSelectorPage] Login cliente bem-sucedido:',
-                res
-              );
+    this.authService
+      // passa 'client' para consultar a coleção de clientes
+      .login(credentials, 'client')
+      .pipe(
+        finalize(() => this._isLoading.set(false)),
+        takeUntil(this.destroy$)
+      )
+      .subscribe({
+        next: (res) => {
+          console.log('[LoginSelectorPage] Login cliente bem-sucedido:', res);
 
-              if (data.coupon && data.coupon !== res.user.couponUsed) {
-                console.log(
-                  '[LoginSelectorPage] Atualizando cupom para:',
-                  data.coupon
-                );
-                this.authService
-                  .vincularClientePorCupom({
-                    email: res.user.email,
-                    coupon: data.coupon,
-                  })
-                  .pipe(takeUntil(this.destroy$))
-                  .subscribe({
-                    next: () => {
-                      console.log(
-                        '[LoginSelectorPage] Cupom atualizado com sucesso'
-                      );
-                      this.redirectByRole(res.user);
-                    },
-                    error: (err: any) => {
-                      console.error(
-                        '[LoginSelectorPage] Erro ao atualizar cupom:',
-                        err
-                      );
-                      this.setError(
-                        this.handleError(err, 'Erro ao atualizar cupom.')
-                      );
-                    },
-                  });
-              } else {
-                console.log(
-                  '[LoginSelectorPage] Cupom já vinculado. Redirecionando...'
-                );
-                this.navigation.resetActivePage();
-                this.redirectByRole(res.user);
-              }
-            },
-            error: (err: any) => {
-              console.error('[LoginSelectorPage] Erro login cliente:', err);
-              const message = this.handleError(
-                err,
-                'Erro ao autenticar cliente.'
-              );
+          // Se cupom diferente, vincula e redireciona
+          if (data.coupon && data.coupon !== res.user.couponUsed) {
+            console.log(
+              '[LoginSelectorPage] Atualizando cupom para:',
+              data.coupon
+            );
+            this.authService
+              .vincularClientePorCupom({
+                email: res.user.email,
+                coupon: data.coupon,
+              })
+              .pipe(takeUntil(this.destroy$))
+              .subscribe({
+                next: () => {
+                  console.log(
+                    '[LoginSelectorPage] Cupom atualizado com sucesso'
+                  );
+                  this.redirectByRole(res.user);
+                },
+                error: (err: any) => {
+                  console.error(
+                    '[LoginSelectorPage] Erro ao atualizar cupom:',
+                    err
+                  );
+                  this.setError(
+                    this.handleError(err, 'Erro ao atualizar cupom.')
+                  );
+                },
+              });
+          } else {
+            console.log(
+              '[LoginSelectorPage] Cupom já vinculado. Redirecionando...'
+            );
+            this.navigation.resetActivePage();
+            this.redirectByRole(res.user);
+          }
+        },
+        error: (err: any) => {
+          console.error('[LoginSelectorPage] Erro login cliente:', err);
+          const message = this.handleError(err, 'Erro ao autenticar cliente.');
 
-              if (message.toLowerCase().includes('user-not-found')) {
-                console.warn(
-                  '[LoginSelectorPage] Redirecionando para cadastro-cliente'
-                );
-                this.navigation.navigateTo('/cadastro-cliente', {
-                  queryParams: {
-                    email: data.identifier,
-                    coupon: data.coupon,
-                  },
-                });
-              } else {
-                this.setError(message);
-              }
-            },
-          });
-      } catch (err) {
-        console.error(
-          '[LoginSelectorPage] Exceção capturada no login cliente:',
-          err
-        );
-        this.handleLoginError(err);
-      }
-    });
+          if (message.toLowerCase().includes('user-not-found')) {
+            console.warn(
+              '[LoginSelectorPage] Redirecionando para cadastro-cliente'
+            );
+            this.navigation.navigateTo('/cadastro-cliente', {
+              queryParams: {
+                email: data.identifier,
+                coupon: data.coupon,
+              },
+            });
+          } else {
+            this.setError(message);
+          }
+        },
+      });
   }
 
   private handleLoginSuccess(): void {
@@ -336,12 +314,10 @@ export class LoginSelectorPage implements OnInit, OnDestroy {
 
   private redirectByRole(user: AuthenticatedUser | null): void {
     console.log('[LoginSelectorPage] Redirecionando usuário:', user);
-
     if (!user) {
       this.setError('Usuário não encontrado.');
       return;
     }
-
     switch (user.role) {
       case UserRole.ADMIN:
         this.navigation.navigateTo('/dashboard-admin');

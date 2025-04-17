@@ -1,11 +1,21 @@
-import { Injectable } from '@angular/core';
+// src/app/shared/regras/client-business-rules.service.ts
+
+import { Injectable, inject } from '@angular/core';
+import {
+  Firestore,
+  doc,
+  getDoc,
+  collection,
+  getDocs,
+  query,
+  where,
+} from '@angular/fire/firestore';
 import { EntityBusinessRules } from '../services/base-firestore-crud.service';
 import { Client } from '../models/client.model';
-import { AngularFirestore } from '@angular/fire/compat/firestore';
 
 @Injectable({ providedIn: 'root' })
 export class ClientBusinessRulesService implements EntityBusinessRules<Client> {
-  constructor(private firestore: AngularFirestore) {}
+  private readonly firestore = inject(Firestore);
 
   async prepareForCreate(client: Client): Promise<Client> {
     const now = new Date();
@@ -14,8 +24,9 @@ export class ClientBusinessRulesService implements EntityBusinessRules<Client> {
     client.lastVisit = client.lastVisit || now;
 
     const companyId = client.companyIds?.[0];
-    if (!companyId)
+    if (!companyId) {
       throw new Error('Cliente deve estar vinculado a uma empresa.');
+    }
 
     await this.assertNoDuplicate(client.email!, companyId);
     await this.assertLimitNotExceeded(companyId);
@@ -42,25 +53,24 @@ export class ClientBusinessRulesService implements EntityBusinessRules<Client> {
     email: string,
     companyId: string
   ): Promise<void> {
-    const snapshot = await this.firestore
-      .collection<Client>('clients', (ref) =>
-        ref
-          .where('email', '==', email)
-          .where('companyIds', 'array-contains', companyId)
-      )
-      .get()
-      .toPromise();
+    const clientsRef = collection(this.firestore, 'clients');
+    const q = query(
+      clientsRef,
+      where('email', '==', email),
+      where('companyIds', 'array-contains', companyId)
+    );
+    const snapshot = await getDocs(q);
 
-    if (snapshot && !snapshot.empty) {
+    if (!snapshot.empty) {
       throw new Error('Este cliente já está vinculado a esta empresa.');
     }
   }
 
   private async assertLimitNotExceeded(companyId: string): Promise<void> {
-    const empresaRef = this.firestore.doc(`empresas/${companyId}`);
-    const empresaSnap = await empresaRef.get().toPromise();
+    const empresaRef = doc(this.firestore, `empresas/${companyId}`);
+    const empresaSnap = await getDoc(empresaRef);
 
-    if (!empresaSnap || !empresaSnap.exists) {
+    if (!empresaSnap.exists()) {
       throw new Error('Empresa não encontrada.');
     }
 
@@ -75,14 +85,14 @@ export class ClientBusinessRulesService implements EntityBusinessRules<Client> {
 
     const limite = limites[plano] ?? 10;
 
-    const snapshot = await this.firestore
-      .collection<Client>('clients', (ref) =>
-        ref.where('companyIds', 'array-contains', companyId)
-      )
-      .get()
-      .toPromise();
+    const clientsRef = collection(this.firestore, 'clients');
+    const q = query(
+      clientsRef,
+      where('companyIds', 'array-contains', companyId)
+    );
+    const snapshot = await getDocs(q);
 
-    if ((snapshot?.size || 0) >= limite) {
+    if (snapshot.size >= limite) {
       throw new Error(`Limite de clientes atingido para o plano ${plano}.`);
     }
   }

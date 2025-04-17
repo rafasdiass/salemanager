@@ -1,7 +1,15 @@
 // src/app/shared/services/service-business-rules.service.ts
 
-import { Injectable } from '@angular/core';
-import { AngularFirestore } from '@angular/fire/compat/firestore';
+import { Injectable, inject } from '@angular/core';
+import {
+  collection,
+  doc,
+  getDoc,
+  getDocs,
+  query,
+  where,
+  Firestore,
+} from '@angular/fire/firestore';
 import { EntityBusinessRules } from '../services/base-firestore-crud.service';
 import { Service } from '../models/service.model';
 
@@ -9,7 +17,7 @@ import { Service } from '../models/service.model';
 export class ServiceBusinessRulesService
   implements EntityBusinessRules<Service>
 {
-  constructor(private firestore: AngularFirestore) {}
+  private readonly firestore = inject(Firestore);
 
   async prepareForCreate(service: Service): Promise<Service> {
     const now = new Date();
@@ -60,12 +68,10 @@ export class ServiceBusinessRulesService
   }
 
   private async assertCompanyExists(companyId: string): Promise<void> {
-    const snap = await this.firestore
-      .doc(`empresas/${companyId}`)
-      .get()
-      .toPromise();
+    const empresaRef = doc(this.firestore, `empresas/${companyId}`);
+    const snap = await getDoc(empresaRef);
 
-    if (!snap || !snap.exists) {
+    if (!snap.exists()) {
       throw new Error('Empresa vinculada ao serviço não encontrada.');
     }
   }
@@ -73,16 +79,14 @@ export class ServiceBusinessRulesService
   private async assertServiceLimitNotExceeded(
     companyId: string
   ): Promise<void> {
-    const snap = await this.firestore
-      .doc(`empresas/${companyId}`)
-      .get()
-      .toPromise();
+    const empresaRef = doc(this.firestore, `empresas/${companyId}`);
+    const empresaSnap = await getDoc(empresaRef);
 
-    if (!snap || !snap.exists) {
+    if (!empresaSnap.exists()) {
       throw new Error('Empresa não encontrada.');
     }
 
-    const empresaData = snap.data() as { subscriptionPlanId: string };
+    const empresaData = empresaSnap.data() as { subscriptionPlanId: string };
     const plano = empresaData?.subscriptionPlanId;
 
     const limites: Record<string, number> = {
@@ -93,14 +97,14 @@ export class ServiceBusinessRulesService
 
     const limite = limites[plano] ?? 5;
 
-    const servicesSnap = await this.firestore
-      .collection<Service>('services', (ref) =>
-        ref.where('companyId', '==', companyId)
-      )
-      .get()
-      .toPromise();
+    const servicesQuery = query(
+      collection(this.firestore, 'services'),
+      where('companyId', '==', companyId)
+    );
 
-    if (servicesSnap && servicesSnap.size >= limite) {
+    const servicesSnap = await getDocs(servicesQuery);
+
+    if (servicesSnap.size >= limite) {
       throw new Error(`Limite de serviços atingido para o plano ${plano}.`);
     }
   }
@@ -109,16 +113,15 @@ export class ServiceBusinessRulesService
     service: Service,
     excludeId?: string
   ): Promise<void> {
-    const snapshot = await this.firestore
-      .collection<Service>('services', (ref) =>
-        ref
-          .where('companyId', '==', service.companyId)
-          .where('name', '==', service.name.trim())
-      )
-      .get()
-      .toPromise();
+    const servicesQuery = query(
+      collection(this.firestore, 'services'),
+      where('companyId', '==', service.companyId),
+      where('name', '==', service.name.trim())
+    );
 
-    if (snapshot && !snapshot.empty) {
+    const snapshot = await getDocs(servicesQuery);
+
+    if (!snapshot.empty) {
       const exists = snapshot.docs.find((doc) => doc.id !== excludeId);
       if (exists) {
         throw new Error('Já existe um serviço com esse nome nesta empresa.');
