@@ -10,11 +10,11 @@ import {
 import { Client } from '../models/client.model';
 import { AuthService } from './auth.service';
 import { ClientBusinessRulesService } from '../regras/client-business-rules.service';
-import { toSignal } from '@angular/core/rxjs-interop';
 import { BaseFirestoreCrudService } from './base-firestore-crud.service';
-import { collection, query, where } from '@angular/fire/firestore';
+import {  collection, query, where } from '@angular/fire/firestore';
+// <-- importa do rxfire, não do @angular/fire
 import { collectionData } from 'rxfire/firestore';
-import { Observable } from 'rxjs';
+import { Observable, Subscription } from 'rxjs';
 
 @Injectable({ providedIn: 'root' })
 export class ClientService extends BaseFirestoreCrudService<Client> {
@@ -36,17 +36,21 @@ export class ClientService extends BaseFirestoreCrudService<Client> {
     effect(() => {
       const companyId = this.authService.primaryCompanyId();
 
+      // Query sem tipagem genérica para evitar converter FirestoreDataConverter
+      const clientsCol = collection(this.firestore, 'clients');
       const q = query(
-        collection(this.firestore, 'clients'),
+        clientsCol,
         where('companyIds', 'array-contains', companyId)
       );
 
-      const obs$: Observable<Client[]> = collectionData(q, {
-        idField: 'id',
-      }) as Observable<Client[]>;
+      // Usa collectionData do rxfire, que aceita 1 ou 2 argumentos
+      const obs$ = collectionData(q, { idField: 'id' }) as Observable<Client[]>;
 
-      const signalClientes = toSignal(obs$, { initialValue: [] });
-      this._filteredClients.set(signalClientes());
+      const sub: Subscription = obs$.subscribe((clients) => {
+        this._filteredClients.set(clients);
+      });
+
+      return () => sub.unsubscribe();
     });
   }
 

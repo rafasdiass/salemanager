@@ -17,50 +17,80 @@ import {
 export class EstablishmentBusinessRulesService
   implements EntityBusinessRules<Company>
 {
-  private firestore = inject(Firestore);
+  private readonly firestore = inject(Firestore);
 
+  /**
+   * Gatilho antes de criar um novo estabelecimento.
+   * - Define timestamps de criação e atualização.
+   * - Executa todas as validações de negócio: coordenadas, nome, endereço e localização.
+   */
   async prepareForCreate(company: Company): Promise<Company> {
-    const now = new Date();
-    company.createdAt = now;
-    company.updatedAt = now;
+    try {
+      const now = new Date();
+      company.createdAt = now;
+      company.updatedAt = now;
 
-    await this.assertValidCoordinates(company);
-    await this.assertUniqueName(company);
-    await this.assertUniqueAddress(company);
-    await this.assertUniqueLocation(company);
+      await this.assertValidCoordinates(company);
+      await this.assertUniqueName(company);
+      await this.assertUniqueAddress(company);
+      await this.assertUniqueLocation(company);
 
-    return company;
+      return company;
+    } catch (error) {
+      throw new Error(
+        `Erro ao preparar criação de estabelecimento: ${
+          error instanceof Error ? error.message : String(error)
+        }`
+      );
+    }
   }
 
+  /**
+   * Gatilho antes de atualizar um estabelecimento existente.
+   * - Atualiza o timestamp de atualização.
+   * - Não permite mudança de ID nem de ownerId.
+   * - Valida novamente as coordenadas.
+   */
   async prepareForUpdate(
-    newValue: Company,
-    oldValue: Company
+    newCompany: Company,
+    oldCompany: Company
   ): Promise<Company> {
-    newValue.updatedAt = new Date();
+    try {
+      newCompany.updatedAt = new Date();
 
-    if (newValue.id && oldValue.id && newValue.id !== oldValue.id) {
-      throw new Error('Não é permitido alterar o ID do estabelecimento.');
+      if (newCompany.id && oldCompany.id && newCompany.id !== oldCompany.id) {
+        throw new Error('Não é permitido alterar o ID do estabelecimento.');
+      }
+
+      if (newCompany.ownerId !== oldCompany.ownerId) {
+        throw new Error(
+          'Não é permitido alterar a empresa proprietária do estabelecimento.'
+        );
+      }
+
+      await this.assertValidCoordinates(newCompany);
+      return newCompany;
+    } catch (error) {
+      throw new Error(
+        `Erro ao preparar atualização de estabelecimento: ${
+          error instanceof Error ? error.message : String(error)
+        }`
+      );
     }
-
-    if (newValue.ownerId !== oldValue.ownerId) {
-      throw new Error('Não é permitido alterar a empresa do estabelecimento.');
-    }
-
-    await this.assertValidCoordinates(newValue);
-
-    return newValue;
   }
 
+  /** Garante que não haja duplicação de nome */
   private async assertUniqueName(company: Company): Promise<void> {
     const ref = collection(this.firestore, 'empresas');
     const q = query(ref, where('name', '==', company.name));
-    const snapshot = await getDocs(q);
+    const snap = await getDocs(q);
 
-    if (!snapshot.empty) {
+    if (!snap.empty) {
       throw new Error('Já existe uma empresa com este nome.');
     }
   }
 
+  /** Garante que o mesmo endereço não seja usado por outro estabelecimento */
   private async assertUniqueAddress(company: Company): Promise<void> {
     const { address } = company;
     const ref = collection(this.firestore, 'empresas');
@@ -70,13 +100,14 @@ export class EstablishmentBusinessRulesService
       where('address.number', '==', address.number),
       where('address.city', '==', address.city)
     );
-    const snapshot = await getDocs(q);
+    const snap = await getDocs(q);
 
-    if (!snapshot.empty) {
+    if (!snap.empty) {
       throw new Error('Endereço já está vinculado a outro estabelecimento.');
     }
   }
 
+  /** Garante que as coordenadas geográficas não colidam com outro estabelecimento */
   private async assertUniqueLocation(company: Company): Promise<void> {
     const { location } = company;
     if (!location) return;
@@ -87,15 +118,16 @@ export class EstablishmentBusinessRulesService
       where('location.latitude', '==', location.latitude),
       where('location.longitude', '==', location.longitude)
     );
-    const snapshot = await getDocs(q);
+    const snap = await getDocs(q);
 
-    if (!snapshot.empty) {
+    if (!snap.empty) {
       throw new Error(
         'Já existe uma empresa cadastrada com estas coordenadas.'
       );
     }
   }
 
+  /** Valida se latitude e longitude estão em faixas aceitáveis */
   private async assertValidCoordinates(company: Company): Promise<void> {
     const { location } = company;
     if (!location) return;

@@ -1,4 +1,6 @@
-// authenticated-user.model.ts
+
+
+// src/app/shared/models/authenticated-user.model.ts
 import { Address } from './address.model';
 import { BaseEntity } from './base-entity.model';
 import { UserRole } from './user-role.enum';
@@ -14,10 +16,12 @@ export interface AuthenticatedUser extends BaseEntity {
   couponUsed?: string;
   address?: Address;
   registration_date: string;
-  is_active: boolean;
+  is_active: boolean;               // já existente
+  termination_date?: string;        // nova: quando foi demitido (ISO string)
   employeeId?: string;
   password?: string;
 }
+
 
 // Estado de autenticação armazenado no front-end
 export interface AuthState {

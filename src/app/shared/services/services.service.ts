@@ -6,40 +6,30 @@ import {
   computed,
   effect,
   WritableSignal,
-  inject,
 } from '@angular/core';
+import { Subscription, Observable } from 'rxjs';
 import { BaseFirestoreCrudService } from './base-firestore-crud.service';
 import { Service } from '../models/service.model';
 import { ServiceBusinessRulesService } from '../regras/service-business-rules.service';
 import { AuthService } from './auth.service';
-import {
-  collection,
-  query,
-  where,
-  collectionData,
-  Firestore,
-} from '@angular/fire/firestore';
-import { toSignal } from '@angular/core/rxjs-interop';
-import { Observable } from 'rxjs';
+
+// rxfire import (not @angular/fire)
+import { collectionData } from 'rxfire/firestore';
+// angular/fire imports
+import { collection, query, where } from '@angular/fire/firestore';
 
 @Injectable({ providedIn: 'root' })
 export class ServicesService extends BaseFirestoreCrudService<Service> {
   private readonly _services: WritableSignal<Service[]> = signal([]);
-  readonly services = computed(() => this._services()); // 🔧 Sem override
-
-  override readonly firestore = inject(Firestore); // ✅ Com override
-
-  /** Serviços ativos somente */
+  readonly services = computed(() => this._services());
   readonly activeServices = computed(() =>
     this.services().filter((s) => s.isActive)
   );
-
-  /** Apenas os nomes dos serviços, útil para dropdowns */
   readonly serviceNames = computed(() =>
     this.activeServices().map((s) => s.name)
   );
 
-  
+  private servicesSub?: Subscription;
 
   constructor(
     private readonly rules: ServiceBusinessRulesService,
@@ -50,40 +40,43 @@ export class ServicesService extends BaseFirestoreCrudService<Service> {
     this.initFilteredServices();
   }
 
-  /**
-   * Inicializa a lista de serviços filtrada por empresa vinculada ao usuário.
-   */
   private initFilteredServices(): void {
     effect(() => {
+      // 1) whenever the primary company changes...
       const companyId = this.authService.primaryCompanyId();
-      if (!companyId) return;
 
-      const servicesQuery = query(
-        collection(this.firestore, 'services'),
-        where('companyId', '==', companyId)
-      );
+      // 2) tear down previous subscription
+      this.servicesSub?.unsubscribe();
 
-      const servicesObservable = collectionData(servicesQuery, {
-        idField: 'id',
-      }) as Observable<Service[]>;
+      // 3) build a Firestore query for just this company
+      const colRef = collection(this.firestore, 'services');
+      const q = query(colRef, where('companyId', '==', companyId));
 
-      const servicesSignal = toSignal(servicesObservable, {
-        initialValue: [],
+      // 4) use rxfire's collectionData (typed via a cast)
+      const obs$ = collectionData(q, { idField: 'id' }) as Observable<
+        Service[]
+      >;
+
+      // 5) subscribe and push into our signal
+      this.servicesSub = obs$.subscribe({
+        next: (services) => this._services.set(services),
+        error: (err) => {
+          console.error('[ServicesService] Erro ao carregar serviços:', err);
+          this._services.set([]);
+        },
       });
-
-      this._services.set(servicesSignal());
     });
   }
 
   /**
-   * Busca um serviço pelo ID diretamente do sinal reativo.
+   * Retorna um serviço diretamente do último valor carregado
    */
   getByIdFromSignal(serviceId: string): Service | undefined {
     return this.services().find((s) => s.id === serviceId);
   }
 
   /**
-   * Retorna todos os serviços oferecidos por um profissional específico.
+   * Todos os serviços que este profissional oferece
    */
   getByProfessional(professionalId: string): Service[] {
     return this.activeServices().filter((s) =>
@@ -92,7 +85,7 @@ export class ServicesService extends BaseFirestoreCrudService<Service> {
   }
 
   /**
-   * Retorna os serviços de uma determinada categoria.
+   * Serviços de uma categoria específica
    */
   getByCategory(categoryId: string): Service[] {
     return this.activeServices().filter((s) => s.categoryId === categoryId);

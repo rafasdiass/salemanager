@@ -1,4 +1,4 @@
-// src/app/login-selector/login-selector.page.ts
+// src/app/pages/auth/login-selector/login-selector.page.ts
 
 import {
   Component,
@@ -33,6 +33,7 @@ import {
 import { RouterModule } from '@angular/router';
 import { finalize, takeUntil } from 'rxjs/operators';
 import { Subject } from 'rxjs';
+
 import { AuthService } from 'src/app/shared/services/auth.service';
 import { NavigationService } from 'src/app/shared/services/navigation.service';
 import {
@@ -64,10 +65,10 @@ import { registerIcons } from 'src/app/icons';
   ],
 })
 export class LoginSelectorPage implements OnInit, OnDestroy {
-  /** Define se o usuário escolheu empresa ou cliente */
+  /** Tipo de login escolhido: empresa ou cliente */
   loginType: 'company' | 'client' | null = null;
 
-  /** Define se o identificador é CPF ou email */
+  /** Define se o identificador é CPF ou Email */
   identifierType: 'cpf' | 'email' = 'email';
 
   dropdownOpen = false;
@@ -82,14 +83,15 @@ export class LoginSelectorPage implements OnInit, OnDestroy {
 
   private destroy$ = new Subject<void>();
 
-  // Estado de loading e mensagem de erro
+  /** Estado de carregamento */
   private readonly _isLoading = signal(false);
   readonly isLoading = computed(() => this._isLoading());
 
+  /** Mensagem de erro */
   private readonly _errorMessage = signal<string | null>(null);
   readonly errorMessage = computed(() => this._errorMessage());
 
-  // Limpa erros automaticamente após 5 segundos
+  /** Limpa a mensagem de erro após 5s */
   private readonly autoClearErrors = effect(() => {
     if (this._errorMessage()) {
       setTimeout(() => this._errorMessage.set(null), 5000);
@@ -113,7 +115,6 @@ export class LoginSelectorPage implements OnInit, OnDestroy {
   selectLoginType(type: 'client' | 'company'): void {
     this.loginType = type;
     this.dropdownOpen = false;
-    // dá foco ao input após a seleção
     setTimeout(() => {
       requestAnimationFrame(() => {
         const ionInput = this.elRef.nativeElement.querySelector(
@@ -137,7 +138,6 @@ export class LoginSelectorPage implements OnInit, OnDestroy {
       identifier: ['', [Validators.required]],
       password: ['', [Validators.required, Validators.minLength(6)]],
     });
-
     this.clientForm = this.fb.group({
       identifier: ['', [Validators.required]],
       password: ['', [Validators.required, Validators.minLength(6)]],
@@ -145,81 +145,56 @@ export class LoginSelectorPage implements OnInit, OnDestroy {
     });
   }
 
-  /** Quando o usuário escolhe “Empresa” */
+  /** Login para ADM / FUNCIONÁRIO (coleção `users`) */
   onCompanyLogin(): void {
-    console.log('[LoginSelectorPage] onCompanyLogin chamado');
-
     if (this.companyForm.invalid) {
-      console.warn(
-        '[LoginSelectorPage] companyForm inválido:',
-        this.companyForm.value
-      );
       this.setError('Preencha os dados da empresa corretamente.');
       return;
     }
 
     const raw = this.companyForm.getRawValue();
     const credentials: LoginRequest = { password: raw.password };
-
     if (this.identifierType === 'email') {
       credentials.email = raw.identifier.trim().toLowerCase();
     } else {
       credentials.cpf = raw.identifier.replace(/\D/g, '');
     }
 
-    console.log('[LoginSelectorPage] Credenciais da empresa:', credentials);
-
     this._isLoading.set(true);
     this.clearError();
 
     this.authService
-      // passa 'user' para consultar a coleção de usuários empresariais
       .login(credentials, 'user')
       .pipe(
         finalize(() => this._isLoading.set(false)),
         takeUntil(this.destroy$)
       )
       .subscribe({
-        next: (res) => {
-          console.log('[LoginSelectorPage] Login empresa bem-sucedido:', res);
-          this.handleLoginSuccess();
-        },
-        error: (err: any) => {
-          console.error('[LoginSelectorPage] Erro login empresa:', err);
-          this.handleLoginError(err);
-        },
+        next: () => this.handleLoginSuccess(),
+        error: (err) => this.handleLoginError(err),
       });
   }
 
-  /** Quando o usuário escolhe “Cliente” */
+  /** Login para CLIENTE (coleção `clients`) */
   onClientLogin(): void {
-    console.log('[LoginSelectorPage] onClientLogin chamado');
-
     if (this.clientForm.invalid) {
-      console.warn(
-        '[LoginSelectorPage] clientForm inválido:',
-        this.clientForm.value
-      );
       this.setError('Informe corretamente os dados de login e o cupom.');
       return;
     }
 
-    const data = this.clientForm.getRawValue();
-    const credentials: LoginRequest = { password: data.password };
-
+    const raw = this.clientForm.getRawValue();
+    const credentials: LoginRequest = { password: raw.password };
     if (this.identifierType === 'email') {
-      credentials.email = data.identifier.trim().toLowerCase();
+      credentials.email = raw.identifier.trim().toLowerCase();
     } else {
-      credentials.cpf = data.identifier.replace(/\D/g, '');
+      credentials.cpf = raw.identifier.replace(/\D/g, '');
     }
-
-    console.log('[LoginSelectorPage] Credenciais do cliente:', credentials);
+    const coupon = raw.coupon;
 
     this._isLoading.set(true);
     this.clearError();
 
     this.authService
-      // passa 'client' para consultar a coleção de clientes
       .login(credentials, 'client')
       .pipe(
         finalize(() => this._isLoading.set(false)),
@@ -227,97 +202,56 @@ export class LoginSelectorPage implements OnInit, OnDestroy {
       )
       .subscribe({
         next: (res) => {
-          console.log('[LoginSelectorPage] Login cliente bem-sucedido:', res);
-
-          // Se cupom diferente, vincula e redireciona
-          if (data.coupon && data.coupon !== res.user.couponUsed) {
-            console.log(
-              '[LoginSelectorPage] Atualizando cupom para:',
-              data.coupon
-            );
+          if (coupon && coupon !== res.user.couponUsed) {
             this.authService
               .vincularClientePorCupom({
                 email: res.user.email,
-                coupon: data.coupon,
+                coupon,
               })
               .pipe(takeUntil(this.destroy$))
               .subscribe({
-                next: () => {
-                  console.log(
-                    '[LoginSelectorPage] Cupom atualizado com sucesso'
-                  );
-                  this.redirectByRole(res.user);
-                },
-                error: (err: any) => {
-                  console.error(
-                    '[LoginSelectorPage] Erro ao atualizar cupom:',
-                    err
-                  );
+                next: () => this.redirectByRole(res.user),
+                error: (err) =>
                   this.setError(
                     this.handleError(err, 'Erro ao atualizar cupom.')
-                  );
-                },
+                  ),
               });
           } else {
-            console.log(
-              '[LoginSelectorPage] Cupom já vinculado. Redirecionando...'
-            );
-            this.navigation.resetActivePage();
             this.redirectByRole(res.user);
           }
         },
-        error: (err: any) => {
-          console.error('[LoginSelectorPage] Erro login cliente:', err);
-          const message = this.handleError(err, 'Erro ao autenticar cliente.');
-
-          if (message.toLowerCase().includes('user-not-found')) {
-            console.warn(
-              '[LoginSelectorPage] Redirecionando para cadastro-cliente'
-            );
+        error: (err) => {
+          const msg = this.handleError(err, 'Erro ao autenticar cliente.');
+          if (msg.toLowerCase().includes('user-not-found')) {
             this.navigation.navigateTo('/cadastro-cliente', {
               queryParams: {
-                email: data.identifier,
-                coupon: data.coupon,
+                email: raw.identifier,
+                coupon,
               },
             });
           } else {
-            this.setError(message);
+            this.setError(msg);
           }
         },
       });
   }
 
   private handleLoginSuccess(): void {
-    console.log('[LoginSelectorPage] handleLoginSuccess chamado');
     this.navigation.resetActivePage();
-
-    const user = this.authService.user();
-    console.log('[LoginSelectorPage] Usuário autenticado retornado:', user);
-
-    if (user) {
-      this.redirectByRole(user);
+    const u = this.authService.user();
+    if (u) {
+      this.redirectByRole(u);
     } else {
-      console.error('[LoginSelectorPage] ERRO: Usuário autenticado está null');
       this.handleLoginError(new Error('Usuário não encontrado.'));
     }
   }
 
   private handleLoginError(err: any): void {
     this._isLoading.set(false);
-    const errorMessage = this.handleError(err, 'Erro ao fazer login');
-    console.error(
-      '[LoginSelectorPage] Mensagem de erro formatada:',
-      errorMessage
-    );
-    this.setError(errorMessage);
+    this.setError(this.handleError(err, 'Erro ao fazer login.'));
   }
 
-  private redirectByRole(user: AuthenticatedUser | null): void {
-    console.log('[LoginSelectorPage] Redirecionando usuário:', user);
-    if (!user) {
-      this.setError('Usuário não encontrado.');
-      return;
-    }
+  private redirectByRole(user: AuthenticatedUser): void {
     switch (user.role) {
       case UserRole.ADMIN:
         this.navigation.navigateTo('/dashboard-admin');
@@ -342,8 +276,12 @@ export class LoginSelectorPage implements OnInit, OnDestroy {
   }
 
   private handleError(err: any, fallback: string): string {
-    if (err instanceof Error) return err.message;
-    if (typeof err === 'string') return err;
+    if (err instanceof Error) {
+      return err.message;
+    }
+    if (typeof err === 'string') {
+      return err;
+    }
     return fallback;
   }
 }

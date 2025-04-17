@@ -1,18 +1,38 @@
-import { Injectable, computed, effect, signal } from '@angular/core';
+// src/app/shared/services/appointments.service.ts
+
+import {
+  Injectable,
+  signal,
+  computed,
+  effect,
+  WritableSignal,
+  inject,
+} from '@angular/core';
+import { Subscription, Observable } from 'rxjs';
 import { BaseFirestoreCrudService } from './base-firestore-crud.service';
 import { Appointment } from '../models/appointments.model';
 import { AppointmentBusinessRulesService } from '../regras/appointment-business-rules.service';
 import { AuthService } from './auth.service';
-import { toSignal } from '@angular/core/rxjs-interop';
+
+// RXFire helper for streaming a collection
+import { collectionData } from 'rxfire/firestore';
+// AngularFire Firestore primitives
+import { Firestore, collection, query, where } from '@angular/fire/firestore';
 
 @Injectable({ providedIn: 'root' })
 export class AppointmentsService extends BaseFirestoreCrudService<Appointment> {
   private readonly _appointments = signal<Appointment[]>([]);
   readonly loading = signal<boolean>(true);
+
   readonly appointments = computed(() =>
     this._appointments().filter((a) => a.companyId === this.companyId())
   );
   readonly hasAppointments = computed(() => this.appointments().length > 0);
+
+  private apptsSub?: Subscription;
+
+  // pull primaryCompanyId from the AuthService
+  private companyId = computed(() => this.authService.primaryCompanyId());
 
   constructor(
     private readonly rules: AppointmentBusinessRulesService,
@@ -20,28 +40,51 @@ export class AppointmentsService extends BaseFirestoreCrudService<Appointment> {
   ) {
     super('appointments');
     this.businessRules = this.rules;
-    this.loadAppointments();
+    this.initAppointments();
   }
 
-  private companyId = computed(() => this.authService.primaryCompanyId());
-
-  private loadAppointments(): void {
+  private initAppointments(): void {
     effect(() => {
+      // re‑run any time the companyId signal changes:
+      const company = this.companyId();
       this.loading.set(true);
-      const all$ = toSignal(this.listAll(), { initialValue: [] });
-      this._appointments.set(all$());
-      this.loading.set(false);
+      this.apptsSub?.unsubscribe();
+
+      // use the inherited `this.firestore` from BaseFirestoreCrudService
+      const colRef = collection(this.firestore, 'appointments');
+      const q = query(colRef, where('companyId', '==', company));
+
+      const obs$ = collectionData(q, { idField: 'id' }) as Observable<
+        Appointment[]
+      >;
+
+      this.apptsSub = obs$.subscribe({
+        next: (list) => {
+          this._appointments.set(list);
+          this.loading.set(false);
+        },
+        error: (err) => {
+          console.error('[AppointmentsService] erro ao carregar:', err);
+          this._appointments.set([]);
+          this.loading.set(false);
+        },
+      });
     });
   }
 
+  /** Helpers unchanged from before */
   getUpcomingAppointments(): Appointment[] {
-    const now = new Date();
-    return this.appointments().filter((a) => new Date(a.startTime) > now);
+    const now = Date.now();
+    return this.appointments().filter(
+      (a) => new Date(a.startTime).getTime() > now
+    );
   }
 
   getPastAppointments(): Appointment[] {
-    const now = new Date();
-    return this.appointments().filter((a) => new Date(a.endTime) < now);
+    const now = Date.now();
+    return this.appointments().filter(
+      (a) => new Date(a.endTime).getTime() < now
+    );
   }
 
   getClientAppointments(clientId: string): Appointment[] {
@@ -49,16 +92,16 @@ export class AppointmentsService extends BaseFirestoreCrudService<Appointment> {
   }
 
   getEmployeeUpcomingAppointments(employeeId: string): Appointment[] {
-    const now = new Date();
+    const now = Date.now();
     return this.appointments().filter(
-      (a) => a.employeeId === employeeId && new Date(a.startTime) > now
+      (a) =>
+        a.employeeId === employeeId && new Date(a.startTime).getTime() > now
     );
   }
 
   async cancelAppointment(id: string, reason: string): Promise<void> {
     const appt = await this.getById(id).toPromise();
     if (!appt) throw new Error('Agendamento não encontrado.');
-
     await this.update(id, {
       ...appt,
       status: 'canceled',
@@ -70,7 +113,6 @@ export class AppointmentsService extends BaseFirestoreCrudService<Appointment> {
   async markAsCompleted(id: string): Promise<void> {
     const appt = await this.getById(id).toPromise();
     if (!appt) throw new Error('Agendamento não encontrado.');
-
     await this.update(id, {
       ...appt,
       status: 'completed',

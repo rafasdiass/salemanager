@@ -20,8 +20,14 @@ import {
 export class UserBusinessRulesService
   implements EntityBusinessRules<AuthenticatedUser>
 {
-  private firestore = inject(Firestore);
+  private readonly firestore = inject(Firestore);
 
+  /**
+   * Gatilho antes de criar qualquer usuário.
+   * - Define timestamps e marca como ativo.
+   * - Inicializa termination_date como undefined.
+   * - Executa validações específicas por papel (role).
+   */
   async prepareForCreate(user: AuthenticatedUser): Promise<AuthenticatedUser> {
     try {
       const now = new Date();
@@ -29,6 +35,7 @@ export class UserBusinessRulesService
       user.createdAt = now;
       user.updatedAt = now;
       user.is_active = true;
+      user.termination_date = undefined; // nunca chega demitido ao criar
 
       const companyId = getPrimaryCompanyId(user);
 
@@ -44,7 +51,7 @@ export class UserBusinessRulesService
 
         case UserRole.client:
           user.couponUsed = user.couponUsed || now.toISOString();
-          await this.assertNoDuplicateClient(user.email, companyId);
+          await this.assertNoDuplicateClient(user.email!, companyId);
           await this.assertClientLimit(companyId);
           break;
 
@@ -62,15 +69,33 @@ export class UserBusinessRulesService
     }
   }
 
+  /**
+   * Gatilho antes de atualizar qualquer usuário.
+   * - Atualiza timestamp.
+   * - Não permite mudança de role.
+   * - Marca termination_date ao demitir e limpa ao recontratar.
+   */
   async prepareForUpdate(
     newUser: AuthenticatedUser,
     oldUser: AuthenticatedUser
   ): Promise<AuthenticatedUser> {
     try {
-      newUser.updatedAt = new Date();
+      const now = new Date();
+      newUser.updatedAt = now;
 
       if (newUser.role !== oldUser.role) {
         throw new Error('Não é permitido alterar o tipo de usuário.');
+      }
+
+      // Controle de demissão (soft‑delete) e recontratação
+      if (oldUser.is_active && newUser.is_active === false) {
+        // ao demitir, registra data de demissão
+        newUser.termination_date =
+          newUser.termination_date || now.toISOString();
+      }
+      if (!oldUser.is_active && newUser.is_active === true) {
+        // ao recontratar, limpa data de demissão
+        newUser.termination_date = undefined;
       }
 
       return newUser;
@@ -83,16 +108,17 @@ export class UserBusinessRulesService
     }
   }
 
+  /** Garante que só haja um ADMIN por empresa */
   private async assertSingleAdmin(companyId: string): Promise<void> {
     const ref = collection(this.firestore, `empresas/${companyId}/users`);
     const q = query(ref, where('role', '==', UserRole.ADMIN));
-    const snapshot = await getDocs(q);
-
-    if (!snapshot.empty) {
+    const snap = await getDocs(q);
+    if (!snap.empty) {
       throw new Error('Já existe um administrador neste estabelecimento.');
     }
   }
 
+  /** Não permite cadastrar o mesmo cliente duas vezes na mesma empresa */
   private async assertNoDuplicateClient(
     email: string,
     companyId: string
@@ -103,30 +129,27 @@ export class UserBusinessRulesService
       where('email', '==', email),
       where('role', '==', UserRole.client)
     );
-    const snapshot = await getDocs(q);
-
-    if (!snapshot.empty) {
+    const snap = await getDocs(q);
+    if (!snap.empty) {
       throw new Error('Este cliente já está cadastrado neste estabelecimento.');
     }
   }
 
+  /** Verifica limite de clientes ativos conforme plano da empresa */
   private async assertClientLimit(companyId: string): Promise<void> {
     const empresaRef = doc(this.firestore, `empresas/${companyId}`);
     const empresaSnap = await getDoc(empresaRef);
-
     if (!empresaSnap.exists()) {
       throw new Error('Estabelecimento não encontrado.');
     }
 
-    const empresaData = empresaSnap.data() as Company;
-    const plano = empresaData.subscriptionPlanId;
+    const plano = (empresaSnap.data() as Company).subscriptionPlanId;
     const limites: Record<Company['subscriptionPlanId'], number> = {
       Free: 10,
       Pro: 30,
       Unlimited: Infinity,
     };
-
-    const limite = limites[plano] ?? 10;
+    const max = limites[plano] ?? 10;
 
     const usersRef = collection(this.firestore, `empresas/${companyId}/users`);
     const q = query(
@@ -134,11 +157,8 @@ export class UserBusinessRulesService
       where('role', '==', UserRole.client),
       where('is_active', '==', true)
     );
-    const snapshot = await getDocs(q);
-
-    const totalAtivos = snapshot.size || 0;
-
-    if (totalAtivos >= limite) {
+    const snap = await getDocs(q);
+    if (snap.size >= max) {
       throw new Error(
         `Limite de clientes ativos atingido para o plano ${plano}.`
       );

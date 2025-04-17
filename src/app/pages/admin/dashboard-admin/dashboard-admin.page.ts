@@ -3,10 +3,9 @@ import { CommonModule } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
 import { AuthService } from 'src/app/shared/services/auth.service';
 import { ClientService } from 'src/app/shared/services/clients.service';
-import { EmployeeService } from 'src/app/shared/services/employee.service';
+import { AdminService } from 'src/app/shared/services/admin.service';
 import { AppointmentsService } from 'src/app/shared/services/appointments.service';
 import { ServicesService } from 'src/app/shared/services/services.service';
-import { AuthenticatedUser } from 'src/app/shared/models/auth.model';
 
 @Component({
   selector: 'app-dashboard-admin',
@@ -16,24 +15,29 @@ import { AuthenticatedUser } from 'src/app/shared/models/auth.model';
   styleUrls: ['./dashboard-admin.page.scss'],
 })
 export class DashboardAdminPage {
-  private auth = inject(AuthService);
-  private clients = inject(ClientService);
-  private employees = inject(EmployeeService);
-  private appointments = inject(AppointmentsService);
-  private services = inject(ServicesService);
+  private readonly auth = inject(AuthService);
+  private readonly clients = inject(ClientService);
+  private readonly adminService = inject(AdminService);
+  private readonly appointments = inject(AppointmentsService);
+  private readonly services = inject(ServicesService);
 
-  // Substituição do currentUser antigo por signal moderno
-  admin = this.auth.user; // já é um computed<AuthenticatedUser | null>
+  /** Dados do admin logado */
+  readonly admin = this.auth.user; // já é computed<AuthenticatedUser|null>
 
-  totalClients = signal(0);
-  totalEmployees = signal(0);
-  totalAppointments = signal(0);
-  totalServices = signal(0);
+  /** Totais de cada entidade */
+  readonly totalClients = signal(0);
+  readonly totalEmployees = signal(0);
+  readonly totalAppointments = signal(0);
+  readonly totalServices = signal(0);
+
+  /** Lista de funcionários (só leitura) */
+  readonly employees = computed(() => this.adminService.employees());
 
   constructor() {
+    // Quando qualquer lista mudar, atualiza os totais
     effect(() => {
       this.totalClients.set(this.clients.filteredClients().length);
-      this.totalEmployees.set(this.employees.employees().length);
+      this.totalEmployees.set(this.employees().length);
       this.totalAppointments.set(this.appointments.appointments().length);
       this.totalServices.set(this.services.services().length);
     });
