@@ -24,22 +24,13 @@ export class SeedService {
 
   async seedDatabase(): Promise<void> {
     try {
+      console.log('🚀 Iniciando processo de Seed...');
+
       const empresaId = 'empresa-001';
 
       const adminEmail = 'admin@teste.com';
       const funcionarioEmail = 'teste@teste.com';
       const senha = 'teste1234';
-
-      // Cria ou loga admin
-      const adminCredential = await this.createOrSignInUser(adminEmail, senha);
-      const adminId = adminCredential.user.uid;
-
-      // Cria ou loga funcionário
-      const funcCredential = await this.createOrSignInUser(
-        funcionarioEmail,
-        senha
-      );
-      const funcId = funcCredential.user.uid;
 
       const endereco: Address = {
         street: 'Av. Exemplo',
@@ -51,7 +42,17 @@ export class SeedService {
         country: 'Brasil',
       };
 
-      // Empresa
+      // Criação dos usuários
+      const adminCredential = await this.createOrSignInUser(adminEmail, senha);
+      const adminId = adminCredential.user.uid;
+
+      const funcCredential = await this.createOrSignInUser(
+        funcionarioEmail,
+        senha
+      );
+      const funcId = funcCredential.user.uid;
+
+      // Criar empresa
       const empresa: Company = {
         id: empresaId,
         name: 'Empresa de Teste',
@@ -64,45 +65,49 @@ export class SeedService {
         createdAt: new Date(),
         updatedAt: new Date(),
       };
-      await setDoc(doc(this.firestore, `companies/${empresaId}`), empresa);
+      console.log('🏢 Salvando empresa:', empresa);
+      await this.safeSetDoc(`companies/${empresaId}`, empresa);
 
-      // Admin
-      const admin: AuthenticatedUser = {
-        id: adminId,
-        cpf: '12345678900',
-        email: adminEmail,
-        role: UserRole.ADMIN,
-        first_name: 'Admin',
-        last_name: 'Teste',
-        phone: '85999999900',
-        companyId: empresaId,
-        address: endereco,
-        registration_date: new Date().toISOString(),
-        is_active: true,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      };
-      await setDoc(doc(this.firestore, `users/${adminId}`), admin);
+      // Criar usuários na coleção /users
+      const usuarios: AuthenticatedUser[] = [
+        {
+          id: adminId,
+          cpf: '12345678900',
+          email: adminEmail,
+          role: UserRole.ADMIN,
+          first_name: 'Administrador',
+          last_name: 'Principal',
+          phone: '85999999900',
+          companyId: empresaId,
+          address: endereco,
+          registration_date: new Date().toISOString(),
+          is_active: true,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+        {
+          id: funcId,
+          cpf: '12345678901',
+          email: funcionarioEmail,
+          role: UserRole.employee,
+          first_name: 'Funcionário',
+          last_name: 'Empresa',
+          phone: '85999999901',
+          companyId: empresaId,
+          address: endereco,
+          registration_date: new Date().toISOString(),
+          is_active: true,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+      ];
 
-      // Funcionário
-      const funcionario: AuthenticatedUser = {
-        id: funcId,
-        cpf: '12345678901',
-        email: funcionarioEmail,
-        role: UserRole.employee,
-        first_name: 'Funcionário',
-        last_name: 'Teste',
-        phone: '85999999901',
-        companyId: empresaId,
-        address: endereco,
-        registration_date: new Date().toISOString(),
-        is_active: true,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      };
-      await setDoc(doc(this.firestore, `users/${funcId}`), funcionario);
+      for (const usuario of usuarios) {
+        console.log(`👤 Salvando usuário (${usuario.role}):`, usuario);
+        await this.safeSetDoc(`users/${usuario.id}`, usuario);
+      }
 
-      // Cliente
+      // Criar cliente
       const cliente: Cliente = {
         id: 'cliente-001',
         nome: 'Cliente Teste',
@@ -117,12 +122,13 @@ export class SeedService {
         createdAt: new Date(),
         updatedAt: new Date(),
       };
-      await setDoc(
-        doc(this.firestore, `companies/${empresaId}/clientes/cliente-001`),
+      console.log('🧑‍💼 Salvando cliente:', cliente);
+      await this.safeSetDoc(
+        `companies/${empresaId}/clientes/${cliente.id}`,
         cliente
       );
 
-      // Produtos (com imagens reais)
+      // Criar produtos
       const produtos: Produto[] = [
         {
           id: 'produto-001',
@@ -160,15 +166,16 @@ export class SeedService {
       ];
 
       for (const produto of produtos) {
-        await setDoc(
-          doc(this.firestore, `companies/${empresaId}/produtos/${produto.id}`),
+        console.log('🛒 Salvando produto:', produto);
+        await this.safeSetDoc(
+          `companies/${empresaId}/produtos/${produto.id}`,
           produto
         );
       }
 
       console.log('✅ Seed finalizado com sucesso.');
     } catch (error) {
-      console.error('❌ Erro ao executar seed:', error);
+      console.error('❌ Erro geral ao executar seed:', error);
     }
   }
 
@@ -180,10 +187,18 @@ export class SeedService {
       return await createUserWithEmailAndPassword(this.auth, email, password);
     } catch (err: any) {
       if (err.code === 'auth/email-already-in-use') {
-        console.warn(`[SEED] Usuário já existe: ${email}`);
+        console.warn(`⚠️ Usuário já existe: ${email}`);
         return await signInWithEmailAndPassword(this.auth, email, password);
       }
       throw err;
+    }
+  }
+
+  private async safeSetDoc(path: string, data: any): Promise<void> {
+    try {
+      await setDoc(doc(this.firestore, path), data);
+    } catch (error) {
+      console.error(`❌ Erro ao salvar no caminho ${path}:`, error);
     }
   }
 }

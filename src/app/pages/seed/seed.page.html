@@ -1,13 +1,18 @@
-<ion-header [translucent]="true">
-  <ion-toolbar>
-    <ion-title>seed</ion-title>
-  </ion-toolbar>
-</ion-header>
-
-<ion-content [fullscreen]="true">
-  <ion-header collapse="condense">
-    <ion-toolbar>
-      <ion-title size="large">seed</ion-title>
+<ion-content class="ion-padding">
+  <ion-header>
+    <ion-toolbar color="primary">
+      <ion-title>Executar Seed</ion-title>
     </ion-toolbar>
   </ion-header>
+
+  <div class="seed-container">
+    <h2>💾 Inicializar Base de Dados</h2>
+    <p class="seed-warning">
+      Atenção: Esta operação criará usuários, clientes e produtos de teste no sistema.
+    </p>
+
+    <ion-button expand="block" color="warning" (click)="executarSeed()">
+      🚀 Executar Seed
+    </ion-button>
+  </div>
 </ion-content>

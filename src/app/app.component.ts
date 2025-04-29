@@ -3,6 +3,7 @@ import { IonApp, IonRouterOutlet, IonHeader, IonContent } from '@ionic/angular/s
 import { HeaderPage } from './pages/header/header.page';
 
 
+
 @Component({
   selector: 'app-root',
   templateUrl: 'app.component.html',

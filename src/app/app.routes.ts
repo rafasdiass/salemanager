@@ -6,7 +6,7 @@ export const routes: Routes = [
   // Redirecionamento inicial para o login-selector
   {
     path: '',
-    redirectTo: 'dashboard-admin',
+    redirectTo: 'login-selector',
     pathMatch: 'full',
   },
 
@@ -40,7 +40,7 @@ export const routes: Routes = [
   // -----------------------------
   {
     path: 'dashboard-admin',
-    // canActivate: [AdminGuard],
+    canActivate: [AdminGuard],
     loadComponent: () =>
       import('./pages/admin/dashboard-admin/dashboard-admin.page').then(
         (m) => m.DashboardAdminPage
@@ -68,15 +68,22 @@ export const routes: Routes = [
   },
   {
     path: 'venda-form',
-    loadComponent: () => import('./pages/vendas/venda-form/venda-form.page').then( m => m.VendaFormPage)
+    loadComponent: () =>
+      import('./pages/vendas/venda-form/venda-form.page').then(
+        (m) => m.VendaFormPage
+      ),
   },
   {
     path: 'produto-form',
-    loadComponent: () => import('./pages/produtos/produto-form/produto-form.page').then( m => m.ProdutoFormPage)
+    loadComponent: () =>
+      import('./pages/produtos/produto-form/produto-form.page').then(
+        (m) => m.ProdutoFormPage
+      ),
   },
   {
     path: 'seed',
-    loadComponent: () => import('./pages/seed/seed.page').then( m => m.SeedPage)
+    loadComponent: () =>
+      import('./pages/seed/seed.page').then((m) => m.SeedPage),
   },
 
   // (Opcional) Rota de fallback se quiser no futuro
