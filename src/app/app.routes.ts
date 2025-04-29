@@ -74,6 +74,10 @@ export const routes: Routes = [
     path: 'produto-form',
     loadComponent: () => import('./pages/produtos/produto-form/produto-form.page').then( m => m.ProdutoFormPage)
   },
+  {
+    path: 'seed',
+    loadComponent: () => import('./pages/seed/seed.page').then( m => m.SeedPage)
+  },
 
   // (Opcional) Rota de fallback se quiser no futuro
   // { path: '**', redirectTo: 'login-selector' },
