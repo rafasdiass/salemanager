@@ -1,0 +1,56 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Cadastrar Produto</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+
+  <form [formGroup]="form" (ngSubmit)="submit()">
+
+    <!-- Nome do Produto -->
+    <ion-item>
+      <ion-label position="stacked">Nome</ion-label>
+      <ion-input formControlName="nome" type="text" placeholder="Digite o nome do produto">
+      </ion-input>
+    </ion-item>
+
+    <!-- Preço -->
+    <ion-item>
+      <ion-label position="stacked">Preço (R$)</ion-label>
+      <ion-input formControlName="preco" type="number" placeholder="0.00" inputmode="decimal">
+      </ion-input>
+    </ion-item>
+
+    <!-- Estoque -->
+    <ion-item>
+      <ion-label position="stacked">Estoque</ion-label>
+      <ion-input formControlName="estoque" type="number" placeholder="0" inputmode="numeric">
+      </ion-input>
+    </ion-item>
+
+    <!-- Categoria (Opcional) -->
+    <ion-item>
+      <ion-label position="stacked">Categoria (opcional)</ion-label>
+      <ion-input formControlName="categoria" type="text" placeholder="Ex: Bebidas, Cosméticos, etc.">
+      </ion-input>
+    </ion-item>
+
+    <!-- Botão de salvar -->
+    <div class="button-group">
+      <ion-button expand="block" type="submit" [disabled]="form.invalid || isLoading()">
+        Salvar Produto
+      </ion-button>
+    </div>
+
+    <!-- Loader -->
+    <ion-spinner *ngIf="isLoading()" name="crescent" class="spinner"></ion-spinner>
+
+    <!-- Erro -->
+    <ion-text color="danger" *ngIf="errorMessage()">
+      <p class="error-message">{{ errorMessage() }}</p>
+    </ion-text>
+
+  </form>
+
+</ion-content>

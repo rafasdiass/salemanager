@@ -2,124 +2,42 @@
   <div class="login-wrapper">
     <ion-card class="login-card">
       <ion-card-content>
-        <h2 class="login-title">Login como:</h2>
+        <h2 class="login-title">Login no sistema</h2>
 
-        <!-- Seletor visual -->
-        <div class="select-area">
-          <div class="select-wrapper" (click)="toggleDropdown()" tabindex="0">
-            <ion-icon name="person-circle" class="select-icon"></ion-icon>
-            <div class="custom-select">
-              {{ loginType === 'company' ? 'Empresa' : loginType === 'client' ? 'Cliente' : 'Selecione o tipo de login'
-              }}
-              <ion-icon name="chevron-down" class="select-chevron"></ion-icon>
+        <!-- Formulário de login -->
+        <form [formGroup]="loginForm" (ngSubmit)="onLogin()">
+          <div class="field-group">
+            <label class="form-label">{{ identifierType === 'cpf' ? 'CPF' : 'Email' }}</label>
+            <div class="input-wrapper">
+              <ion-icon [name]="identifierType === 'cpf' ? 'card' : 'mail'" class="input-icon"></ion-icon>
+              <ion-input formControlName="identifier" [type]="identifierType === 'cpf' ? 'text' : 'email'"
+                [placeholder]="identifierType === 'cpf' ? 'Digite seu CPF' : 'Digite seu email'">
+              </ion-input>
             </div>
           </div>
 
-          <div class="custom-options" *ngIf="dropdownOpen" (click)="$event.stopPropagation()">
-            <div class="option" [class.selected]="loginType === 'company'" (click)="selectLoginType('company')">
-              Empresa
-            </div>
-            <div class="option" [class.selected]="loginType === 'client'" (click)="selectLoginType('client')">
-              Cliente
+          <div class="field-group">
+            <label class="form-label">Senha</label>
+            <div class="input-wrapper">
+              <ion-icon name="lock-closed" class="input-icon"></ion-icon>
+              <ion-input formControlName="password" type="password" placeholder="Digite sua senha"></ion-input>
             </div>
           </div>
-        </div>
 
-        <!-- Radio para tipo de identificação -->
-        <div class="field-group">
-          <label class="form-label">Tipo de identificação</label>
-          <div class="input-wrapper radio-group">
-            <label class="radio-option">
-              <input type="radio" name="identifierType" [(ngModel)]="identifierType" value="email" />
-              <span>Email</span>
-            </label>
-            <label class="radio-option">
-              <input type="radio" name="identifierType" [(ngModel)]="identifierType" value="cpf" />
-              <span>CPF</span>
-            </label>
+          <ion-button expand="block" type="submit" [disabled]="isLoading()">Entrar</ion-button>
+
+          <div class="link-row">
+            <ion-text>Esqueci a senha</ion-text>
           </div>
-        </div>
+        </form>
 
-        <!-- Formulário Empresa -->
-        <ng-container *ngIf="loginType === 'company'">
-          <form [formGroup]="companyForm" (ngSubmit)="onCompanyLogin()">
-            <div class="field-group">
-              <label class="form-label">{{ identifierType === 'cpf' ? 'CPF' : 'Email' }}</label>
-              <div class="input-wrapper">
-                <ion-icon [name]="identifierType === 'cpf' ? 'card' : 'mail'" class="input-icon"></ion-icon>
-                <ion-input formControlName="identifier" [type]="identifierType === 'cpf' ? 'text' : 'email'"
-                  [placeholder]="identifierType === 'cpf' ? 'Digite seu CPF' : 'Digite seu email'"></ion-input>
-              </div>
-            </div>
-
-            <div class="field-group">
-              <label class="form-label">Senha</label>
-              <div class="input-wrapper">
-                <ion-icon name="lock-closed" class="input-icon"></ion-icon>
-                <ion-input formControlName="password" type="password" placeholder="Digite sua senha"></ion-input>
-              </div>
-            </div>
-
-            <ion-button expand="block" type="submit" [disabled]="isLoading()">Entrar</ion-button>
-
-            <div class="link-row">
-              <ion-text>Esqueci a senha</ion-text>
-            </div>
-
-            <div class="new-client-row">
-              <ion-router-link routerLink="/escolher-plano" class="link-button">
-                <ion-icon name="pricetag" slot="start"></ion-icon>
-                Compre um plano
-              </ion-router-link>
-            </div>
-          </form>
-        </ng-container>
-
-        <!-- Formulário Cliente -->
-        <ng-container *ngIf="loginType === 'client'">
-          <form [formGroup]="clientForm" (ngSubmit)="onClientLogin()">
-            <div class="field-group">
-              <label class="form-label">{{ identifierType === 'cpf' ? 'CPF' : 'Email' }}</label>
-              <div class="input-wrapper">
-                <ion-icon [name]="identifierType === 'cpf' ? 'card' : 'mail'" class="input-icon"></ion-icon>
-                <ion-input formControlName="identifier" [type]="identifierType === 'cpf' ? 'text' : 'email'"
-                  [placeholder]="identifierType === 'cpf' ? 'Digite seu CPF' : 'Digite seu email'"></ion-input>
-              </div>
-            </div>
-
-            <div class="field-group">
-              <label class="form-label">Senha</label>
-              <div class="input-wrapper">
-                <ion-icon name="lock-closed" class="input-icon"></ion-icon>
-                <ion-input formControlName="password" type="password" placeholder="Digite sua senha"></ion-input>
-              </div>
-            </div>
-
-            <ion-button expand="block" type="submit" [disabled]="isLoading()">Entrar</ion-button>
-
-            <div class="link-row">
-              <ion-text>Esqueci a senha</ion-text>
-            </div>
-
-            <div class="field-group">
-              <label class="form-label">Cupom</label>
-              <div class="input-wrapper">
-                <ion-icon name="pricetag" class="input-icon"></ion-icon>
-                <ion-input formControlName="coupon" placeholder="Digite seu cupom"></ion-input>
-              </div>
-              <ion-button expand="block" type="submit" size="small" color="danger" class="coupon-button">
-                Aplicar
-              </ion-button>
-            </div>
-          </form>
-        </ng-container>
-
-        <!-- Carregando ou Erro -->
+        <!-- Carregando ou erro -->
         <ion-spinner *ngIf="isLoading()" name="crescent" class="spinner"></ion-spinner>
 
         <ion-text color="danger" *ngIf="errorMessage()">
           <p class="error-msg">{{ errorMessage() }}</p>
         </ion-text>
+
       </ion-card-content>
     </ion-card>
   </div>

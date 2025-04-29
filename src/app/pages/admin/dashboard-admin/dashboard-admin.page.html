@@ -34,63 +34,42 @@
     </ion-row>
   </ion-grid>
 
-  <!-- Próximos Agendamentos -->
-  <section>
-    <h3>Próximos agendamentos</h3>
-    <p *ngIf="!upcomingAppointments().length" class="empty">
-      Nenhum agendamento futuro.
-    </p>
-    <ion-list *ngIf="upcomingAppointments().length">
-      <ion-item *ngFor="let a of upcomingAppointments()">
-        <ion-label>
-          <h4>
-            {{ a.startTime | date:'short' }} – {{ a.endTime | date:'short' }}
-          </h4>
-          <p>
-            {{ getClientName(a.clientId) }} •
-            {{ getEmployeeName(a.employeeId) }} •
-            {{ getServiceName(a.serviceId) }}
-          </p>
-        </ion-label>
-        <ion-button fill="clear" size="small" slot="end" (click)="editAppt(a.id!)">✎</ion-button>
-        <ion-button fill="clear" color="danger" size="small" slot="end" (click)="cancelAppt(a.id!)">✖</ion-button>
-      </ion-item>
-    </ion-list>
+  <!-- Ações Rápidas -->
+  <section class="quick-actions">
+    <h3>Ações Rápidas</h3>
+    <ion-grid>
+      <ion-row>
+        <ion-col size="4">
+          <ion-button expand="block" color="primary" (click)="onAddVenda()">
+            Nova Venda
+          </ion-button>
+        </ion-col>
+        <ion-col size="4">
+          <ion-button expand="block" color="success" (click)="onAddClient()">
+            Novo Cliente
+          </ion-button>
+        </ion-col>
+        <ion-col size="4">
+          <ion-button expand="block" color="tertiary" (click)="onAddEmployee()">
+            Novo Funcionário
+          </ion-button>
+        </ion-col>
+      </ion-row>
+    </ion-grid>
   </section>
 
-  <!-- Filtro por Data -->
-  <ion-item>
-    <ion-label>Filtrar data</ion-label>
-    <ion-datetime [value]="selectedDate()" (ionChange)="onDateChange($event.detail.value)" display-format="DD/MM/YYYY"
-      picker-format="DD MM YYYY">
-    </ion-datetime>
-  </ion-item>
-
-  <!-- Agendamentos da data selecionada -->
+  <!-- Últimas Vendas -->
   <section>
-    <h3>Agendamentos em {{ selectedDate() | date:'dd/MM/yyyy' }}</h3>
-    <p *ngIf="!dateAppointments().length" class="empty">
-      Nenhum agendamento nesta data.
-    </p>
-    <ion-list *ngIf="dateAppointments().length">
-      <ion-item *ngFor="let a of dateAppointments()">
+    <h3>Últimas Vendas</h3>
+    <p *ngIf="!vendas().length" class="empty">Nenhuma venda realizada.</p>
+    <ion-list *ngIf="vendas().length">
+      <ion-item *ngFor="let v of vendas() | slice:0:5">
         <ion-label>
-          <h4>
-            {{ a.startTime | date:'shortTime' }} – {{ a.endTime | date:'shortTime' }}
-          </h4>
-          <p>
-            {{ getClientName(a.clientId) }} •
-            {{ getEmployeeName(a.employeeId) }} •
-            {{ getServiceName(a.serviceId) }}
-          </p>
+          <h4>Venda: R$ {{ v.valorTotal.toFixed(2) }}</h4>
+          <p>{{ v.data | date: 'short' }}</p>
         </ion-label>
-        <ion-button fill="clear" size="small" slot="end" (click)="editAppt(a.id!)">✎</ion-button>
-        <ion-button fill="clear" color="danger" size="small" slot="end" (click)="cancelAppt(a.id!)">✖</ion-button>
       </ion-item>
     </ion-list>
-    <p class="procedures">
-      Procedimentos concluídos/cancelados: {{ totalProcedures() }}
-    </p>
   </section>
 
 </ion-content>

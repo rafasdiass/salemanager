@@ -1,15 +1,15 @@
 /**
  * @file address.model.ts
  * Define a estrutura de um endereço padronizado
- * para uso em Company, AuthenticatedUser, etc.
+ * para uso em Company, AuthenticatedUser, Cliente, etc.
  */
 export interface Address {
-  street: string;
-  number: string;
-  complement?: string; // Campo opcional
-  neighborhood: string;
-  city: string;
-  state: string;
-  postal_code: string; // Ex.: CEP
-  country?: string; // Caso deseje permitir preenchimento de país
+  street: string; // Rua
+  number: string; // Número
+  complement?: string; // Complemento (opcional)
+  neighborhood: string; // Bairro
+  city: string; // Cidade
+  state: string; // Estado
+  postal_code: string; // CEP (ex.: 01001-000)
+  country?: string; // País (opcional, default "Brasil")
 }

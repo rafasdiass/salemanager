@@ -1,78 +1,27 @@
-@use 'sass:color';
+.form-container {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
 
-// Variáveis para a paleta dark com acentos quentes
-$background-dark: #1c1c1c;
-$input-bg: #2a2a2a;
-$text-light: #f0f0f0;
-$accent-skin: #f1c27d; // Tom de pele quente para acentos
-$border-dark: #333;
-$shadow-dark: 0 2px 4px rgba(0, 0, 0, 0.7);
+ion-card {
+    margin-bottom: 12px;
+}
 
-.clients-form {
-    background-color: $background-dark;
-    padding: 1.5rem;
-    border-radius: 8px;
-    box-shadow: $shadow-dark;
-    color: $text-light;
+ion-item {
+    --highlight-color-focused: var(--ion-color-primary);
+}
 
-    h5 {
-        color: $accent-skin;
-        margin-bottom: 1.5rem;
-        font-size: 1.5rem;
-    }
+ion-textarea {
+    width: 100%;
+}
 
-    .form-label {
-        font-weight: 600;
-        margin-bottom: 0.5rem;
-        display: block;
-    }
+.button-container {
+    margin-top: 24px;
+    display: flex;
+    justify-content: center;
+}
 
-    input,
-    textarea,
-    .form-select {
-        background-color: $input-bg;
-        border: 1px solid $border-dark;
-        border-radius: 4px;
-        color: $text-light;
-        padding: 0.5rem;
-        width: 100%;
-        transition: border-color 0.3s ease;
-
-        &:focus {
-            border-color: $accent-skin;
-            outline: none;
-        }
-    }
-
-    fieldset {
-        border: 1px solid $border-dark;
-        border-radius: 8px;
-        padding: 1rem;
-        margin-bottom: 1rem;
-
-        legend {
-            color: $accent-skin;
-            font-weight: 600;
-            padding: 0 0.5rem;
-        }
-    }
-
-    .btn-primary {
-        background-color: $accent-skin;
-        border: none;
-        padding: 0.75rem 1.5rem;
-        border-radius: 4px;
-        font-weight: 600;
-        transition: background-color 0.3s ease;
-        cursor: pointer;
-
-        &:hover {
-            background-color: color.adjust($accent-skin, $lightness: -10%);
-        }
-
-        &:disabled {
-            background-color: color.adjust($accent-skin, $lightness: -10%);
-            cursor: not-allowed;
-        }
-    }
+ion-button {
+    width: 90%;
 }

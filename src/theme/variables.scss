@@ -1,25 +1,26 @@
 @use 'sass:map';
 
 /**
- * Paleta emocional refinada com fidelidade visual ao design da tela de login (empresa e cliente).
- * Ajustada para tons mais vivos e visíveis conforme screenshots.
+ * Paleta visual neutra e profissional para sistemas de gestão e controle de estoque.
+ * Tons sóbrios de cinza, branco e preto, com destaques discretos.
  */
 
-$background-dark: #1A1614; // fundo geral escuro, elegante e aconchegante
-$card-background: #241C19; // fundo de cards um pouco mais contrastante que o fundo geral
-$primary-color: #F7C873; // dourado quente, visível, sem exagero (mais vibrante que #D4AF37)
-$accent-color: #A97142; // marrom canela com mais saturação (para botões e destaques)
-$text-light: #FFF8F0; // texto claro legível no fundo escuro
-$text-muted: #CBB8A0; // tom neutro elegante, suavemente mais visível
-$input-background: #2D2522; // fundo dos inputs com leve contraste
-$error-color: #E74C3C; // vermelho elegante para erros
-$shadow-color: rgba(0, 0, 0, 0.6); // sombra suave porém profunda
-$border-color: #3C312D; // usado para segmentação e contornos sutis
+/* Cores principais */
+$background-dark: #f4f4f4; // Fundo geral cinza bem claro
+$card-background: #ffffff; // Fundo dos cards branco puro
+$primary-color: #555555; // Cinza escuro para títulos e botões
+$accent-color: #888888; // Cinza médio para ícones e destaques suaves
+$text-light: #333333; // Texto padrão mais escuro para boa leitura
+$text-muted: #999999; // Texto de apoio em cinza claro
+$input-background: #f5f5f5; // Fundo dos inputs
+$error-color: #d9534f; // Vermelho sóbrio para mensagens de erro
+$shadow-color: rgba(0, 0, 0, 0.1); // Sombra leve
+$border-color: #dddddd; // Bordas sutis para inputs/cards
 
-// Seções específicas
-$company-section-color: #2C1E1A; // fundo da área de empresa, chocolate queimado
-$client-section-color: #1E2621; // fundo da área de cliente, oliva escuro puxado para o musgo
+/* Cores específicas de seções */
+$company-section-color: #e9ecef; // Cinza muito claro (background de áreas de empresa)
+$client-section-color: #f8f9fa; // Quase branco (background de áreas de cliente)
 
-// Destaques para botões e ações por perfil
-$company-highlight: #E4B072; // botão dourado de empresa (com leve brilho)
-$client-highlight: #B5D5B0; // botão verde-claro calmante e moderno
+/* Destaques */
+$company-highlight: #666666; // Botão padrão para empresa (cinza médio)
+$client-highlight: #4e4e4e; // Botão mais escuro para cliente

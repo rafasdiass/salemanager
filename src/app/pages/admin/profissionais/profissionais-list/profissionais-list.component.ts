@@ -1,8 +1,7 @@
-import { Component, inject } from '@angular/core';
+import { Component, effect, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ProfessionalService } from '../../../../shared/services/employee.service';
-import { EmployeeUser } from '../../../../shared/models/models';
-import { signal, computed, effect } from '@angular/core';
+import { EmployeeService } from '../../../../shared/services/employee.service'; // CORRIGIDO
+import { AuthenticatedUser } from '../../../../shared/models/auth.model'; // agora vem do modelo certo
 
 @Component({
   selector: 'app-profissionais-list',
@@ -12,11 +11,11 @@ import { signal, computed, effect } from '@angular/core';
   styleUrls: ['./profissionais-list.component.scss'],
 })
 export class ProfissionaisListComponent {
-  private readonly service = inject(ProfessionalService);
+  private readonly service = inject(EmployeeService); // Corrigido
 
   private readonly _loading = signal(true);
   private readonly _error = signal<string | null>(null);
-  private readonly _professionals = signal<EmployeeUser[]>([]);
+  private readonly _professionals = signal<AuthenticatedUser[]>([]);
 
   readonly loading = computed(() => this._loading());
   readonly error = computed(() => this._error());
@@ -35,23 +34,20 @@ export class ProfissionaisListComponent {
     this._loading.set(true);
     this._error.set(null);
     try {
-      await this.service.load();
-      const all = this.service.professionals();
-      const employees = all.filter(
-        (u): u is EmployeeUser => u.role === 'employee'
-      );
+      const list = this.service.employees();
+      const employees = list.filter((u) => u.role === 'employee');
       this._professionals.set(employees);
     } catch (err) {
       console.error('[ProfissionaisList] Erro ao carregar:', err);
-      this._error.set('Erro ao carregar profissionais');
+      this._error.set('Erro ao carregar profissionais.');
     } finally {
       this._loading.set(false);
     }
   }
 
-  async remove(professional: EmployeeUser): Promise<void> {
+  async remove(professional: AuthenticatedUser): Promise<void> {
     const confirmed = confirm(
-      `Deseja remover o profissional ${professional.name}?`
+      `Deseja remover o profissional ${professional.first_name} ${professional.last_name}?`
     );
     if (!confirmed || !professional.id) return;
 

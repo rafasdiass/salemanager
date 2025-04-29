@@ -1,21 +1,41 @@
-<div class="clients-list">
-    <h5 class="mb-3">Lista de Clientes</h5>
+<ion-header translucent>
+    <ion-toolbar>
+        <ion-title>Clientes Cadastrados</ion-title>
+        <ion-buttons slot="end">
+            <ion-button color="primary" (click)="initClients()">Atualizar</ion-button>
+        </ion-buttons>
+    </ion-toolbar>
+</ion-header>
 
-    <div *ngIf="loading()" class="alert alert-info">
-        Carregando clientes...
+<ion-content class="ion-padding">
+
+    <div class="search-container">
+        <ion-searchbar placeholder="Buscar cliente por nome, email ou telefone"
+            (ionInput)="onSearch($event.target.value)" debounce="300">
+        </ion-searchbar>
     </div>
 
-    <div *ngIf="error() as errorMsg" class="alert alert-danger">
-        {{ errorMsg }}
+    <ion-grid>
+        <ion-row class="client-list">
+            <ion-col size="12" size-md="6" size-lg="4" *ngFor="let client of filteredClients()">
+                <ion-card class="client-card">
+                    <ion-card-header>
+                        <ion-card-title>{{ getClientDisplayName(client) }}</ion-card-title>
+                    </ion-card-header>
+                    <ion-card-content>
+                        <p *ngIf="client.email"><strong>Email:</strong> {{ client.email }}</p>
+                        <p *ngIf="client.telefone"><strong>Telefone:</strong> {{ client.telefone }}</p>
+                        <p *ngIf="client.endereco?.city">
+                            <strong>Cidade:</strong> {{ client.endereco?.city }}/{{ client.endereco?.state }}
+                        </p>
+                    </ion-card-content>
+                </ion-card>
+            </ion-col>
+        </ion-row>
+    </ion-grid>
+
+    <div class="empty-result" *ngIf="!filteredClients().length">
+        Nenhum cliente encontrado para o termo pesquisado.
     </div>
 
-    <ul class="list-group">
-        <li class="list-group-item" *ngFor="let client of clients()">
-            <strong>{{ client.name }}</strong> - {{ client.email }}<br>
-            <small>
-                {{ client.address.street }}, {{ client.address.number }} - {{ client.address.city }}/{{
-                client.address.state }}
-            </small>
-        </li>
-    </ul>
-</div>
+</ion-content>

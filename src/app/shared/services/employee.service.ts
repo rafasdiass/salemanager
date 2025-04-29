@@ -11,7 +11,7 @@ import {
 import { BaseFirestoreCrudService } from './base-firestore-crud.service';
 import { AuthenticatedUser } from '../models/auth.model';
 import { UserRole } from '../models/user-role.enum';
-import { UserBusinessRulesService } from '../regras/user-business-rules.service';
+import { EmployeeBusinessRulesService } from '../regras/employee-business-rules.service';
 import { AuthService } from './auth.service';
 import { Firestore, collection, query, where } from '@angular/fire/firestore';
 import { collectionData } from 'rxfire/firestore';
@@ -25,33 +25,33 @@ export class EmployeeService extends BaseFirestoreCrudService<AuthenticatedUser>
   private employeesSub?: Subscription;
 
   constructor(
-    private readonly rules: UserBusinessRulesService,
+    private readonly rules: EmployeeBusinessRulesService, // ✅ Agora certo
     private readonly authService: AuthService
-  ) // usamos o `firestore` herdado de BaseFirestoreCrudService,
-  // então não precisamos injetá‑lo aqui de novo
-  {
-    super('employees');
+  ) {
+    super('users'); // ✅ Estamos buscando os employees dentro de 'users'
     this.businessRules = this.rules;
     this.initFilteredEmployees();
   }
 
   /**
-   * Re-subscreve à lista de funcionários ativos
-   * sempre que a empresa principal mudar.
+   * Observa a lista de funcionários da empresa logada.
    */
   private initFilteredEmployees(): void {
     effect(() => {
-      const companyId = this.authService.primaryCompanyId();
+      const companyId = this.authService.user()?.companyId; // ✅ Corrigido
 
-      // cancela a assinatura anterior
+      if (!companyId) {
+        this._employees.set([]);
+        return;
+      }
+
       this.employeesSub?.unsubscribe();
 
-      // monta a query diretamente sobre this.firestore (herdado)
-      const colRef = collection(this.firestore, 'employees');
+      const colRef = collection(this.firestore, 'users');
       const q = query(
         colRef,
         where('role', '==', UserRole.employee),
-        where('companyIds', 'array-contains', companyId),
+        where('companyId', '==', companyId),
         where('is_active', '==', true)
       );
 
@@ -72,22 +72,16 @@ export class EmployeeService extends BaseFirestoreCrudService<AuthenticatedUser>
     });
   }
 
-  /**
-   * Cria um funcionário garantindo role e vínculo corretos.
-   */
   override create(user: AuthenticatedUser, id?: string) {
     if (user.role !== UserRole.employee) {
       throw new Error('Este serviço só pode criar usuários com role EMPLOYEE.');
     }
-    if (!user.companyIds?.length) {
+    if (!user.companyId) {
       throw new Error('Funcionário precisa estar vinculado a uma empresa.');
     }
     return super.create(user, id);
   }
 
-  /**
-   * Atualiza um funcionário sem permitir mudar o role.
-   */
   override update(id: string, user: AuthenticatedUser) {
     if (user.role !== UserRole.employee) {
       throw new Error('Não é permitido alterar o role de um funcionário.');
@@ -95,20 +89,12 @@ export class EmployeeService extends BaseFirestoreCrudService<AuthenticatedUser>
     return super.update(id, user);
   }
 
-  /**
-   * Marca funcionário como demitido (is_active = false).
-   * A UserBusinessRulesService cuidará de setar termination_date.
-   */
   async terminateEmployee(id: string): Promise<void> {
     const user = await firstValueFrom(this.getById(id));
     if (!user) throw new Error('Funcionário não encontrado.');
     await firstValueFrom(this.update(id, { ...user, is_active: false }));
   }
 
-  /**
-   * Re-contrata funcionário (is_active = true).
-   * A UserBusinessRulesService cuidará de limpar termination_date.
-   */
   async rehireEmployee(id: string): Promise<void> {
     const user = await firstValueFrom(this.getById(id));
     if (!user) throw new Error('Funcionário não encontrado.');

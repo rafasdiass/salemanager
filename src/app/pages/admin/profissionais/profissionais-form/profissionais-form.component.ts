@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, signal, computed } from '@angular/core';
 import {
   FormGroup,
   FormControl,
@@ -6,47 +6,47 @@ import {
   ReactiveFormsModule,
 } from '@angular/forms';
 import { CommonModule } from '@angular/common';
-import { ProfessionalService } from '../../../../shared/services/employee.service';
-import { EmployeeUser } from '../../../../shared/models/models';
-import { NgxMaskDirective, provideNgxMask } from 'ngx-mask';
-import { DomSanitizer } from '@angular/platform-browser';
+import { EmployeeService } from 'src/app/shared/services/employee.service';
+import { AuthService } from 'src/app/shared/services/auth.service';
+import { EmployeeUser } from 'src/app/shared/models/employee.model';
+import {  provideNgxMask } from 'ngx-mask';
+import { IonicModule } from '@ionic/angular';
+import { UserRole } from 'src/app/shared/models/user-role.enum';
 
 @Component({
   selector: 'app-profissionais-form',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, NgxMaskDirective],
+  imports: [CommonModule, ReactiveFormsModule, IonicModule],
   providers: [provideNgxMask()],
   templateUrl: './profissionais-form.component.html',
   styleUrls: ['./profissionais-form.component.scss'],
 })
 export class ProfissionaisFormComponent {
-  private readonly professionalService = inject(ProfessionalService);
-  private readonly sanitizer = inject(DomSanitizer);
+  private readonly employeeService = inject(EmployeeService);
+  private readonly authService = inject(AuthService);
 
-  // Pré-visualização da imagem (opcional para exibir no UI)
-  imagePreviewUrl: string | null = null;
-  // Armazena o arquivo selecionado
-  selectedImageFile: File | null = null;
-
-  // Formulário com os campos necessários, sem o campo de URL de imagem
+  /** Formulário reativo */
   form: FormGroup<{
-    name: FormControl<string>;
+    first_name: FormControl<string>;
+    last_name: FormControl<string>;
+    cpf: FormControl<string>;
+    phone: FormControl<string>;
     email: FormControl<string>;
     password: FormControl<string>;
-    phone: FormControl<string>;
-    birthDate: FormControl<string>;
-    commission: FormControl<number>;
-    isActive: FormControl<boolean>;
-    street: FormControl<string>;
-    number: FormControl<string>;
-    complement: FormControl<string>;
-    neighborhood: FormControl<string>;
-    city: FormControl<string>;
-    state: FormControl<string>;
-    zipCode: FormControl<string>;
-    country: FormControl<string>;
   }> = new FormGroup({
-    name: new FormControl('', {
+    first_name: new FormControl('', {
+      nonNullable: true,
+      validators: [Validators.required],
+    }),
+    last_name: new FormControl('', {
+      nonNullable: true,
+      validators: [Validators.required],
+    }),
+    cpf: new FormControl('', {
+      nonNullable: true,
+      validators: [Validators.required],
+    }),
+    phone: new FormControl('', {
       nonNullable: true,
       validators: [Validators.required],
     }),
@@ -58,76 +58,66 @@ export class ProfissionaisFormComponent {
       nonNullable: true,
       validators: [Validators.required, Validators.minLength(6)],
     }),
-    phone: new FormControl('', { nonNullable: true }),
-    birthDate: new FormControl('', { nonNullable: true }),
-    commission: new FormControl(0, { nonNullable: true }),
-    isActive: new FormControl(true, { nonNullable: true }),
-    street: new FormControl('', { nonNullable: true }),
-    number: new FormControl('', { nonNullable: true }),
-    complement: new FormControl('', { nonNullable: true }),
-    neighborhood: new FormControl('', { nonNullable: true }),
-    city: new FormControl('', { nonNullable: true }),
-    state: new FormControl('', { nonNullable: true }),
-    zipCode: new FormControl('', { nonNullable: true }),
-    country: new FormControl('Brasil', { nonNullable: true }),
   });
 
-  // Submete o formulário para criar o profissional
+  /** Carregando durante a submissão */
+  readonly isLoading = signal(false);
+
+  /** Erro eventual durante criação */
+  readonly errorMessage = signal<string | null>(null);
+
+  /**
+   * Submete o formulário para criação do funcionário.
+   */
   async submit(): Promise<void> {
-    if (this.form.invalid) return;
+    if (this.form.invalid) {
+      this.form.markAllAsTouched();
+      return;
+    }
 
-    const values = this.form.getRawValue();
+    this.isLoading.set(true);
+    this.errorMessage.set(null);
 
-    // Cria o objeto profissional com base nas interfaces definidas
-    const professional: Omit<EmployeeUser, 'id'> = {
-      role: 'employee',
-      companyId: '', // Ajuste conforme a lógica de negócio (ex: associar a uma empresa)
-      name: values.name,
-      email: values.email,
-      password: values.password,
-      phone: values.phone,
-      birthDate: new Date(values.birthDate),
-      commission: values.commission,
-      isActive: values.isActive,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-      specialties: [],
-      address: {
-        street: values.street,
-        number: values.number,
-        complement: values.complement,
-        neighborhood: values.neighborhood,
-        city: values.city,
-        state: values.state,
-        zipCode: values.zipCode,
-        country: values.country,
-      },
-    };
+    try {
+      const companyId = this.authService.user()?.companyId;
+      if (!companyId) {
+        throw new Error(
+          'Usuário autenticado não está vinculado a uma empresa.'
+        );
+      }
 
-    // Envia os dados do profissional e o arquivo da imagem para o serviço
-    await this.professionalService.create(professional, this.selectedImageFile);
-    this.resetForm();
+      const values = this.form.getRawValue();
+
+      const employee: Omit<EmployeeUser, 'id'> = {
+        cpf: values.cpf.replace(/\D/g, ''),
+        phone: values.phone,
+        email: values.email.toLowerCase().trim(),
+        first_name: values.first_name.trim(),
+        last_name: values.last_name.trim(),
+        password: values.password,
+        role: UserRole.employee,
+
+        companyId,
+        is_active: true,
+        registration_date: new Date().toISOString(),
+      };
+
+      await this.employeeService.create(employee);
+      this.resetForm();
+    } catch (error: any) {
+      console.error('[ProfissionaisForm] Erro ao criar funcionário:', error);
+      this.errorMessage.set(error.message || 'Erro desconhecido');
+    } finally {
+      this.isLoading.set(false);
+    }
   }
 
-  // Reseta o formulário e limpa a pré-visualização e arquivo selecionado
+  /**
+   * Reseta o formulário e limpa os estados internos.
+   */
   resetForm(): void {
     this.form.reset();
-    this.form.controls.country.setValue('Brasil');
-    this.imagePreviewUrl = null;
-    this.selectedImageFile = null;
-  }
-
-  // Gerencia a seleção da imagem, gera a pré-visualização e armazena o arquivo selecionado
-  onImageSelect(event: Event): void {
-    const fileInput = event.target as HTMLInputElement;
-    if (fileInput.files && fileInput.files.length > 0) {
-      this.selectedImageFile = fileInput.files[0];
-
-      const reader = new FileReader();
-      reader.onload = () => {
-        this.imagePreviewUrl = reader.result as string;
-      };
-      reader.readAsDataURL(this.selectedImageFile);
-    }
+    this.isLoading.set(false);
+    this.errorMessage.set(null);
   }
 }

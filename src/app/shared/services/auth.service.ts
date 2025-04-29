@@ -42,7 +42,6 @@ import {
   AuthenticatedUser,
   LoginRequest,
   LoginResponse,
-  ClientLoginWithCoupon,
 } from '../models/auth.model';
 import { UserRole } from '../models/user-role.enum';
 import { UserService } from './user.service';
@@ -69,16 +68,11 @@ export class AuthService {
     if (!u) throw new Error('Usuário não autenticado.');
     return u;
   });
-  readonly primaryCompanyId = computed(() => {
-    const u = this.authenticatedUser();
-    if (u.role === UserRole.client) {
-      if (!u.couponUsed) throw new Error('Cliente sem cupom vinculado.');
-      return u.couponUsed;
-    }
-    if (!u.companyIds?.length) {
-      throw new Error('Usuário sem empresas vinculadas.');
-    }
-    return u.companyIds[0];
+
+  readonly companyId = computed(() => {
+    const user = this.authenticatedUser();
+    if (!user.companyId) throw new Error('Usuário sem empresa vinculada.');
+    return user.companyId;
   });
 
   constructor() {}
@@ -97,23 +91,17 @@ export class AuthService {
     return this.authState();
   }
 
-  isAuthenticated(): boolean {
-    return this.authState().isAuthenticated;
-  }
-
-  login(
-    credentials: LoginRequest,
-    collectionType: 'user' | 'client' = 'user'
-  ): Observable<LoginResponse> {
+  login(credentials: LoginRequest): Observable<LoginResponse> {
     const identifier = credentials.email ?? credentials.cpf;
     if (!identifier || !credentials.password) {
       return throwError(() => new Error('CPF/Email e senha são obrigatórios.'));
     }
 
     const field = credentials.cpf ? 'cpf' : 'email';
-    const colName = collectionType === 'client' ? 'clients' : 'users';
-    const collRef = collection(this.firestore, colName);
-    const q = query(collRef, where(field, '==', identifier));
+    const q = query(
+      collection(this.firestore, 'users'),
+      where(field, '==', identifier)
+    );
 
     return from(
       this.ngZone.run(() =>
@@ -121,14 +109,11 @@ export class AuthService {
       )
     ).pipe(
       switchMap((snap) => {
-        if (snap.empty) {
+        if (snap.empty)
           return throwError(() => new Error('Usuário não encontrado.'));
-        }
         const docSnap = snap.docs[0];
         const userData = docSnap.data() as AuthenticatedUser;
-        if (!userData.email) {
-          return throwError(() => new Error('Usuário sem email cadastrado.'));
-        }
+
         return from(
           this.ngZone.run(() =>
             runInInjectionContext(this.injector, () =>
@@ -167,103 +152,6 @@ export class AuthService {
     );
   }
 
-  loginOrRegisterClient(
-    data: ClientLoginWithCoupon
-  ): Observable<LoginResponse> {
-    const clientsRef = collection(this.firestore, 'clients');
-    const q = query(clientsRef, where('email', '==', data.email));
-    return from(
-      this.ngZone.run(() =>
-        runInInjectionContext(this.injector, () => getDocs(q))
-      )
-    ).pipe(
-      switchMap((snap) => {
-        if (snap.empty) {
-          const newClient: AuthenticatedUser = {
-            cpf: '',
-            email: data.email,
-            role: UserRole.client,
-            first_name: '',
-            last_name: '',
-            phone: '',
-            registration_date: new Date().toISOString(),
-            is_active: true,
-            couponUsed: data.coupon,
-            companyIds: [data.coupon],
-            password: '',
-          };
-          return from(
-            this.ngZone.run(() =>
-              runInInjectionContext(this.injector, () =>
-                addDoc(clientsRef, newClient)
-              )
-            )
-          ).pipe(
-            map((ref) => {
-              newClient.id = ref.id;
-              this.userService.setUserData(newClient);
-              this.authState.set({
-                isAuthenticated: true,
-                user: newClient,
-                token: '',
-              });
-              return { access_token: '', user: newClient };
-            })
-          );
-        }
-        const docSnap = snap.docs[0];
-        const client = docSnap.data() as AuthenticatedUser;
-        if (client.password?.trim()) {
-          return throwError(
-            () => new Error('Cliente já cadastrado. Utilize login com senha.')
-          );
-        }
-        if (client.couponUsed !== data.coupon) {
-          const upd: Partial<AuthenticatedUser> = {
-            couponUsed: data.coupon,
-            updatedAt: new Date(),
-            companyIds: Array.from(
-              new Set([...(client.companyIds || []), data.coupon])
-            ),
-          };
-          return from(
-            this.ngZone.run(() =>
-              runInInjectionContext(this.injector, () =>
-                updateDoc(doc(this.firestore, 'clients', docSnap.id), upd)
-              )
-            )
-          ).pipe(
-            switchMap(() =>
-              from(
-                this.ngZone.run(() =>
-                  runInInjectionContext(this.injector, () =>
-                    getDoc(doc(this.firestore, 'clients', docSnap.id))
-                  )
-                )
-              ).pipe(
-                map((updSnap) => {
-                  const updatedClient = {
-                    ...(updSnap.data() as AuthenticatedUser),
-                    id: docSnap.id,
-                  };
-                  this.userService.setUserData(updatedClient);
-                  this.authState.update((s) => ({ ...s, user: updatedClient }));
-                  return { access_token: '', user: updatedClient };
-                })
-              )
-            )
-          );
-        }
-        return of({ access_token: '', user: client });
-      })
-    );
-  }
-
-  vincularClientePorCupom(data: ClientLoginWithCoupon): Observable<void> {
-    // idem ao fluxo acima…
-    return of();
-  }
-
   logout(): void {
     signOut(this.auth)
       .then(() => {
@@ -276,27 +164,26 @@ export class AuthService {
 
   refreshToken(): Observable<string> {
     const cur = this.auth.currentUser;
-    if (!cur) {
-      return throwError(() => new Error('Usuário não autenticado.'));
-    }
+    if (!cur) return throwError(() => new Error('Usuário não autenticado.'));
+
     return from(
       this.ngZone.run(() =>
         runInInjectionContext(this.injector, () => getIdToken(cur, true))
       )
     ).pipe(
-      map((t) => {
-        this.userService.setToken(t);
-        this.authState.update((s) => ({ ...s, token: t }));
-        return t;
+      map((token) => {
+        this.userService.setToken(token);
+        this.authState.update((s) => ({ ...s, token }));
+        return token;
       })
     );
   }
 
-  completeClientRegistration(
+  completeRegistration(
     uid: string,
     data: Partial<AuthenticatedUser>
   ): Observable<void> {
-    const ref = doc(this.firestore, `clients/${uid}`);
+    const ref = doc(this.firestore, `users/${uid}`);
     return from(
       this.ngZone.run(() =>
         runInInjectionContext(this.injector, () => updateDoc(ref, data))

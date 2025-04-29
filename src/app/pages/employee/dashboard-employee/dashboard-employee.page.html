@@ -10,22 +10,22 @@
 <ion-content class="ion-padding">
   <div class="employee-info">
     <h2>Bem-vindo, {{ user()?.first_name }}!</h2>
-    <p>Agendamentos futuros: <strong>{{ totalUpcoming() }}</strong></p>
+    <p>Vendas realizadas: <strong>{{ totalVendas() }}</strong></p>
   </div>
 
-  <ion-list *ngIf="upcomingAppointments().length > 0">
-    <ion-item *ngFor="let appt of upcomingAppointments()">
+  <ion-list *ngIf="vendasRecentes().length > 0">
+    <ion-item *ngFor="let venda of vendasRecentes()">
       <ion-label>
-        <h3>{{ appt.serviceId }}</h3>
-        <p>{{ appt.startTime | date: 'short' }} - {{ appt.endTime | date: 'short' }}</p>
-        <p>Status: {{ appt.status }}</p>
+        <h3>Venda de R$ {{ venda.valorTotal | number: '1.2-2' }}</h3>
+        <p>Data: {{ venda.data | date: 'short' }}</p>
+        <p>Pagamento: {{ venda.formaPagamento }}</p>
       </ion-label>
     </ion-item>
   </ion-list>
 
-  <ion-card *ngIf="upcomingAppointments().length === 0">
+  <ion-card *ngIf="vendasRecentes().length === 0">
     <ion-card-content>
-      Nenhum agendamento futuro disponível no momento.
+      Nenhuma venda registrada ainda.
     </ion-card-content>
   </ion-card>
 </ion-content>
