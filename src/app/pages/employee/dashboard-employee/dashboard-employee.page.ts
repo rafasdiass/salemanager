@@ -1,9 +1,9 @@
-import { Component, effect, inject, signal } from '@angular/core';
+import { Component, effect, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
 import { AuthService } from 'src/app/shared/services/auth.service';
-import { AppointmentsService } from 'src/app/shared/services/appointments.service';
-import { Appointment } from 'src/app/shared/models/appointments.model';
+import { Venda } from 'src/app/shared/models/venda.model';
+import { VendaService } from 'src/app/shared/services/venda.service';
 
 @Component({
   selector: 'app-dashboard-employee',
@@ -13,27 +13,33 @@ import { Appointment } from 'src/app/shared/models/appointments.model';
   styleUrls: ['./dashboard-employee.page.scss'],
 })
 export class DashboardEmployeePage {
-  private auth = inject(AuthService);
-  private appointmentsService = inject(AppointmentsService);
+  private readonly auth = inject(AuthService);
+  private readonly vendaService = inject(VendaService);
 
-  user = this.auth.currentUser;
+  /** Usuário autenticado */
+  readonly user = this.auth.user; // computed<AuthenticatedUser | null>
 
-  upcomingAppointments = signal<Appointment[]>([]);
-  totalUpcoming = signal(0);
+  /** Lista de vendas feitas pelo funcionário */
+  private readonly _vendas = signal<Venda[]>([]);
+  readonly vendasRecentes = computed(() => this._vendas());
+
+  /** Total de vendas realizadas */
+  readonly totalVendas = computed(() => this.vendasRecentes().length);
 
   constructor() {
     effect(() => {
       const employeeId = this.user()?.id;
       if (employeeId) {
-        const list =
-          this.appointmentsService.getEmployeeUpcomingAppointments(employeeId);
-        this.upcomingAppointments.set(list);
-        this.totalUpcoming.set(list.length);
+        const list = this.vendaService.getVendasByEmployee(employeeId);
+        this._vendas.set(list);
+      } else {
+        this._vendas.set([]);
       }
     });
   }
 
-  logout() {
+  /** Faz logout e limpa sessão */
+  logout(): void {
     this.auth.logout();
   }
 }

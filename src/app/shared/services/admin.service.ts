@@ -1,53 +1,84 @@
 // src/app/shared/services/admin.service.ts
 
-import { Injectable } from '@angular/core';
+import { Injectable, computed, inject } from '@angular/core';
 import { BaseFirestoreCrudService } from './base-firestore-crud.service';
 import { AuthenticatedUser } from '../models/auth.model';
 import { UserRole } from '../models/user-role.enum';
-import { UserBusinessRulesService } from '../regras/user-business-rules.service';
-import { throwError, Observable } from 'rxjs';
+import { AdminBusinessRulesService } from '../regras/admin-business-rules.service';
+import { EmployeeService } from './employee.service';
+import { Observable, throwError } from 'rxjs';
 
 @Injectable({ providedIn: 'root' })
 export class AdminService extends BaseFirestoreCrudService<AuthenticatedUser> {
-  constructor(private readonly rules: UserBusinessRulesService) {
-    super('admins'); // ou 'empresas/{companyId}/users'
+  private readonly employeeService = inject(EmployeeService);
+
+  /** Lista reativa de funcionários ativos da empresa */
+  readonly activeEmployees = computed(() =>
+    this.employeeService
+      .employees()
+      .filter((u) => u.role === UserRole.employee && u.is_active)
+  );
+
+  constructor(private readonly rules: AdminBusinessRulesService) {
+    super('users');
     this.businessRules = this.rules;
   }
 
+  /**
+   * Cria um novo administrador.
+   * Valida vínculo com empresa e role apropriada.
+   */
   override create(
-    user: AuthenticatedUser,
+    admin: AuthenticatedUser,
     id?: string
   ): Observable<AuthenticatedUser> {
-    if (user.role !== UserRole.ADMIN) {
-      throw new Error(
-        'Este serviço só pode ser utilizado para criar usuários do tipo ADMIN.'
-      );
+    if (admin.role !== UserRole.ADMIN) {
+      throw new Error('Só é permitido criar usuários com role ADMIN.');
     }
 
-    if (!user.companyIds || user.companyIds.length === 0) {
-      throw new Error(
-        'Administrador precisa estar vinculado a uma empresa (companyIds).'
-      );
+    if (!admin.companyId) {
+      throw new Error('Administrador precisa estar vinculado a uma empresa.');
     }
 
-    delete user.couponUsed;
-    return super.create(user, id);
+    return super.create(admin, id);
   }
 
-  override update(id: string, value: AuthenticatedUser): Observable<string> {
-    if (value.role !== UserRole.ADMIN) {
-      throw new Error('Não é permitido alterar o tipo de usuário ADMIN.');
+  /**
+   * Atualiza dados do admin.
+   * Impede troca de role.
+   */
+  override update(id: string, admin: AuthenticatedUser): Observable<string> {
+    if (admin.role !== UserRole.ADMIN) {
+      throw new Error('Role do usuário não pode ser alterada de ADMIN.');
     }
 
-    return super.update(id, value);
+    return super.update(id, admin);
   }
 
+  /**
+   * Impede exclusão direta do administrador.
+   * Recomenda uso de inativação lógica.
+   */
   override delete(id: string): Observable<string> {
     return throwError(
       () =>
         new Error(
-          'A exclusão de administradores não é permitida diretamente. Use desativação lógica.'
+          'Exclusão direta de administradores não é permitida. Use desativação lógica.'
         )
+    );
+  }
+
+  /** Lista todos os admins ativos */
+  listAdmins(): AuthenticatedUser[] {
+    return this.items().filter(
+      (user) => user.role === UserRole.ADMIN && user.is_active
+    );
+  }
+
+  /** Busca o admin principal de uma empresa */
+  findAdminByCompany(companyId: string): AuthenticatedUser | undefined {
+    return this.items().find(
+      (user) => user.role === UserRole.ADMIN && user.companyId === companyId
     );
   }
 }

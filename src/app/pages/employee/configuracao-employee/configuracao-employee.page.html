@@ -5,26 +5,26 @@
 </ion-header>
 
 <ion-content class="ion-padding">
-  <form (ngSubmit)="salvarAlteracoes()">
+  <form *ngIf="employeeData" (ngSubmit)="salvarAlteracoes()">
     <ion-list>
       <ion-item>
         <ion-label position="stacked">Nome</ion-label>
-        <ion-input [(ngModel)]="employee().first_name" name="first_name" required></ion-input>
+        <ion-input [(ngModel)]="employeeData.first_name" name="first_name" required></ion-input>
       </ion-item>
 
       <ion-item>
         <ion-label position="stacked">Sobrenome</ion-label>
-        <ion-input [(ngModel)]="employee().last_name" name="last_name"></ion-input>
+        <ion-input [(ngModel)]="employeeData.last_name" name="last_name"></ion-input>
       </ion-item>
 
       <ion-item>
         <ion-label position="stacked">Email</ion-label>
-        <ion-input type="email" [(ngModel)]="employee().email" name="email"></ion-input>
+        <ion-input type="email" [(ngModel)]="employeeData.email" name="email"></ion-input>
       </ion-item>
 
       <ion-item>
         <ion-label position="stacked">Telefone</ion-label>
-        <ion-input type="tel" [(ngModel)]="employee().phone" name="phone"></ion-input>
+        <ion-input type="tel" [(ngModel)]="employeeData.phone" name="phone"></ion-input>
       </ion-item>
     </ion-list>
 

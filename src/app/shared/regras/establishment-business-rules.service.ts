@@ -1,108 +1,70 @@
 // src/app/shared/services/establishment-business-rules.service.ts
 
-import { Injectable } from '@angular/core';
-import { AngularFirestore } from '@angular/fire/compat/firestore';
+import { Injectable, inject } from '@angular/core';
 import { EntityBusinessRules } from '../services/base-firestore-crud.service';
 import { Company } from '../models/company.model';
+import {
+  Firestore,
+  collection,
+  query,
+  where,
+  getDocs,
+} from '@angular/fire/firestore';
 
 @Injectable({ providedIn: 'root' })
 export class EstablishmentBusinessRulesService
   implements EntityBusinessRules<Company>
 {
-  constructor(private firestore: AngularFirestore) {}
+  private readonly firestore = inject(Firestore);
 
+  /**
+   * Gatilho executado antes de criar uma empresa.
+   * - Define timestamps de criação e atualização.
+   * - Garante que não exista outra empresa com o mesmo nome.
+   */
   async prepareForCreate(company: Company): Promise<Company> {
     const now = new Date();
     company.createdAt = now;
     company.updatedAt = now;
 
-    await this.assertValidCoordinates(company);
     await this.assertUniqueName(company);
-    await this.assertUniqueAddress(company);
-    await this.assertUniqueLocation(company);
 
     return company;
   }
 
+  /**
+   * Gatilho executado antes de atualizar uma empresa existente.
+   * - Atualiza o timestamp de modificação.
+   * - Impede alteração do ID e do proprietário da empresa.
+   */
   async prepareForUpdate(
-    newValue: Company,
-    oldValue: Company
+    newCompany: Company,
+    oldCompany: Company
   ): Promise<Company> {
-    newValue.updatedAt = new Date();
+    newCompany.updatedAt = new Date();
 
-    if (newValue.id && oldValue.id && newValue.id !== oldValue.id) {
-      throw new Error('Não é permitido alterar o ID do estabelecimento.');
+    if (newCompany.id && oldCompany.id && newCompany.id !== oldCompany.id) {
+      throw new Error('Não é permitido alterar o ID da empresa.');
     }
 
-    if (newValue.ownerId !== oldValue.ownerId) {
-      throw new Error('Não é permitido alterar a empresa do estabelecimento.');
+    if (newCompany.ownerId !== oldCompany.ownerId) {
+      throw new Error('Não é permitido alterar o proprietário da empresa.');
     }
 
-    await this.assertValidCoordinates(newValue);
-
-    return newValue;
+    return newCompany;
   }
 
+  /**
+   * Valida que o nome da empresa seja único entre todas cadastradas.
+   * Útil para evitar conflitos em dashboards e URLs.
+   */
   private async assertUniqueName(company: Company): Promise<void> {
-    const snapshot = await this.firestore
-      .collection<Company>('empresas', (ref) =>
-        ref.where('name', '==', company.name)
-      )
-      .get()
-      .toPromise();
+    const ref = collection(this.firestore, 'empresas');
+    const q = query(ref, where('name', '==', company.name));
+    const snap = await getDocs(q);
 
-    if (snapshot && !snapshot.empty) {
-      throw new Error('Já existe uma empresa com este nome.');
-    }
-  }
-
-  private async assertUniqueAddress(company: Company): Promise<void> {
-    const { address } = company;
-
-    const snapshot = await this.firestore
-      .collection<Company>('empresas', (ref) =>
-        ref
-          .where('address.postal_code', '==', address.postal_code)
-          .where('address.number', '==', address.number)
-          .where('address.city', '==', address.city)
-      )
-      .get()
-      .toPromise();
-
-    if (snapshot && !snapshot.empty) {
-      throw new Error('Endereço já está vinculado a outro estabelecimento.');
-    }
-  }
-
-  private async assertUniqueLocation(company: Company): Promise<void> {
-    const { location } = company;
-    if (!location) return;
-
-    const snapshot = await this.firestore
-      .collection<Company>('empresas', (ref) =>
-        ref
-          .where('location.latitude', '==', location.latitude)
-          .where('location.longitude', '==', location.longitude)
-      )
-      .get()
-      .toPromise();
-
-    if (snapshot && !snapshot.empty) {
-      throw new Error(
-        'Já existe uma empresa cadastrada com estas coordenadas.'
-      );
-    }
-  }
-
-  private async assertValidCoordinates(company: Company): Promise<void> {
-    const { location } = company;
-    if (!location) return;
-
-    const isValidLat = location.latitude >= -90 && location.latitude <= 90;
-    const isValidLng = location.longitude >= -180 && location.longitude <= 180;
-
-    if (!isValidLat || !isValidLng) {
-      throw new Error('Coordenadas geográficas inválidas.');
+    if (!snap.empty) {
+      throw new Error('Já existe uma empresa cadastrada com este nome.');
     }
   }
 }

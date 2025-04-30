@@ -1,86 +1,51 @@
-// src/app/pages/admin/dashboard-admin/dashboard-admin.page.scss
-@use 'variables' as *;
-:host {
-    --ion-background-color: #1A1A1A;
-    --ion-text-color: #F5F5F5;
-}
-
 ion-content {
-    background-color: $background-dark;
-    color: $text-light;
+    --padding-top: 16px;
+    --padding-bottom: 16px;
 }
 
-.admin-info {
-    margin-bottom: 24px;
-    padding: 16px;
-    background: $card-background;
-    border-radius: 12px;
-    color: $text-light;
-    box-shadow: 0 4px 8px $shadow-color;
+.company-info {
+    text-align: center;
+    margin-bottom: 16px;
 
     h2 {
+        margin: 0;
         font-size: 1.5rem;
-        font-weight: bold;
-        color: $primary-color;
-        margin-bottom: 4px;
     }
 
     p {
-        color: $text-muted;
-        font-size: 0.9rem;
+        margin: 4px 0 0;
+        color: var(--ion-color-medium);
     }
 }
 
-.stats-row {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: space-between;
-    gap: 16px;
+ion-card {
+    text-align: center;
 
-    ion-col {
-        display: flex;
-        flex-direction: column;
-    }
-
-    ion-card {
-        flex: 1;
-        background-color: $card-background;
-        border-radius: 16px;
-        color: $text-light;
-        box-shadow: 0 4px 12px $shadow-color;
-        transition: transform 0.2s ease;
-
-        &:hover {
-            transform: translateY(-4px);
-        }
-
-        ion-card-header {
-            background: transparent;
-            border-bottom: 1px solid $border-color;
-        }
-
-        ion-card-title {
-            font-size: 1.1rem;
-            font-weight: 600;
-            color: $accent-color;
-        }
-
-        ion-card-content {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 2.4rem;
-            font-weight: bold;
-            padding: 16px 0;
-            color: $primary-color;
-        }
+    ion-card-content h1 {
+        font-size: 2rem;
+        margin: 0;
     }
 }
 
-ion-button[color="danger"] {
-    --background: $error-color;
-    --background-activated: darken($error-color, 10%);
-    --background-focused: lighten($error-color, 5%);
-    --color: #fff;
-    font-weight: 500;
+section {
+    margin: 24px 0;
+
+    h3 {
+        margin-bottom: 12px;
+        font-size: 1.2rem;
+    }
+
+    .empty {
+        color: var(--ion-color-medium);
+        font-style: italic;
+    }
+
+    .procedures {
+        margin-top: 12px;
+        font-weight: bold;
+    }
+}
+
+ion-item[ion-datetime] {
+    --padding-start: 16px;
 }

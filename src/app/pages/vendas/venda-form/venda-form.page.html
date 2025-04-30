@@ -1,0 +1,135 @@
+<ion-content class="ion-padding">
+  <ion-header>
+    <ion-toolbar color="primary">
+      <ion-title>
+        <ion-icon name="cart" slot="start"></ion-icon>
+        Registrar Venda
+      </ion-title>
+    </ion-toolbar>
+  </ion-header>
+
+  <ion-grid>
+    <!-- Cliente -->
+    <ion-row>
+      <ion-col size="12">
+        <ion-item>
+          <ion-label position="stacked">Buscar Cliente</ion-label>
+          <ion-input placeholder="Digite o nome" (ionInput)="filtrarClientesPorNome($event)">
+          </ion-input>
+        </ion-item>
+
+        <ion-item>
+          <ion-label position="stacked">Selecionar Cliente</ion-label>
+          <ion-select interface="popover" [value]="clienteId()" (ionChange)="clienteId.set($event.detail.value)">
+            <ion-select-option *ngFor="let cliente of clientesFiltrados()" [value]="cliente.id">
+              {{ cliente.nome }}
+            </ion-select-option>
+          </ion-select>
+        </ion-item>
+      </ion-col>
+    </ion-row>
+
+    <!-- Produto e quantidade -->
+    <ion-row>
+      <ion-col size="8">
+        <ion-item>
+          <ion-label position="stacked">Produto</ion-label>
+          <ion-select interface="popover" [value]="selectedProdutoId()"
+            (ionChange)="selectedProdutoId.set($event.detail.value)">
+            <ion-select-option *ngFor="let produto of produtos()" [value]="produto.id">
+              {{ produto.nome }} - R$ {{ produto.preco }}
+            </ion-select-option>
+          </ion-select>
+        </ion-item>
+      </ion-col>
+
+      <ion-col size="4">
+        <ion-item>
+          <ion-label position="stacked">Quantidade</ion-label>
+         <ion-input
+  type="number"
+  [value]="quantidade()"
+  (ionInput)="onQuantidadeInput($event)">
+</ion-input>
+
+         
+        </ion-item>
+      </ion-col>
+    </ion-row>
+
+    <!-- Estoque e preço -->
+    <ion-row>
+      <ion-col size="6">
+        <ion-item lines="none">
+          <ion-label>Estoque disponível:</ion-label>
+          <ion-label><strong>{{ estoqueDisponivel }}</strong></ion-label>
+        </ion-item>
+      </ion-col>
+      <ion-col size="6">
+        <ion-item lines="none">
+          <ion-label>Preço unitário:</ion-label>
+          <ion-label><strong>R$ {{ precoUnitarioAtual }}</strong></ion-label>
+        </ion-item>
+      </ion-col>
+    </ion-row>
+
+    <!-- Botão adicionar -->
+    <ion-row>
+      <ion-col>
+        <ion-button expand="block" color="success" (click)="addItem()">
+          <ion-icon name="add" slot="start"></ion-icon>
+          Adicionar Produto
+        </ion-button>
+      </ion-col>
+    </ion-row>
+
+    <!-- Lista de itens -->
+    <ion-row>
+      <ion-col>
+        <ion-list>
+          <ion-item *ngFor="let item of vendaItens(); let i = index">
+            <ion-label>
+              {{ item.nomeProduto }} x{{ item.quantidade }}<br />
+              <small>Subtotal: R$ {{ item.subtotal }}</small>
+            </ion-label>
+            <ion-button fill="clear" color="danger" slot="end" (click)="removeItem(i)">
+              <ion-icon name="trash-bin"></ion-icon>
+            </ion-button>
+          </ion-item>
+        </ion-list>
+      </ion-col>
+    </ion-row>
+
+    <!-- Pagamento -->
+    <ion-row>
+      <ion-col>
+        <ion-item>
+          <ion-label position="stacked">Forma de Pagamento</ion-label>
+          <ion-select [value]="formaPagamento()" (ionChange)="formaPagamento.set($event.detail.value)">
+            <ion-select-option value="PIX">PIX</ion-select-option>
+            <ion-select-option value="DINHEIRO">Dinheiro</ion-select-option>
+            <ion-select-option value="CARTAO">Cartão</ion-select-option>
+            <ion-select-option value="OUTRO">Outro</ion-select-option>
+          </ion-select>
+        </ion-item>
+      </ion-col>
+    </ion-row>
+
+    <!-- Total e salvar -->
+    <ion-row class="ion-align-items-center">
+      <ion-col size="6">
+        <ion-item lines="none">
+          <ion-label><strong>Total:</strong></ion-label>
+          <ion-label color="success"><strong>R$ {{ valorTotal() }}</strong></ion-label>
+        </ion-item>
+      </ion-col>
+
+      <ion-col size="6">
+        <ion-button expand="block" color="primary" (click)="saveVenda()">
+          <ion-icon name="save" slot="start"></ion-icon>
+          Salvar Venda
+        </ion-button>
+      </ion-col>
+    </ion-row>
+  </ion-grid>
+</ion-content>

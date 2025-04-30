@@ -1,89 +1,108 @@
-<form [formGroup]="form" (ngSubmit)="submit()" class="clients-form p-4 bg-dark text-light border rounded shadow-sm">
-    <h5 class="mb-4">
-        <i class="bi bi-person-vcard me-2 text-info"></i> Cadastro de Cliente
-    </h5>
+<ion-header translucent>
+    <ion-toolbar>
+        <ion-title>Cadastro de Cliente</ion-title>
+    </ion-toolbar>
+</ion-header>
 
-    <!-- Dados do Cliente -->
-    <div class="row g-3">
-        <div class="col-md-6">
-            <label for="name" class="form-label">Nome *</label>
-            <input type="text" id="name" class="form-control" formControlName="name" placeholder="Nome completo" />
+<ion-content class="ion-padding">
+
+    <form [formGroup]="form" (ngSubmit)="submit()" class="form-container">
+
+        <ion-card>
+            <ion-card-header>
+                <ion-card-title>Informações Pessoais</ion-card-title>
+            </ion-card-header>
+            <ion-card-content>
+
+                <ion-item>
+                    <ion-label position="floating">Nome</ion-label>
+                    <ion-input formControlName="nome" type="text"></ion-input>
+                </ion-item>
+
+                <ion-item>
+                    <ion-label position="floating">Telefone</ion-label>
+                    <ion-input formControlName="telefone" type="text" mask="(00) 00000-0000"></ion-input>
+                </ion-item>
+
+                <ion-item>
+                    <ion-label position="floating">Email</ion-label>
+                    <ion-input formControlName="email" type="email"></ion-input>
+                </ion-item>
+
+                <ion-item>
+                    <ion-label position="floating">CPF/CNPJ</ion-label>
+                    <ion-input formControlName="documento" type="text" mask="000.000.000-00"></ion-input>
+                </ion-item>
+
+            </ion-card-content>
+        </ion-card>
+
+        <ion-card>
+            <ion-card-header>
+                <ion-card-title>Endereço</ion-card-title>
+            </ion-card-header>
+            <ion-card-content formGroupName="endereco">
+
+                <ion-item>
+                    <ion-label position="floating">Rua</ion-label>
+                    <ion-input formControlName="street" type="text"></ion-input>
+                </ion-item>
+
+                <ion-item>
+                    <ion-label position="floating">Número</ion-label>
+                    <ion-input formControlName="number" type="text"></ion-input>
+                </ion-item>
+
+                <ion-item>
+                    <ion-label position="floating">Complemento</ion-label>
+                    <ion-input formControlName="complement" type="text"></ion-input>
+                </ion-item>
+
+                <ion-item>
+                    <ion-label position="floating">Bairro</ion-label>
+                    <ion-input formControlName="neighborhood" type="text"></ion-input>
+                </ion-item>
+
+                <ion-item>
+                    <ion-label position="floating">Cidade</ion-label>
+                    <ion-input formControlName="city" type="text"></ion-input>
+                </ion-item>
+
+                <ion-item>
+                    <ion-label position="floating">Estado</ion-label>
+                    <ion-input formControlName="state" type="text"></ion-input>
+                </ion-item>
+
+                <ion-item>
+                    <ion-label position="floating">CEP</ion-label>
+                    <ion-input formControlName="postal_code" type="text" mask="00000-000"></ion-input>
+                </ion-item>
+
+                <ion-item>
+                    <ion-label position="floating">País</ion-label>
+                    <ion-input formControlName="country" type="text"></ion-input>
+                </ion-item>
+
+            </ion-card-content>
+        </ion-card>
+
+        <ion-card>
+            <ion-card-header>
+                <ion-card-title>Observações</ion-card-title>
+            </ion-card-header>
+            <ion-card-content>
+                <ion-textarea formControlName="observacoes" placeholder="Alguma anotação relevante sobre o cliente?"
+                    autoGrow="true">
+                </ion-textarea>
+            </ion-card-content>
+        </ion-card>
+
+        <div class="button-container">
+            <ion-button expand="block" type="submit" color="primary" [disabled]="form.invalid">
+                Salvar Cliente
+            </ion-button>
         </div>
 
-        <div class="col-md-6">
-            <label for="phone" class="form-label">Telefone *</label>
-            <input type="tel" id="phone" class="form-control" formControlName="phone" placeholder="(99) 99999-9999" />
-        </div>
+    </form>
 
-        <div class="col-md-6">
-            <label for="email" class="form-label">E-mail *</label>
-            <input type="email" id="email" class="form-control" formControlName="email"
-                placeholder="cliente@email.com" />
-        </div>
-
-        <div class="col-md-6">
-            <label for="birthDate" class="form-label">Data de Nascimento *</label>
-            <input type="date" id="birthDate" class="form-control" formControlName="birthDate" />
-        </div>
-
-        <div class="col-12">
-            <label for="notes" class="form-label">Observações</label>
-            <textarea id="notes" class="form-control" rows="3" formControlName="notes"
-                placeholder="Preferências, alergias, recomendações..."></textarea>
-        </div>
-    </div>
-
-    <!-- Endereço -->
-    <fieldset formGroupName="address" class="border p-3 mt-4 rounded">
-        <legend class="w-auto px-2 text-info">Endereço</legend>
-
-        <div class="row g-3">
-            <div class="col-md-6">
-                <label for="street" class="form-label">Rua *</label>
-                <input type="text" id="street" class="form-control" formControlName="street" />
-            </div>
-
-            <div class="col-md-3">
-                <label for="number" class="form-label">Número *</label>
-                <input type="text" id="number" class="form-control" formControlName="number" />
-            </div>
-
-            <div class="col-md-3">
-                <label for="complement" class="form-label">Complemento</label>
-                <input type="text" id="complement" class="form-control" formControlName="complement" />
-            </div>
-
-            <div class="col-md-4">
-                <label for="neighborhood" class="form-label">Bairro *</label>
-                <input type="text" id="neighborhood" class="form-control" formControlName="neighborhood" />
-            </div>
-
-            <div class="col-md-4">
-                <label for="city" class="form-label">Cidade *</label>
-                <input type="text" id="city" class="form-control" formControlName="city" />
-            </div>
-
-            <div class="col-md-2">
-                <label for="state" class="form-label">Estado *</label>
-                <input type="text" id="state" class="form-control" formControlName="state" />
-            </div>
-
-            <div class="col-md-2">
-                <label for="zipCode" class="form-label">CEP *</label>
-                <input type="text" id="zipCode" class="form-control" formControlName="zipCode" />
-            </div>
-
-            <div class="col-md-12">
-                <label for="country" class="form-label">País *</label>
-                <input type="text" id="country" class="form-control" formControlName="country" />
-            </div>
-        </div>
-    </fieldset>
-
-    <!-- Botão -->
-    <div class="d-flex justify-content-end mt-4">
-        <button type="submit" class="btn btn-info text-dark" [disabled]="form.invalid">
-            <i class="bi bi-save me-2"></i>Salvar Cliente
-        </button>
-    </div>
-</form>
+</ion-content>

@@ -1,4 +1,4 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IonicModule, ToastController } from '@ionic/angular';
 import { AuthService } from 'src/app/shared/services/auth.service';
@@ -13,15 +13,23 @@ import { AuthenticatedUser } from 'src/app/shared/models/auth.model';
   templateUrl: './configuracao-employee.page.html',
   styleUrls: ['./configuracao-employee.page.scss'],
 })
-export class ConfiguracaoEmployeePage {
+export class ConfiguracaoEmployeePage implements OnInit {
   private auth = inject(AuthService);
   private employeeService = inject(EmployeeService);
   private toast = inject(ToastController);
 
-  employee = signal(this.auth.currentUser() as AuthenticatedUser);
+  // Aqui é uma cópia local, editável, segura
+  employeeData: AuthenticatedUser | null = null;
+
+  ngOnInit() {
+    const user = this.auth.user();
+    if (user) {
+      this.employeeData = { ...user }; // clone seguro para edição
+    }
+  }
 
   async salvarAlteracoes() {
-    const user = this.employee();
+    const user = this.employeeData;
     if (!user?.id) return;
 
     try {

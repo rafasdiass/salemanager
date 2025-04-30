@@ -57,11 +57,16 @@ import {
   send,
   text,
   attach,
+  mail,
+  pricetag,
+  logoFacebook,
+  logoInstagram,
+  chevronDown, // Ícone desejado
 } from 'ionicons/icons';
 
 /**
- * Função responsável por registrar os ícones customizados para o projeto.
- * Certifique-se de que os ícones importados sejam os mesmos usados no seu código.
+ * Função responsável por registrar os ícones utilizados no projeto.
+ * Deve ser chamada no início da aplicação (ex: no main.ts).
  */
 export const registerIcons = (): void => {
   addIcons({
@@ -122,5 +127,10 @@ export const registerIcons = (): void => {
     send,
     text,
     attach,
+    mail,
+    pricetag,
+    'logo-facebook': logoFacebook,
+    'logo-instagram': logoInstagram,
+    'chevron-down': chevronDown, // ✅ Corrigido aqui também
   });
 };

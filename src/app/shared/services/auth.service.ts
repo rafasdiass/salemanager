@@ -1,190 +1,200 @@
 // src/app/shared/services/auth.service.ts
 
-import { Injectable, computed, signal, WritableSignal } from '@angular/core';
-import { Observable, throwError } from 'rxjs';
-import { catchError, map, tap } from 'rxjs/operators';
-import { ApiService } from './api.service';
-import { UserService } from './user.service';
+import {
+  Injectable,
+  signal,
+  WritableSignal,
+  computed,
+  inject,
+  NgZone,
+  EnvironmentInjector,
+  runInInjectionContext,
+} from '@angular/core';
 import { Router } from '@angular/router';
 import {
+  Auth,
+  signInWithEmailAndPassword,
+  signOut,
+  getIdToken,
+} from '@angular/fire/auth';
+import {
+  Firestore,
+  collection,
+  query,
+  where,
+  getDocs,
+  addDoc,
+  updateDoc,
+  doc,
+  getDoc,
+} from '@angular/fire/firestore';
+import {
+  from,
+  of,
+  throwError,
+  switchMap,
+  map,
+  catchError,
+  Observable,
+} from 'rxjs';
+import {
   AuthState,
+  AuthenticatedUser,
   LoginRequest,
   LoginResponse,
-  AuthenticatedUser,
 } from '../models/auth.model';
 import { UserRole } from '../models/user-role.enum';
+import { UserService } from './user.service';
 
-@Injectable({
-  providedIn: 'root',
-})
+@Injectable({ providedIn: 'root' })
 export class AuthService {
-  /** Estado de autenticação usando Signals */
-  private authState: WritableSignal<AuthState> = signal<AuthState>({
+  private readonly ngZone = inject(NgZone);
+  private readonly auth = inject(Auth);
+  private readonly firestore = inject(Firestore);
+  private readonly injector = inject(EnvironmentInjector);
+  private readonly userService = inject(UserService);
+  private readonly router = inject(Router);
+
+  private readonly authState: WritableSignal<AuthState> = signal({
     isAuthenticated: false,
     user: null,
     token: null,
   });
 
-  readonly currentUser = computed(() => this.authState().user);
+  readonly user = computed(() => this.authState().user);
   readonly isLoggedIn = computed(() => this.authState().isAuthenticated);
-
-  /** Computed do companyId principal baseado no usuário logado */
-  readonly primaryCompanyId = computed(() => {
-    const user = this.authState().user;
-    if (!user) throw new Error('Usuário não autenticado.');
-
-    if (user.role === UserRole.client) {
-      if (!user.couponUsed) {
-        throw new Error('Cliente não possui cupom vinculado.');
-      }
-      return user.couponUsed;
-    }
-
-    if (user.role === UserRole.ADMIN || user.role === UserRole.employee) {
-      if (!user.companyIds || user.companyIds.length === 0) {
-        throw new Error('Usuário não possui empresas vinculadas.');
-      }
-      return user.companyIds[0];
-    }
-
-    throw new Error(`Tipo de usuário inválido: ${user.role}`);
+  readonly authenticatedUser = computed(() => {
+    const u = this.authState().user;
+    if (!u) throw new Error('Usuário não autenticado.');
+    return u;
   });
 
-  constructor(
-    private apiService: ApiService,
-    private userService: UserService,
-    private router: Router
-  ) {}
+  readonly companyId = computed(() => {
+    const user = this.authenticatedUser();
+    if (!user.companyId) throw new Error('Usuário sem empresa vinculada.');
+    return user.companyId;
+  });
+
+  constructor() {}
+
+  autoLogin(): void {
+    const user = this.userService.getUserData();
+    const token = this.userService.getToken();
+    this.authState.set({
+      isAuthenticated: !!user && !!token,
+      user,
+      token,
+    });
+  }
 
   getAuthState(): AuthState {
     return this.authState();
   }
 
-  isAuthenticated(): boolean {
-    return this.authState().isAuthenticated;
-  }
-
-  autoLogin(): void {
-    const storedUser: AuthenticatedUser | null = this.userService.getUserData();
-    const storedToken: string | null = this.userService.getToken();
-
-    if (storedToken && storedUser) {
-      console.log('AutoLogin: Usuário e token encontrados.');
-      this.authState.set({
-        isAuthenticated: true,
-        user: storedUser,
-        token: storedToken,
-      });
-    } else {
-      console.log('AutoLogin: Nenhum usuário/token encontrado.');
-      this.authState.set({
-        isAuthenticated: false,
-        user: null,
-        token: null,
-      });
-    }
-  }
-
   login(credentials: LoginRequest): Observable<LoginResponse> {
-    return this.apiService.post<LoginResponse>('auth/login', credentials).pipe(
-      tap((response: LoginResponse) => {
-        if (response.access_token && response.user) {
-          console.log('Login bem-sucedido:', response);
+    const identifier = credentials.email ?? credentials.cpf;
+    if (!identifier || !credentials.password) {
+      return throwError(() => new Error('CPF/Email e senha são obrigatórios.'));
+    }
 
-          this.userService.setToken(response.access_token);
-          this.userService.setUserData(response.user);
-
-          this.authState.set({
-            isAuthenticated: true,
-            user: response.user,
-            token: response.access_token,
-          });
-
-          if (!response.user.password || response.user.password.trim() === '') {
-            console.log('Primeiro login detectado. Redirecionando...');
-            this.router.navigate(['/definir-senha']);
-          }
-        } else {
-          throw new Error('Erro: Resposta inválida do servidor.');
-        }
-      }),
-      catchError((error: unknown) => this.handleError(error))
+    const field = credentials.cpf ? 'cpf' : 'email';
+    const q = query(
+      collection(this.firestore, 'users'),
+      where(field, '==', identifier)
     );
-  }
 
-  definirSenhaPrimeiroAcesso(
-    cpf: string,
-    newPassword: string
-  ): Observable<void> {
-    const updateData = { cpf, password: newPassword };
+    return from(
+      this.ngZone.run(() =>
+        runInInjectionContext(this.injector, () => getDocs(q))
+      )
+    ).pipe(
+      switchMap((snap) => {
+        if (snap.empty)
+          return throwError(() => new Error('Usuário não encontrado.'));
+        const docSnap = snap.docs[0];
+        const userData = docSnap.data() as AuthenticatedUser;
 
-    return this.apiService.put<void>('users/first-access', updateData).pipe(
-      tap(() => {
-        console.log('Senha definida com sucesso.');
-        this.router.navigate(['/login']);
+        return from(
+          this.ngZone.run(() =>
+            runInInjectionContext(this.injector, () =>
+              signInWithEmailAndPassword(
+                this.auth,
+                userData.email!,
+                credentials.password!
+              )
+            )
+          )
+        ).pipe(
+          switchMap((cred) =>
+            from(
+              this.ngZone.run(() =>
+                runInInjectionContext(this.injector, () =>
+                  getIdToken(cred.user)
+                )
+              )
+            ).pipe(
+              map((token) => {
+                userData.id = cred.user.uid;
+                this.userService.setUserData(userData);
+                this.userService.setToken(token);
+                this.authState.set({
+                  isAuthenticated: true,
+                  user: userData,
+                  token,
+                });
+                return { access_token: token, user: userData };
+              })
+            )
+          )
+        );
       }),
-      catchError((error: unknown) => this.handleError(error))
+      catchError((err) => throwError(() => err))
     );
   }
 
   logout(): void {
-    this.userService.clearUserData();
-    this.authState.set({
-      isAuthenticated: false,
-      user: null,
-      token: null,
-    });
-
-    console.log('Logout realizado com sucesso.');
-    this.router.navigate(['/login']);
+    signOut(this.auth)
+      .then(() => {
+        this.userService.clearUserData();
+        this.authState.set({ isAuthenticated: false, user: null, token: null });
+        this.router.navigate(['/login']);
+      })
+      .catch(console.error);
   }
 
   refreshToken(): Observable<string> {
-    return this.apiService
-      .post<{ access_token: string }>('refresh-token', {})
-      .pipe(
-        map((response: { access_token: string }) => {
-          if (response.access_token) {
-            console.log('Token renovado:', response.access_token);
+    const cur = this.auth.currentUser;
+    if (!cur) return throwError(() => new Error('Usuário não autenticado.'));
 
-            this.userService.setToken(response.access_token);
-            this.authState.update((state) => ({
-              ...state,
-              token: response.access_token,
-            }));
-
-            return response.access_token;
-          } else {
-            throw new Error('Erro ao renovar o token.');
-          }
-        }),
-        catchError((error: unknown) => {
-          console.error('Erro ao renovar o token:', error);
-          this.logout();
-          return throwError(() => new Error('Erro ao renovar o token.'));
-        })
-      );
+    return from(
+      this.ngZone.run(() =>
+        runInInjectionContext(this.injector, () => getIdToken(cur, true))
+      )
+    ).pipe(
+      map((token) => {
+        this.userService.setToken(token);
+        this.authState.update((s) => ({ ...s, token }));
+        return token;
+      })
+    );
   }
 
-  private handleError(error: unknown): Observable<never> {
-    console.error('Erro no AuthService:', error);
-
-    const errorMessage = this.getErrorMessage(error);
-    return throwError(() => new Error(errorMessage));
-  }
-
-  private getErrorMessage(error: unknown): string {
-    if (typeof error === 'object' && error !== null && 'status' in error) {
-      const status = (error as { status: number }).status;
-      switch (status) {
-        case 400:
-          return 'Requisição inválida.';
-        case 401:
-          return 'Credenciais inválidas.';
-        default:
-          return 'Erro desconhecido. Tente novamente mais tarde.';
-      }
-    }
-    return 'Erro inesperado. Tente novamente mais tarde.';
+  completeRegistration(
+    uid: string,
+    data: Partial<AuthenticatedUser>
+  ): Observable<void> {
+    const ref = doc(this.firestore, `users/${uid}`);
+    return from(
+      this.ngZone.run(() =>
+        runInInjectionContext(this.injector, () => updateDoc(ref, data))
+      )
+    ).pipe(
+      map(() => {
+        const cur = this.authenticatedUser();
+        const updated = { ...cur, ...data, updatedAt: new Date() };
+        this.userService.setUserData(updated);
+        this.authState.update((s) => ({ ...s, user: updated }));
+      })
+    );
   }
 }

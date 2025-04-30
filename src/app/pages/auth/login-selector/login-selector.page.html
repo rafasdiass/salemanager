@@ -1,0 +1,44 @@
+<ion-content class="login-selector dark-theme" fullscreen>
+  <div class="login-wrapper">
+    <ion-card class="login-card">
+      <ion-card-content>
+        <h2 class="login-title">Login no sistema</h2>
+
+        <!-- Formulário de login -->
+        <form [formGroup]="loginForm" (ngSubmit)="onLogin()">
+          <div class="field-group">
+            <label class="form-label">{{ identifierType === 'cpf' ? 'CPF' : 'Email' }}</label>
+            <div class="input-wrapper">
+              <ion-icon [name]="identifierType === 'cpf' ? 'card' : 'mail'" class="input-icon"></ion-icon>
+              <ion-input formControlName="identifier" [type]="identifierType === 'cpf' ? 'text' : 'email'"
+                [placeholder]="identifierType === 'cpf' ? 'Digite seu CPF' : 'Digite seu email'">
+              </ion-input>
+            </div>
+          </div>
+
+          <div class="field-group">
+            <label class="form-label">Senha</label>
+            <div class="input-wrapper">
+              <ion-icon name="lock-closed" class="input-icon"></ion-icon>
+              <ion-input formControlName="password" type="password" placeholder="Digite sua senha"></ion-input>
+            </div>
+          </div>
+
+          <ion-button expand="block" type="submit" [disabled]="isLoading()">Entrar</ion-button>
+
+          <div class="link-row">
+            <ion-text>Esqueci a senha</ion-text>
+          </div>
+        </form>
+
+        <!-- Carregando ou erro -->
+        <ion-spinner *ngIf="isLoading()" name="crescent" class="spinner"></ion-spinner>
+
+        <ion-text color="danger" *ngIf="errorMessage()">
+          <p class="error-msg">{{ errorMessage() }}</p>
+        </ion-text>
+
+      </ion-card-content>
+    </ion-card>
+  </div>
+</ion-content>

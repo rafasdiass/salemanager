@@ -1,8 +1,11 @@
+Claro, Rafa! Aqui está o `README.md` adaptado especialmente para o seu **sistema genérico de vendas e estoque**, mantendo a mesma organização e clareza do exemplo do AgendeBarbearia, mas com foco total na nova proposta:
+
+---
 
 ```markdown
-# AgendeBarbearia
+# SistemaGenérico Vendas & Estoque
 
-**AgendeBarbearia** é um aplicativo de agendamento e fidelização para salões e barbearias, desenvolvido em **Angular CLI 19** com backend no **Firebase**. A plataforma oferece um modelo híbrido de cadastro e múltiplos planos para estabelecimentos, com foco em organização, escalabilidade e fidelização.
+**SistemaGenérico** é uma plataforma de controle de estoque e vendas desenvolvida com **Angular CLI 19** e **Firebase** (Firestore, Auth e Hosting). O sistema foi pensado para ser **reutilizável e adaptável**, permitindo que diversos negócios utilizem a mesma base, com rápida entrega, baixo custo e fácil manutenção.
 
 ---
 
@@ -11,8 +14,8 @@
 - [Descrição do Projeto](#📝-descrição-do-projeto)
 - [Funcionalidades](#✅-funcionalidades)
 - [Regras de Negócio](#🧩-regras-de-negócio)
-- [Modelagem de Usuários](#👥-modelagem-de-usuários)
-- [Modelo de Assinatura](#💰-modelo-de-assinatura)
+- [Modelagem de Entidades](#📦-modelagem-de-entidades)
+- [Modelo de Licenciamento](#💰-modelo-de-licenciamento)
 - [Tecnologias Utilizadas](#🧪-tecnologias-utilizadas)
 - [Instalação e Configuração](#⚙️-instalação-e-configuração)
 - [Execução e Build](#🚀-execução-e-build)
@@ -24,157 +27,128 @@
 
 ## 📝 Descrição do Projeto
 
-O sistema foi criado para **facilitar agendamentos, promover fidelização e escalar o atendimento de salões e barbearias**, mantendo o controle por parte dos gestores e a liberdade de escolha para os clientes.
+O sistema foi criado para **facilitar a gestão de estoque e vendas** em pequenas e médias empresas, com **cadastro rápido de produtos, registro de vendas, controle de estoque e relatórios simples**. Ideal para comércios locais que precisam de um sistema prático, acessível e direto ao ponto.
 
 ---
 
 ## ✅ Funcionalidades
 
-- Cadastro de salões e planos com geração de cupom automático.
-- Agendamento de horários por clientes vinculados via cupom ou QR Code.
-- Painel de administração por perfil (admin, funcionário, cliente).
-- Histórico completo de atendimentos por cliente.
-- Cancelamento e edição de agendamentos pelo admin.
-- Módulo de fidelidade ativável (acúmulo de pontos por visita).
-- Cadastro automático de clientes ao usar um cupom de salão.
-- Logs de ações sensíveis para auditoria.
-- Detecção de clientes inativos.
-- Validação automática dos limites do plano.
+- Cadastro de produtos com nome, categoria, preço, estoque e imagem.
+- Registro de vendas com múltiplos produtos e formas de pagamento.
+- Atualização automática do estoque após cada venda.
+- Relatórios de vendas por dia, forma de pagamento e produtos mais vendidos.
+- Autenticação com Firebase para múltiplos usuários por empresa.
+- Dashboard com indicadores rápidos.
+- Estrutura pronta para escalar com múltiplos negócios (multiempresa).
 
 ---
 
 ## 🧩 Regras de Negócio
 
-### 📌 Estrutura por Estabelecimento
+### 📌 Estrutura por Empresa
 
-- Cada salão representa uma instância com dados isolados.
-- O `cupom` é o identificador único do estabelecimento, usado para vincular clientes.
-- Cada salão possui:
-  - Subcoleção `users/` com admins, funcionários e clientes.
-  - Subcoleção `appointments/` para agendamentos.
+Cada empresa possui seus dados organizados de forma isolada:
+- Subcoleção `produtos/`
+- Subcoleção `vendas/`
+- Subcoleção `usuarios/`
 
 ### 👤 Tipos de Usuário
 
 #### 👑 Admin
-- Criado após adesão ao plano.
-- Apenas **um admin por estabelecimento**.
-- Não usa cupom e não possui `lastCouponUsedAt`.
-- Pode cancelar ou editar agendamentos (individual ou do dia).
-- Possui acesso completo ao dashboard, relatórios e notificações.
-- Pode cadastrar funcionários e visualizar todos os clientes vinculados.
-- Ações de admins são registradas nos logs.
+- Pode cadastrar produtos, visualizar relatórios e registrar vendas.
+- Pode cadastrar e gerenciar usuários da empresa.
+- É o responsável pela conta da empresa.
 
-#### 🧑‍🔧 Funcionário
-- Criado pelo admin.
-- `role = 'employee'`.
-- Acesso somente à agenda (nome, horário, serviço).
-- Não pode acessar, editar ou visualizar dados de clientes além dos agendamentos.
+#### 🧑 Vendedor
+- Pode registrar vendas e visualizar produtos.
+- Não pode alterar dados de outros usuários nem editar produtos.
 
-#### 🙋 Cliente
-- Criado automaticamente ao utilizar um **cupom** (ID do estabelecimento).
-- `role = 'client'`.
-- Deve conter `lastCouponUsedAt` com a data/hora da última utilização do cupom.
-- Antes de criar, o sistema verifica se já existe cliente no salão.  
-  - Se existir, **não duplica**: apenas atualiza o `lastCouponUsedAt`.
-  - Se for a primeira vez no salão, um novo registro é criado.
-- O cliente **não pode ser deletado** pelo admin, apenas marcado como inativo.
-- O salão ativo para agendamento é definido pelo `lastCouponUsedAt` mais recente.
+### 🔄 Centralização de Regras
 
----
-
-### 🔄 Centralização das Regras
-
-Implementadas por meio da interface `EntityBusinessRules<T>`, com os seguintes _hooks_:
+Utiliza `EntityBusinessRules<T>` com os hooks:
 
 #### 🔧 prepareForCreate()
-- `admin`: remove `lastCouponUsedAt`, valida que só pode haver um admin.
-- `employee`: força `role = 'employee'`.
-- `client`: adiciona `lastCouponUsedAt` com data atual, se ausente.
-- Valida se o limite de clientes do plano foi atingido antes de criar.
+- Adiciona timestamps.
+- Valida duplicações (produto com mesmo nome, etc.).
+- Aplica limites (ex: planos futuros).
 
 #### 🔄 prepareForUpdate()
-- Atualiza `updatedAt`.
-- Impede mudança de `role`.
-- Registra alteração nos logs do sistema.
+- Atualiza timestamp.
+- Impede mudanças indevidas (como mudar o tipo de usuário).
+- Valida regras de integridade (ex: estoque não negativo).
 
 ---
 
-### 🔐 Segurança e Auditoria
+## 📦 Modelagem de Entidades
 
-- Toda alteração (criação, edição, cancelamento) gera um log com:
-  - Usuário que executou
-  - Tipo de ação
-  - Data e hora
-  - Entidade afetada
-- Logs não são apagáveis.
-
----
-
-### ⏳ Inatividade e Remarketing
-
-- Clientes com mais de 60 dias sem agendamento são considerados inativos.
-- Esses dados são utilizados em estratégias de **remarketing automático**.
-- Inatividade é calculada com base em `lastCouponUsedAt`.
-
----
-
-## 👥 Modelagem de Usuários
-
-```json
+### Produto
+```ts
 {
-  "id": "string",
-  "role": "admin" | "employee" | "client",
-  "createdAt": "timestamp",
-  "updatedAt": "timestamp",
-  "lastCouponUsedAt": "timestamp (clientes somente)",
-  "nome": "string",
-  "telefone": "string",
-  "email": "string",
-  "estabelecimentoId": "string",
-  "ativo": true
+  id: string,
+  nome: string,
+  preco: number,
+  categoria?: string,
+  estoque: number,
+  imagemUrl?: string,
+  createdAt: Date,
+  updatedAt: Date
+}
+```
+
+### Venda
+```ts
+{
+  id: string,
+  data: Date,
+  valorTotal: number,
+  formaPagamento: 'PIX' | 'DINHEIRO' | 'CARTAO',
+  itens: [
+    {
+      produtoId: string,
+      nomeProduto: string,
+      quantidade: number,
+      precoUnitario: number
+    }
+  ],
+  createdBy: string
 }
 ```
 
 ---
 
-## 💰 Modelo de Assinatura
+## 💰 Modelo de Licenciamento
 
-### 🆓 Plano Free
-- Gratuito
-- Até 10 clientes
-
-### 💼 Plano Basic
-- R$50/mês
-- Até 30 clientes
-
-### 👑 Plano VIP
-- R$100/mês (ajustável)
-- Ilimitado
-
-> O cupom é gerado automaticamente com base no `estabelecimentoId`.
+### Plano Padrão
+- R$500 de adesão
+- R$150/mês de manutenção
+- Inclui:
+  - Acesso completo à plataforma
+  - Suporte técnico básico
+  - Atualizações automáticas
+- Funcionalidades avançadas (NF-e, integração WhatsApp, etc.) são vendidas à parte.
 
 ---
 
 ## 🧪 Tecnologias Utilizadas
 
 - **Angular CLI 19**  
-- **Firebase (Auth, Firestore, Hosting)**  
-- **Signals, Computed, Effects (Angular 16+)**  
+- **Firebase Firestore, Auth, Storage, Hosting**  
+- **Angular Signals (16+)**  
 - **Arquitetura Standalone**  
-- **Componentização Reativa**  
-- **Deploy no Firebase Hosting**
+- **SCSS Modular e Ionic Components**  
+- **Regras reativas com Services + Business Rules centralizadas**
 
 ---
 
 ## ⚙️ Instalação e Configuração
 
 ```bash
-git clone https://github.com/usuario/agendebarbearia.git
-cd agendebarbearia
+git clone https://github.com/seu-usuario/sistema-vendas-estoque.git
+cd sistema-vendas-estoque
 npm install
 ```
 
-Configure seu arquivo `environment.ts` com as credenciais do Firebase.
+Configure o arquivo `environment.ts` com os dados do seu projeto Firebase.
 
 ---
 
@@ -194,13 +168,12 @@ ng build --configuration production
 
 ## ✅ Boas Práticas
 
-- Separação de responsabilidades por perfil.
-- CRUD com _hooks_ de validação.
-- Timestamps automáticos.
-- Controle rigoroso de acesso.
-- Isolamento completo entre salões.
-- Firebase Rules ativas para segurança.
-- Regras centralizadas e auditáveis.
+- Separação clara por domínio (produtos, vendas, usuários)
+- Regras de negócio encapsuladas em services
+- Aplicação de padrões DRY e SRP
+- Estrutura multiempresa com dados isolados
+- Firebase Rules de segurança
+- Componentes standalone reativos
 
 ---
 
@@ -213,10 +186,13 @@ Distribuído sob a licença **MIT**. Veja o arquivo `LICENSE`.
 ## 🤝 Contribuições
 
 Contribuições são bem-vindas!  
-Faça um fork, crie uma branch com sua funcionalidade e envie um PR detalhado.
+Crie uma branch, implemente a funcionalidade, e envie seu PR com uma descrição clara.
 
 ---
 
-**AgendeBarbearia** é a solução definitiva para digitalizar, organizar e escalar o atendimento de salões e barbearias.
+**SistemaGenérico** é a solução ideal para entregar controle, organização e eficiência a pequenos negócios, com velocidade, simplicidade e estrutura escalável.
 ```
 
+---
+
+Se quiser, posso gerar esse `README.md` em `.md` ou `.txt`, e até te entregar num `.zip` com a estrutura de pastas inicial. Quer que eu crie esse arquivo pra você já no formato Markdown pronto pra usar?

@@ -4,35 +4,29 @@ import {
   withFetch,
   withInterceptors,
 } from '@angular/common/http';
-import { provideAnimations } from '@angular/platform-browser/animations';
 import {
   provideRouter,
   PreloadAllModules,
   withPreloading,
 } from '@angular/router';
-import { provideFirebaseApp, initializeApp } from '@angular/fire/app';
-import { provideMessaging, getMessaging } from '@angular/fire/messaging';
-import { environment } from 'src/environments/environment';
-import { authInterceptor } from './shared/interceptors/auth.interceptor';
+import { provideAnimations } from '@angular/platform-browser/animations';
+
 import { routes } from './app.routes';
+import { authInterceptor } from './shared/interceptors/auth.interceptor';
 import { DeviceDetectorService } from 'ngx-device-detector';
 
 export const appConfig: ApplicationConfig = {
   providers: [
-    // Cliente HTTP com interceptadores
+    // Cliente HTTP com suporte a interceptores e API Fetch
     provideHttpClient(withFetch(), withInterceptors([authInterceptor])),
 
-    // Rotas com pré-carregamento
+    // Roteamento com pré-carregamento inteligente
     provideRouter(routes, withPreloading(PreloadAllModules)),
 
-    // Firebase
-    provideFirebaseApp(() => initializeApp(environment.firebase)),
-    provideMessaging(() => getMessaging()),
-
-    // Animações
+    // Suporte a animações Angular
     provideAnimations(),
 
-    // Detector de dispositivo
+    // Serviço de detecção de dispositivos (desktop/mobile/tablet)
     DeviceDetectorService,
   ],
 };
