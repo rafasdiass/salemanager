@@ -73,14 +73,14 @@ export class DashboardAdminPage {
 
   /** Botões de ação do Admin */
   onAddEmployee(): void {
-    this.nav.navigateTo('/employees/new');
+    this.nav.navigateTo('/profissionais-form');
   }
 
   onAddClient(): void {
-    this.nav.navigateTo('/clients/new');
+    this.nav.navigateTo('/clients-form');
   }
 
   onAddVenda(): void {
-    this.nav.navigateTo('/vendas/new');
+    this.nav.navigateTo('/venda-form');
   }
 }

@@ -1,6 +1,7 @@
 import { Routes } from '@angular/router';
 import { AdminGuard } from './shared/guards/admin.guard';
 import { employeeGuard } from './shared/guards/employee.guard';
+import { ClientsFormComponent } from './pages/admin/clients/clients-form/clients-form.component';
 
 export const routes: Routes = [
   // Redirecionamento inicial para o login-selector
@@ -73,6 +74,21 @@ export const routes: Routes = [
         (m) => m.VendaFormPage
       ),
   },
+  {
+  path: 'clients-form',
+  loadComponent: () =>
+   import('./pages/admin/clients/clients-form/clients-form.component').then(
+  (m) => m.ClientsFormComponent
+)
+},
+{
+  path: 'profissionais-form',
+  loadComponent: () =>
+   import('./pages/admin/profissionais/profissionais-form/profissionais-form.component').then(
+      (m) => m.ProfissionaisFormComponent
+    ),
+},
+
   {
     path: 'produto-form',
     loadComponent: () =>
