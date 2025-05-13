@@ -1,9 +1,9 @@
-Claro, Rafa! Aqui está o `README.md` adaptado especialmente para o seu **sistema genérico de vendas e estoque**, mantendo a mesma organização e clareza do exemplo do AgendeBarbearia, mas com foco total na nova proposta:
+# SistemaGenérico Vendas & Estoque
 
 ---
 
 ```markdown
-# SistemaGenérico Vendas & Estoque
+
 
 **SistemaGenérico** é uma plataforma de controle de estoque e vendas desenvolvida com **Angular CLI 19** e **Firebase** (Firestore, Auth e Hosting). O sistema foi pensado para ser **reutilizável e adaptável**, permitindo que diversos negócios utilizem a mesma base, com rápida entrega, baixo custo e fácil manutenção.
 
