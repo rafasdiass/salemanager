@@ -1,13 +1,22 @@
-<ion-header [translucent]="true">
+<ion-header class="admin-navbar" translucent>
   <ion-toolbar>
-    <ion-title>layout-admin</ion-title>
+    <!-- Navbar customizada (lado esquerdo) -->
+    <div class="navbar-left">
+      <img src="assets/logo.svg" alt="Logo" class="navbar-logo" />
+    </div>
+
+    <!-- Título centralizado -->
+    <ion-title class="navbar-title">
+      Painel Administrativo
+    </ion-title>
+
+    <!-- Navbar customizada (lado direito) -->
+    <div class="navbar-right">
+      <app-navbar-admin></app-navbar-admin>
+    </div>
   </ion-toolbar>
 </ion-header>
 
-<ion-content [fullscreen]="true">
-  <ion-header collapse="condense">
-    <ion-toolbar>
-      <ion-title size="large">layout-admin</ion-title>
-    </ion-toolbar>
-  </ion-header>
+<ion-content [fullscreen]="true" class="admin-content">
+  <ion-router-outlet></ion-router-outlet>
 </ion-content>

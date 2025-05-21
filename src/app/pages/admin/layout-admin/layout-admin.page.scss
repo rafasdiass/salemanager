@@ -1,0 +1,90 @@
+:host {
+    display: block;
+    height: 100%;
+}
+
+.admin-navbar {
+    --background: #fff;
+    --ion-toolbar-background: linear-gradient(90deg, #22577a 70%, #38a3a5 100%);
+    --ion-toolbar-border-color: transparent;
+    color: #fff;
+    box-shadow: 0 2px 14px rgba(30, 70, 140, 0.07);
+
+    ion-toolbar {
+        display: flex;
+        align-items: center;
+        min-height: 64px;
+        padding: 0 20px;
+        justify-content: space-between;
+        background: transparent;
+        position: relative;
+    }
+
+    .navbar-left {
+        display: flex;
+        align-items: center;
+        min-width: 130px;
+        gap: 12px;
+
+        .navbar-logo {
+            width: 42px;
+            height: 42px;
+            border-radius: 10px;
+            background: #fff;
+            box-shadow: 0 1px 5px rgba(0, 0, 0, 0.10);
+            padding: 2px;
+            object-fit: contain;
+            margin-right: 6px;
+            transition: transform 0.15s;
+
+            &:hover {
+                transform: scale(1.08);
+                box-shadow: 0 3px 16px rgba(56, 163, 165, 0.15);
+            }
+        }
+    }
+
+    .navbar-title {
+        font-size: 1.32rem;
+        font-weight: 700;
+        color: #fff;
+        text-shadow: 0 2px 6px rgba(56, 163, 165, 0.08);
+        letter-spacing: 1.2px;
+        text-align: center;
+        margin: 0 auto;
+        flex: 1 1 auto;
+    }
+
+    .navbar-right {
+        display: flex;
+        align-items: center;
+        min-width: 160px;
+        justify-content: flex-end;
+        gap: 10px;
+        // Deixe espaço para botões, ícones ou menu customizados pelo <app-navbar-admin>
+    }
+}
+
+ion-content.admin-content {
+    --background: #f5f9fc;
+    padding: 0;
+}
+
+@media (max-width: 700px) {
+    .admin-navbar ion-toolbar {
+        flex-direction: column;
+        padding: 0 4vw;
+        min-height: 54px;
+    }
+
+    .navbar-title {
+        font-size: 1rem;
+        margin: 0 0 0 0;
+    }
+
+    .navbar-left,
+    .navbar-right {
+        min-width: 0;
+        gap: 5px;
+    }
+}

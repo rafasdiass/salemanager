@@ -126,10 +126,10 @@ export class LoginSelectorPage implements OnInit, OnDestroy {
   private redirectByRole(user: AuthenticatedUser): void {
     switch (user.role) {
       case UserRole.ADMIN:
-        this.navigation.navigateTo('/dashboard-admin');
+        this.navigation.navigateTo('/admin/dashboard');
         break;
       case UserRole.employee:
-        this.navigation.navigateTo('/dashboard-employee');
+        this.navigation.navigateTo('employee/dashboard-employee');
         break;
       default:
         this.setError('Tipo de usuário inválido.');
