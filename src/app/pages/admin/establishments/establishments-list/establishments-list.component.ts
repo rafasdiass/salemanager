@@ -1,18 +1,8 @@
-import {
-  Component,
-  inject,
-  signal,
-  computed,
-  OnInit,
-  Output,
-  EventEmitter,
-} from '@angular/core';
+import { Component, inject, signal, computed, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
-import {
-  Establishment,
-  EstablishmentService,
-} from '../../../../shared/services/establishment.service';
+import { Company } from '../../../../shared/models/company.model';
+import { EstablishmentService } from '../../../../shared/services/establishment.service';
 
 @Component({
   selector: 'app-establishments-list',
@@ -25,21 +15,24 @@ export class EstablishmentsListComponent implements OnInit {
   private readonly establishmentService = inject(EstablishmentService);
   private readonly router = inject(Router);
 
-  // Signal que expõe a lista de estabelecimentos (via EstablishmentService)
-  readonly establishments = this.establishmentService.establishments; // Computed<Establishment[]>
   readonly loading = signal<boolean>(false);
   readonly error = signal<string | null>(null);
+  readonly establishments = signal<Company[]>([]);
 
-  // Computado para verificar se há estabelecimentos.
   readonly hasEstablishments = computed(() => this.establishments().length > 0);
-
-  // Evento opcional para notificar o pai, se necessário.
-  @Output() establishmentSelected = new EventEmitter<Establishment>();
 
   async ngOnInit(): Promise<void> {
     this.loading.set(true);
     try {
-      await this.establishmentService.loadEstablishments();
+      // Troque pelo método correto para listar todos os estabelecimentos do admin.
+      const companies = await this.establishmentService.listAllCompanies?.();
+      if (Array.isArray(companies)) {
+        this.establishments.set(companies);
+      } else {
+        // fallback para company única (empresa do usuário logado)
+        const company = await this.establishmentService.getCurrentCompany();
+        this.establishments.set(company ? [company] : []);
+      }
     } catch (err) {
       console.error(
         '[EstablishmentsListComponent] Erro ao carregar estabelecimentos:',
@@ -51,10 +44,17 @@ export class EstablishmentsListComponent implements OnInit {
     }
   }
 
-  selectEstablishment(est: Establishment): void {
-    console.log('Estabelecimento selecionado:', est);
-    this.establishmentSelected.emit(est);
-    // Redireciona para a tela de agendamento, passando o estabelecimento via state.
-    this.router.navigate(['/appointments'], { state: { establishment: est } });
+  visualizar(company: Company): void {
+    // Se quiser uma tela de detalhes, ajuste a rota abaixo.
+    this.router.navigate(['/admin/estabelecimentos', company.id, 'detalhes']);
+  }
+
+  editar(company: Company): void {
+    if (!company.id) return;
+    this.router.navigate(['/admin/estabelecimentos', company.id, 'editar']);
+  }
+
+  criarNovo(): void {
+    this.router.navigate(['/admin/estabelecimentos/novo']);
   }
 }

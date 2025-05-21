@@ -1,36 +1,50 @@
-<div class="establishments-list-container p-4">
-    <h4 class="mb-3 d-flex align-items-center">
-        <i class="bi bi-building me-2 text-accent"></i>
-        Estabelecimentos
-    </h4>
-
-    <!-- Mensagem de carregamento -->
-    <div *ngIf="loading()" class="text-center">
-        <i class="bi bi-arrow-repeat spin me-2"></i>
-        Carregando estabelecimentos...
+<div class="establishments-list-container">
+    <div class="header-bar">
+        <h2>
+            <i class="bi bi-building"></i> Estabelecimentos
+        </h2>
+        <button class="btn-primary" (click)="criarNovo()">
+            <i class="bi bi-plus-circle"></i> Novo Estabelecimento
+        </button>
     </div>
 
-    <!-- Mensagem de erro -->
-    <div *ngIf="error()" class="alert alert-danger">
-        {{ error() }}
+    <div *ngIf="loading()" class="loading">
+        <i class="bi bi-arrow-repeat spin"></i> Carregando estabelecimentos...
+    </div>
+    <div *ngIf="error()" class="error-msg">
+        <i class="bi bi-exclamation-triangle"></i> {{ error() }}
     </div>
 
-    <!-- Lista de estabelecimentos -->
-    <ul *ngIf="!loading() && hasEstablishments()" class="list-group">
-        <li *ngFor="let est of establishments()"
-            class="list-group-item d-flex justify-content-between align-items-center" (click)="selectEstablishment(est)"
-            style="cursor: pointer;">
-            <div>
-                <strong>{{ est.name }}</strong>
-                <br />
-                <small>{{ est.address }}</small>
-            </div>
-            <i class="bi bi-chevron-right"></i>
-        </li>
-    </ul>
+    <table *ngIf="!loading() && hasEstablishments()" class="premium-table">
+        <thead>
+            <tr>
+                <th>Nome</th>
+                <th>CNPJ</th>
+                <th>Email</th>
+                <th>Telefone</th>
+                <th style="width:140px">Ações</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr *ngFor="let est of establishments(); let i = index" [class.zebra]="i % 2 === 1">
+                <td>{{ est.name }}</td>
+                <td>{{ est.cnpj || '-' }}</td>
+                <td>{{ est.email || '-' }}</td>
+                <td>{{ est.phone || '-' }}</td>
+                <td>
+                    <button class="btn-outline" (click)="visualizar(est)">
+                        <i class="bi bi-eye"></i>
+                    </button>
+                    <button class="btn-primary" (click)="editar(est)">
+                        <i class="bi bi-pencil"></i>
+                    </button>
+                </td>
+            </tr>
+        </tbody>
+    </table>
 
-    <!-- Caso não haja estabelecimentos -->
-    <div *ngIf="!loading() && !hasEstablishments()" class="text-muted mt-3">
-        Nenhum estabelecimento encontrado.
+    <div *ngIf="!loading() && !hasEstablishments()" class="empty-list">
+        <i class="bi bi-building-exclamation"></i> Nenhum estabelecimento encontrado.
     </div>
 </div>
+  

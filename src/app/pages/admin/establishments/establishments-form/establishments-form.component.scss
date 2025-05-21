@@ -1,122 +1,176 @@
-@use 'sass:color';
+.establishment-form-container {
+    max-width: 500px;
+    margin: 32px auto 0 auto;
+    padding: 0 2vw 48px 2vw;
+    background: #fff;
+    border-radius: 16px;
+    box-shadow: 0 2px 32px 0 rgba(100, 150, 255, 0.11);
 
-$form-bg: #1b1b1b;
-$text-color: #f0f0f0;
-$input-bg: #2a2a2a;
-$input-border: #444;
-$highlight-color: #d4a373;
-$accent-color: #b5838d;
-$muted-color: #aaa;
-$active-green: #9dc08b;
+    .header-bar {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 24px 0 6px 0;
 
-.appointments-form-container {
-    background-color: $form-bg;
-    color: $text-color;
-    padding: 1.5rem;
-    border-radius: 0.25rem;
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
-    transition: box-shadow 0.3s ease, transform 0.3s ease;
+        h2 {
+            font-weight: 800;
+            font-size: 1.25rem;
+            color: #41508c;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
 
-    h5 {
-        color: $highlight-color;
-        font-size: 1.75rem;
-        font-weight: 600;
-        margin-bottom: 1.5rem;
+        i {
+            font-size: 1.3em;
+        }
     }
 
-    /* Estilização do formulário */
     form {
         display: flex;
         flex-direction: column;
-        gap: 1.75rem;
+        gap: 20px;
+        background: transparent;
+        padding: 0;
 
         label {
-            font-weight: 500;
-            color: $highlight-color;
-            margin-bottom: 0.5rem;
-        }
+            display: flex;
+            flex-direction: column;
+            font-weight: 600;
+            color: #222;
+            margin-bottom: 8px;
 
-        input,
-        textarea,
-        select {
-            background-color: $input-bg;
-            color: $text-color;
-            border: 1px solid $input-border;
-            border-radius: 0;
-            padding: 0.75rem 1rem;
-            transition: border-color 0.2s ease, box-shadow 0.2s ease;
-
-            &::placeholder {
-                color: $muted-color;
+            span {
+                color: #eb5066;
+                font-weight: 800;
+                margin-left: 2px;
             }
 
-            &:focus {
-                border-color: $accent-color;
-                box-shadow: 0 0 0 0.2rem rgba(181, 131, 141, 0.25);
-                outline: none;
+            input,
+            select {
+                width: 100%;
+                padding: 9px 10px;
+                border: 1.4px solid #e3e9f7;
+                border-radius: 6px;
+                margin-top: 4px;
+                font-size: 1rem;
+                background: #f8fbff;
+                transition: border .2s;
+
+                &:focus {
+                    border: 1.5px solid #4098ff;
+                    outline: none;
+                    background: #fff;
+                }
+            }
+
+            select {
+                cursor: pointer;
+                font-weight: 700;
             }
         }
 
-        textarea {
-            resize: none;
-        }
-    }
-
-    /* Estilização dos inputs de data e hora */
-    .date-input,
-    .time-input {
-        text-align: center;
-        letter-spacing: 0.5px;
-        font-weight: 500;
-        text-transform: uppercase;
-    }
-
-    /* Botão de Agendamento */
-    .btn-accent {
-        background-color: $highlight-color;
-        color: $form-bg;
-        font-weight: 600;
-        border: none;
-        padding: 0.75rem 2rem;
-        border-radius: 0;
-        transition: background-color 0.2s ease, transform 0.2s ease;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6);
-
-        &:hover {
-            background-color: color.adjust($highlight-color, $lightness: -10%);
-            transform: scale(1.01);
+        .form-section {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
         }
 
-        &:disabled {
-            background-color: $input-border;
-            color: $muted-color;
-            cursor: not-allowed;
-            box-shadow: none;
+        .address-section {
+            border-radius: 8px;
+            border: 1.2px solid #e8eefa;
+            padding: 14px 16px 7px 16px;
+            background: #f8fcff;
+            margin-bottom: 10px;
+
+            legend {
+                font-size: 1.04rem;
+                color: #4286f4;
+                font-weight: 700;
+            }
+
+            .address-fields {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 10px 14px;
+                margin-top: 8px;
+            }
+        }
+
+        .form-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 14px;
+            margin-top: 14px;
+
+            button {
+                min-width: 130px;
+                height: 43px;
+                border: none;
+                border-radius: 7px;
+                background: linear-gradient(90deg, #21c8f6 40%, #637bff 100%);
+                color: #fff;
+                font-weight: bold;
+                font-size: 1.04rem;
+                cursor: pointer;
+                box-shadow: 0 4px 12px 0 rgba(99, 123, 255, 0.13);
+                transition: filter .17s, box-shadow .15s;
+
+                &:hover,
+                &:focus {
+                    filter: brightness(1.09) saturate(1.14);
+                    box-shadow: 0 3px 16px 0 rgba(34, 170, 255, 0.20);
+                }
+
+                &.cancel-btn {
+                    background: #e7ecf3;
+                    color: #345;
+                    border: 1px solid #cfd9e7;
+                    font-weight: 500;
+                }
+            }
+        }
+
+        .success-message {
+            color: #18b842;
+            font-weight: 700;
+            text-align: center;
+            margin-top: 10px;
+
+            i {
+                margin-right: 7px;
+            }
+        }
+
+        .error-message {
+            color: #e0483d;
+            font-weight: 700;
+            text-align: center;
+            margin-top: 10px;
+
+            i {
+                margin-right: 7px;
+            }
         }
     }
+}
 
-    /* Layout utilitário */
-    .d-flex {
-        display: flex;
-    }
+@media (max-width: 700px) {
+    .establishment-form-container {
+        max-width: 98vw;
+        padding: 0 2vw 32px 2vw;
 
-    .justify-content-end {
-        justify-content: flex-end;
-    }
+        form .address-section .address-fields {
+            grid-template-columns: 1fr;
+        }
 
-    .mt-4 {
-        margin-top: 1.5rem;
-    }
+        form .form-actions {
+            flex-direction: column;
+            gap: 9px;
+        }
 
-    .p-4 {
-        padding: 1.5rem;
-    }
-
-    .rounded {
-        border-radius: 0.25rem;
-    }
-
-    .shadow-sm {
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        form button {
+            min-width: 100%;
+        }
     }
 }

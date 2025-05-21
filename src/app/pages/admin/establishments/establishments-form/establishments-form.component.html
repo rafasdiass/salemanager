@@ -1,39 +1,79 @@
-<div class="establishments-form-container p-4 rounded shadow-sm">
-    <h4 class="mb-3">
-        <i class="bi bi-building me-2 text-accent"></i>
-        Cadastro de Estabelecimento
-    </h4>
+<div class="establishment-form-container">
+    <div class="header-bar">
+        <h2>
+            <i class="bi bi-building"></i>
+            {{ isEditMode ? 'Editar Estabelecimento' : 'Novo Estabelecimento' }}
+        </h2>
+    </div>
+
     <form [formGroup]="form" (ngSubmit)="submit()">
-        <div class="mb-3">
-            <label for="name" class="form-label">Nome</label>
-            <input id="name" type="text" formControlName="name" class="form-control"
-                placeholder="Digite o nome do estabelecimento" />
+        <div class="form-section">
+            <label>Nome <span>*</span>
+                <input formControlName="name" type="text" placeholder="Nome do estabelecimento" />
+            </label>
+            <label>CNPJ
+                <input formControlName="cnpj" type="text" placeholder="CNPJ" />
+            </label>
+            <label>Email
+                <input formControlName="email" type="email" placeholder="Email" />
+            </label>
+            <label>Telefone
+                <input formControlName="phone" type="text" placeholder="Telefone" />
+            </label>
         </div>
-        <div class="mb-3">
-            <label for="address" class="form-label">Endereço</label>
-            <input id="address" type="text" formControlName="address" class="form-control"
-                placeholder="Digite o endereço" />
-        </div>
-        <div class="row mb-3">
-            <div class="col-md-6">
-                <label for="latitude" class="form-label">Latitude</label>
-                <input id="latitude" type="number" formControlName="latitude" class="form-control"
-                    placeholder="Ex: -23.550520" />
+
+        <fieldset class="address-section" [formGroupName]="'address'">
+            <legend>Endereço</legend>
+            <div class="address-fields">
+                <label>Rua <span>*</span>
+                    <input formControlName="street" type="text" />
+                </label>
+                <label>Número <span>*</span>
+                    <input formControlName="number" type="text" />
+                </label>
+                <label>Bairro <span>*</span>
+                    <input formControlName="neighborhood" type="text" />
+                </label>
+                <label>Cidade <span>*</span>
+                    <input formControlName="city" type="text" />
+                </label>
+                <label>Estado <span>*</span>
+                    <input formControlName="state" type="text" />
+                </label>
+                <label>CEP <span>*</span>
+                    <input formControlName="postal_code" type="text" />
+                </label>
+                <label>País <span>*</span>
+                    <input formControlName="country" type="text" />
+                </label>
             </div>
-            <div class="col-md-6">
-                <label for="longitude" class="form-label">Longitude</label>
-                <input id="longitude" type="number" formControlName="longitude" class="form-control"
-                    placeholder="Ex: -46.633308" />
-            </div>
+        </fieldset>
+
+        <div class="form-section">
+            <label>Plano de Assinatura <span>*</span>
+                <select formControlName="subscriptionPlanId">
+                    <option value="Free">Free</option>
+                    <option value="Unlimited">Unlimited</option>
+                </select>
+            </label>
         </div>
-        <div class="mb-3">
-            <label for="companyId" class="form-label">Company ID</label>
-            <input id="companyId" type="text" formControlName="companyId" class="form-control"
-                placeholder="Digite o Company ID" />
+
+        <div class="form-actions">
+            <button type="submit" [disabled]="form.invalid">
+                {{ isEditMode ? 'Salvar Alterações' : 'Criar Estabelecimento' }}
+            </button>
+            <!-- Remova o erro de "private router" mudando o acesso no TS para public -->
+            <button type="button" class="cancel-btn" (click)="onCancel()">
+                Cancelar
+            </button>
         </div>
-        <div *ngIf="successMessage()" class="alert alert-success">
-            {{ successMessage() }}
+
+        <div *ngIf="successMessage()" class="success-message">
+            <i class="bi bi-check-circle"></i> {{ successMessage() }}
         </div>
-        <div *ngIf="errorMessage()" class="alert alert-danger">
-            {{ errorMessage() }}
+        <div *ngIf="errorMessage()" class="error-message">
+            <i class="bi bi-exclamation-triangle"></i> {{ errorMessage() }}
         </div>
+    </form>
+</div>
+  

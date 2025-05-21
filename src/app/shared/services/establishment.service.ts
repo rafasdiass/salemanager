@@ -17,6 +17,7 @@ import {
   DocumentReference,
   docSnapshots,
 } from '@angular/fire/firestore';
+import { collection, getDocs } from '@angular/fire/firestore';
 import { Subscription } from 'rxjs';
 import { map } from 'rxjs/operators';
 
@@ -96,5 +97,16 @@ export class EstablishmentService extends BaseFirestoreCrudService<Company> {
   async getCompanyName(): Promise<string | null> {
     const company = await this.getCurrentCompany();
     return company?.name ?? null;
+  }
+  /**
+   * Lista todas as empresas cadastradas no sistema.
+   */
+  async listAllCompanies(): Promise<Company[]> {
+    const colRef = collection(this.firestore, 'empresas');
+    const snap = await getDocs(colRef);
+    return snap.docs.map((docSnap) => ({
+      ...(docSnap.data() as Company),
+      id: docSnap.id,
+    }));
   }
 }

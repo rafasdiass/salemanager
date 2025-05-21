@@ -1,9 +1,16 @@
-import { Component, inject, OnInit } from '@angular/core';
+import {
+  Component,
+  computed,
+  effect,
+  inject,
+  OnInit,
+  signal,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { EstablishmentsListComponent } from './establishments-list/establishments-list.component';
 import { EstablishmentsFormComponent } from './establishments-form/establishments-form.component';
-import { Establishment ,EstablishmentService,} from '../../../shared/services/establishment.service';
-
+import { Company } from '../../../shared/models/company.model';
+import { EstablishmentService } from '../../../shared/services/establishment.service';
 
 @Component({
   selector: 'app-establishments',
@@ -19,26 +26,41 @@ import { Establishment ,EstablishmentService,} from '../../../shared/services/es
 export class EstablishmentsComponent implements OnInit {
   private readonly establishmentService = inject(EstablishmentService);
 
+  readonly loading = signal(true);
+  readonly error = signal<string | null>(null);
+  readonly companies = signal<Company[]>([]);
+
+  // Computed para saber se existem estabelecimentos
+  readonly hasCompanies = computed(() => this.companies().length > 0);
+
   ngOnInit(): void {
-    // Carrega os estabelecimentos ao iniciar o componente.
-    this.establishmentService.loadEstablishments();
+    this.fetchCompanies();
   }
 
-  /**
-   * Quando um novo estabelecimento é criado no formulário,
-   * este método é chamado para atualizar a lista.
-   */
+  /** Busca e atualiza a lista de estabelecimentos (empresas) */
+  async fetchCompanies() {
+    this.loading.set(true);
+    this.error.set(null);
+    try {
+      const list = await this.establishmentService.listAllCompanies();
+      this.companies.set(list);
+    } catch (err) {
+      this.error.set('Erro ao carregar estabelecimentos.');
+    } finally {
+      this.loading.set(false);
+    }
+  }
+
+  /** Chamado quando um estabelecimento é criado/alterado */
   onEstablishmentCreated(): void {
-    this.establishmentService.loadEstablishments();
+    this.fetchCompanies();
   }
 
-  /**
-   * Quando um estabelecimento é selecionado na lista, este método é chamado.
-   * Aqui, você pode, por exemplo, navegar para uma página de detalhes.
-   */
-  onEstablishmentSelected(est: Establishment): void {
-    console.log('Estabelecimento selecionado no pai:', est);
-    // Exemplo: navegar para detalhes do estabelecimento
-    // this.router.navigate(['/establishment', est.id]);
+  /** Chamado ao selecionar estabelecimento na lista */
+  onEstablishmentSelected(company: Company): void {
+    // Implementar navegação para detalhes/edição se desejar
+    console.log('Estabelecimento selecionado:', company);
+    // Exemplo:
+    // this.router.navigate(['/admin/estabelecimentos', company.id]);
   }
 }
