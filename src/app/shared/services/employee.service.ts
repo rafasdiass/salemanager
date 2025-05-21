@@ -71,15 +71,28 @@ export class EmployeeService extends BaseFirestoreCrudService<AuthenticatedUser>
       });
     });
   }
-
   override create(user: AuthenticatedUser, id?: string) {
+    console.log('[EmployeeService] create() chamado:', user, id);
+
     if (user.role !== UserRole.employee) {
+      console.error('[EmployeeService] Role inválida:', user.role);
       throw new Error('Este serviço só pode criar usuários com role EMPLOYEE.');
     }
     if (!user.companyId) {
+      console.error('[EmployeeService] companyId ausente');
       throw new Error('Funcionário precisa estar vinculado a uma empresa.');
     }
-    return super.create(user, id);
+
+    const observable = super.create(user, id);
+
+    observable.subscribe({
+      next: (result) =>
+        console.log('[EmployeeService] Usuário criado com sucesso:', result),
+      error: (err) =>
+        console.error('[EmployeeService] Erro ao criar usuário:', err),
+    });
+
+    return observable;
   }
 
   override update(id: string, user: AuthenticatedUser) {

@@ -70,7 +70,10 @@ export class ProfissionaisFormComponent {
    * Submete o formulário para criação do funcionário.
    */
   async submit(): Promise<void> {
+    console.log('[ProfissionaisForm] Submit iniciado');
+
     if (this.form.invalid) {
+      console.warn('[ProfissionaisForm] Formulário inválido:', this.form.value);
       this.form.markAllAsTouched();
       return;
     }
@@ -80,6 +83,8 @@ export class ProfissionaisFormComponent {
 
     try {
       const companyId = this.authService.user()?.companyId;
+      console.log('[ProfissionaisForm] companyId:', companyId);
+
       if (!companyId) {
         throw new Error(
           'Usuário autenticado não está vinculado a uma empresa.'
@@ -87,6 +92,7 @@ export class ProfissionaisFormComponent {
       }
 
       const values = this.form.getRawValue();
+      console.log('[ProfissionaisForm] Valores do formulário:', values);
 
       const employee: Omit<EmployeeUser, 'id'> = {
         cpf: values.cpf.replace(/\D/g, ''),
@@ -96,19 +102,24 @@ export class ProfissionaisFormComponent {
         last_name: values.last_name.trim(),
         password: values.password,
         role: UserRole.employee,
-
         companyId,
         is_active: true,
         registration_date: new Date().toISOString(),
       };
 
-      await this.employeeService.create(employee);
+      console.log('[ProfissionaisForm] Payload employee:', employee);
+
+      // Aqui, log antes de tentar criar
+      const result = await this.employeeService.create(employee);
+      console.log('[ProfissionaisForm] Employee criado com sucesso:', result);
+
       this.resetForm();
     } catch (error: any) {
       console.error('[ProfissionaisForm] Erro ao criar funcionário:', error);
       this.errorMessage.set(error.message || 'Erro desconhecido');
     } finally {
       this.isLoading.set(false);
+      console.log('[ProfissionaisForm] Submit finalizado');
     }
   }
 

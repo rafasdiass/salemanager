@@ -87,6 +87,7 @@ export abstract class BaseFirestoreCrudService<
    * Cria um novo documento, aplica regras de negócio, atualiza timestamps e faz refresh da lista.
    */
   create(value: T, id?: string): Observable<T> {
+    console.log('[BaseFirestoreCrudService] create() chamado:', value, id);
     return from(this.applyBusinessRulesBeforeCreate(value)).pipe(
       switchMap(async (processed) => {
         const now = new Date();
@@ -95,11 +96,19 @@ export abstract class BaseFirestoreCrudService<
 
         const docId = id || crypto.randomUUID();
         const ref = doc(this.firestore, this.dbPath, docId);
+
+        console.log('[BaseFirestoreCrudService] setDoc:', processed);
+
         await setDoc(ref, processed);
 
         processed.id = docId;
         // 🔄 refresh manual
         await this.loadItems();
+
+        console.log(
+          '[BaseFirestoreCrudService] Documento criado com id:',
+          docId
+        );
         return processed;
       })
     );
