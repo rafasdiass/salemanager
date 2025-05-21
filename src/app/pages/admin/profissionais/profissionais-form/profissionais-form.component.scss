@@ -1,21 +1,128 @@
 :host {
     display: block;
+    width: 100%;
+    max-width: 420px;
+    margin: 0 auto;
+    padding-top: 16px;
 }
 
 ion-content {
     --background: var(--ion-background-color);
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    min-height: 100vh;
+}
+
+form {
+    width: 100%;
+}
+
+ion-list {
+    background: transparent;
+    box-shadow: none;
+    padding: 0;
 }
 
 ion-item {
     margin-bottom: 12px;
+    border-radius: 10px;
+    background: var(--ion-item-background, #fff);
+    box-shadow: 0 4px 16px 0 rgba(46, 198, 255, 0.11),
+        0 1.5px 8px 0 rgba(0, 0, 0, 0.09);
+    --padding-start: 12px;
+    --inner-padding-end: 12px;
+    transition: box-shadow 0.2s;
+
+    &:focus-within,
+    &:hover {
+        box-shadow: 0 6px 20px 0 rgba(46, 198, 255, 0.17),
+            0 2px 10px 0 rgba(0, 0, 0, 0.13);
+    }
 }
 
 .form-actions {
-    margin-top: 24px;
+    margin-top: 28px;
+    display: flex;
+    justify-content: flex-end;
+    gap: 16px;
+}
+
+ion-button {
+    min-width: 140px;
+    height: 44px;
+    font-size: 1.06rem;
+    border-radius: 8px;
+    font-weight: 700;
+    letter-spacing: 0.01em;
+    box-shadow: 0 4px 18px 0 rgba(70, 210, 255, 0.19),
+        0 1px 6px 0 rgba(0, 0, 0, 0.13);
+    transition: background 0.18s, color 0.18s, box-shadow 0.18s, filter 0.16s;
+
+    &.ion-color-primary,
+    &[color="primary"] {
+        background: linear-gradient(100deg, #21C8F6 40%, #637BFF 100%);
+        color: #fff;
+        border: none;
+        filter: brightness(1.04);
+
+        &:hover,
+        &:focus {
+            filter: brightness(1.13) saturate(1.1);
+            box-shadow: 0 8px 24px 0 rgba(33, 200, 246, 0.21),
+                0 2px 12px 0 rgba(99, 123, 255, 0.22);
+            transform: translateY(-1px) scale(1.03);
+        }
+
+        &:active {
+            filter: brightness(0.93);
+            transform: scale(0.99);
+        }
+    }
+
+    &.ion-color-medium,
+    &[color="medium"] {
+        background: linear-gradient(90deg, #E2E6EA 30%, #d5e8f7 100%);
+        color: #335;
+        border: 1px solid #ccd6f6;
+
+        &:hover,
+        &:focus {
+            background: linear-gradient(90deg, #d5e8f7 30%, #E2E6EA 100%);
+            color: #234;
+            filter: brightness(1.08) contrast(1.1);
+            box-shadow: 0 4px 18px 0 rgba(160, 210, 240, 0.12),
+                0 1px 6px 0 rgba(0, 0, 0, 0.10);
+            transform: translateY(-1px) scale(1.01);
+        }
+
+        &:active {
+            filter: brightness(0.97);
+            transform: scale(0.98);
+        }
+    }
 }
 
 .error-text {
     text-align: center;
     margin-top: 16px;
-    font-size: 0.9rem;
+    font-size: 0.92rem;
+    color: var(--ion-color-danger);
+    font-weight: 500;
+}
+
+@media (max-width: 520px) {
+    :host {
+        max-width: 98vw;
+        padding: 0 2vw;
+    }
+
+    .form-actions {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    ion-button {
+        min-width: 100%;
+    }
 }

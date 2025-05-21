@@ -1,4 +1,4 @@
-import { Component, inject, signal, computed } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import {
   FormGroup,
   FormControl,
@@ -9,8 +9,8 @@ import { CommonModule } from '@angular/common';
 import { EmployeeService } from 'src/app/shared/services/employee.service';
 import { AuthService } from 'src/app/shared/services/auth.service';
 import { EmployeeUser } from 'src/app/shared/models/employee.model';
-import {  provideNgxMask } from 'ngx-mask';
-import { IonicModule } from '@ionic/angular';
+import { provideNgxMask } from 'ngx-mask';
+import { IonicModule, NavController, AlertController } from '@ionic/angular';
 import { UserRole } from 'src/app/shared/models/user-role.enum';
 
 @Component({
@@ -24,6 +24,8 @@ import { UserRole } from 'src/app/shared/models/user-role.enum';
 export class ProfissionaisFormComponent {
   private readonly employeeService = inject(EmployeeService);
   private readonly authService = inject(AuthService);
+  private readonly navCtrl = inject(NavController);
+  private readonly alertCtrl = inject(AlertController);
 
   /** Formulário reativo */
   form: FormGroup<{
@@ -109,11 +111,14 @@ export class ProfissionaisFormComponent {
 
       console.log('[ProfissionaisForm] Payload employee:', employee);
 
-      // Aqui, log antes de tentar criar
-      const result = await this.employeeService.create(employee);
-      console.log('[ProfissionaisForm] Employee criado com sucesso:', result);
+      await this.employeeService.create(employee).toPromise();
+      console.log('[ProfissionaisForm] Employee criado com sucesso');
 
       this.resetForm();
+
+      // Mostra alerta de sucesso e retorna à tela anterior
+      await this.showSuccessAlert();
+      this.navCtrl.back();
     } catch (error: any) {
       console.error('[ProfissionaisForm] Erro ao criar funcionário:', error);
       this.errorMessage.set(error.message || 'Erro desconhecido');
@@ -121,6 +126,27 @@ export class ProfissionaisFormComponent {
       this.isLoading.set(false);
       console.log('[ProfissionaisForm] Submit finalizado');
     }
+  }
+
+  /**
+   * Exibe um alerta de sucesso após cadastro
+   */
+  private async showSuccessAlert(): Promise<void> {
+    const alert = await this.alertCtrl.create({
+      header: 'Funcionário cadastrado!',
+      message: 'O funcionário foi criado com sucesso.',
+      buttons: ['OK'],
+      cssClass: 'success-alert',
+    });
+    await alert.present();
+    await alert.onDidDismiss();
+  }
+
+  /**
+   * Cancela o cadastro e retorna para a tela anterior
+   */
+  cancel(): void {
+    this.navCtrl.back();
   }
 
   /**

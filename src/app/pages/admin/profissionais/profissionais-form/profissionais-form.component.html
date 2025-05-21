@@ -23,15 +23,15 @@
             <!-- CPF -->
             <ion-item>
                 <ion-label position="stacked">CPF</ion-label>
-                <ion-input formControlName="cpf" placeholder="000.000.000-00" type="text" mask="000.000.000-00">
-                </ion-input>
+                <ion-input formControlName="cpf" placeholder="000.000.000-00" type="text"
+                    mask="000.000.000-00"></ion-input>
             </ion-item>
 
             <!-- Telefone -->
             <ion-item>
                 <ion-label position="stacked">Telefone</ion-label>
-                <ion-input formControlName="phone" placeholder="(00) 00000-0000" type="text" mask="(00) 00000-0000">
-                </ion-input>
+                <ion-input formControlName="phone" placeholder="(00) 00000-0000" type="text"
+                    mask="(00) 00000-0000"></ion-input>
             </ion-item>
 
             <!-- Email -->
@@ -53,6 +53,9 @@
                 <ion-spinner *ngIf="isLoading()" name="crescent" slot="start"></ion-spinner>
                 Salvar Funcionário
             </ion-button>
+            <ion-button expand="block" color="medium" type="button" (click)="cancel()">
+                Cancelar
+            </ion-button>
         </div>
 
         <ion-text color="danger" *ngIf="errorMessage()">
@@ -60,3 +63,4 @@
         </ion-text>
     </form>
 </ion-content>
+  
